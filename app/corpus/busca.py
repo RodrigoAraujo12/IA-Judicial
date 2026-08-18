@@ -136,6 +136,54 @@ class Resultado:
     aviso: str | None = None
 
 
+# A matriz de vetores custa 23 MB e uma leitura do banco. Carrega uma vez por
+# processo; o indice so muda por reingestao, que reinicia o servidor de todo jeito.
+_matriz = None
+_matriz_tentada = False
+
+
+def _obter_matriz(con: sqlite3.Connection):
+    global _matriz, _matriz_tentada
+    if not _matriz_tentada:
+        _matriz_tentada = True
+        try:
+            from app.corpus import vetores
+
+            _matriz = vetores.carregar_matriz(con)
+        except Exception:
+            _matriz = None
+    return _matriz
+
+
+def densa(
+    con: sqlite3.Connection, consulta: str, quando: date | None = None, limite: int = 10
+) -> list[Achado]:
+    """Via 2. Similaridade de cosseno sobre os vetores do BGE-M3.
+
+    Devolve lista vazia quando o corpus ainda nao foi vetorizado - a busca degrada
+    para lexical em vez de quebrar, que e o comportamento certo numa maquina onde
+    o modelo nao coube.
+    """
+    matriz = _obter_matriz(con)
+    if matriz is None:
+        return []
+
+    from app.corpus import vetores
+
+    pares = vetores.buscar(con, matriz, consulta, quando, limite)
+    if not pares:
+        return []
+
+    por_id = {
+        l["id"]: l
+        for l in con.execute(
+            f"SELECT * FROM dispositivos WHERE id IN ({','.join('?' * len(pares))})",
+            [i for i, _ in pares],
+        )
+    }
+    return [_achado(por_id[i], "densa", s) for i, s in pares if i in por_id]
+
+
 def buscar(
     con: sqlite3.Connection, consulta: str, quando: date | None = None, limite: int = 10
 ) -> Resultado:
@@ -175,7 +223,16 @@ def buscar(
 
         return Resultado([], "referencia", f"referencia nao encontrada no corpus: {consulta}")
 
-    return Resultado(lexical(con, consulta, quando, limite), "lexical")
+    # As duas vias de busca correm sobre o mesmo filtro de vigencia e sao fundidas
+    # por posicao. Cada uma erra de um jeito proprio: a lexical nao sabe que
+    # "dispensa imotivada" e "despedida sem justa causa" sao a mesma coisa; a densa
+    # troca numero de artigo. RRF aproveita o acerto de qualquer uma das duas sem
+    # precisar que os scores sejam comparaveis - e nao sao.
+    lex = lexical(con, consulta, quando, max(limite, 20))
+    den = densa(con, consulta, quando, max(limite, 20))
+    if not den:
+        return Resultado(lex[:limite], "lexical")
+    return Resultado(rrf([lex, den], limite=limite), "hibrida")
 
 
 def rrf(listas: list[list[Achado]], k: int = 60, limite: int = 10) -> list[Achado]:

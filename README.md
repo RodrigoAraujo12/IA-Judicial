@@ -117,8 +117,8 @@ apoia nisso em vez de começar cego.
    listas (`par. 3o e par. 4o`) e cadeias (`art. 10, II, 'b'`).
 1. **Esparsa (BM25/FTS5).** Consulta jurídica é cheia de token exato — "Súmula
    437", "art. 384". Vetor denso troca número; BM25 não.
-2. **Densa (BGE-M3, 1024d).** Para a pergunta em linguagem de cliente. **Ainda
-   não implementada.**
+2. **Densa (BGE-M3, 1024d).** Para quando o vocabulário da consulta não é o da
+   lei — "dispensa imotivada" onde o art. 487 escreve "sem justo motivo".
 
 Fusão por RRF. Reranking só se a precisão não bastar — o próprio BGE-M3 devolve
 vetores ColBERT, o que evita carregar um segundo modelo.
@@ -151,8 +151,8 @@ Triagem completa. Em andamento e a fazer:
 
 | | | |
 |---|---|---|
-| **Corpus** | CLT pronta | 3.624 dispositivos, 5.670 redações, com eixo de vigência. Faltam CF, súmulas e OJs do TST, NRs. |
-| **Via densa** | a fazer | BGE-M3 sobre o corpus ingerido, e a fusão RRF passa a ter o que fundir. |
+| **Corpus** | CLT pronta | 3.663 dispositivos, 5.752 redações, com eixo de vigência. Faltam CF, súmulas e OJs do TST, NRs, súmulas do TRT-13. |
+| **Via densa** | pronta | BGE-M3 em ONNX na CPU. Fusão RRF acerta 15/15 no conjunto de avaliação. |
 | **Peças** | a fazer | Modelos de peça por preenchimento de slots, com citação obrigatória, validador de citações e exportação em DOCX. |
 | **Processo parado** | a fazer | Consultor de próxima medida para processo que anda devagar há anos. |
 | **Jurisprudência** | a decidir | Acórdãos, em fase própria: muda a escala e exige rastrear superação de tese, não vigência. |

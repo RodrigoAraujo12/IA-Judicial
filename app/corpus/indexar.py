@@ -1,6 +1,7 @@
 """Ingestao do corpus normativo.
 
-    python -m app.corpus.indexar clt
+    python -m app.corpus.indexar clt          # texto da lei, do Planalto
+    python -m app.corpus.indexar vetores      # Via 2: vetores densos (BGE-M3)
     python -m app.corpus.indexar clt --rebaixar   # rebaixa a captura do site
 
 Grava em dados/corpus.db. O banco e indice: apagar e reconstruir e operacao
@@ -14,6 +15,7 @@ dispositivos citados pelo catalogo ficaram enderecaveis**. Um parser que reconhe
 from __future__ import annotations
 
 import sys
+import time
 from datetime import date
 
 from app.catalogo.loader import carregar
@@ -140,13 +142,44 @@ def conferir_catalogo(con, chave: str) -> None:
             print(f"    {urn} ate {quando} ({por})  <- {', '.join(sorted(set(exigidos[urn])))}")
 
 
+def indexar_vetores() -> None:
+    """Via 2: calcula o vetor denso de cada redacao. Retomavel.
+
+    So processa o que ainda nao tem vetor, entao interromper e rodar de novo
+    continua de onde parou - o que importa numa etapa de ~25 minutos.
+    """
+    from app.corpus import vetores
+
+    con = banco.conectar()
+    try:
+        inicio = time.time()
+        feitos = vetores.indexar(con)
+        if feitos:
+            print(f"  {feitos} vetores em {(time.time() - inicio) / 60:.1f} min")
+        else:
+            print("  nada pendente: todos os dispositivos ja tem vetor")
+        print(f"  estatisticas: {banco.estatisticas(con)}")
+    except vetores.ModeloAusente as erro:
+        print(f"  {erro}")
+        raise SystemExit(1) from erro
+    finally:
+        con.close()
+
+
 def main() -> None:
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     rebaixar = "--rebaixar" in sys.argv
-    alvos = args or list(OBRAS)
-    for chave in alvos:
+
+    if "vetores" in args:
+        print("Vetores densos (BGE-M3)")
+        indexar_vetores()
+        args = [a for a in args if a != "vetores"]
+        if not args:
+            return
+
+    for chave in args or list(OBRAS):
         if chave not in OBRAS:
-            print(f"obra desconhecida: {chave}. Disponiveis: {', '.join(OBRAS)}")
+            print(f"obra desconhecida: {chave}. Disponiveis: {', '.join(OBRAS)}, vetores")
             raise SystemExit(1)
         indexar(chave, rebaixar)
 

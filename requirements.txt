@@ -1,6 +1,17 @@
+# --- aplicacao ---------------------------------------------------------------
 fastapi>=0.115
 uvicorn[standard]>=0.32
 jinja2>=3.1
 pydantic>=2.9
 pyyaml>=6.0
 python-multipart>=0.0.12
+
+# --- corpus e recuperacao ----------------------------------------------------
+# Nao ha framework de RAG aqui, e e deliberado. As pecas que um framework traria
+# ja existem: o indice lexical e o FTS5 do SQLite, a busca vetorial e um produto
+# de matrizes de 1 ms sobre 23 MB, e a fusao RRF sao dez linhas. O que o
+# framework nao traz - vigencia por dispositivo dentro da consulta - e justamente
+# a parte que este projeto nao pode terceirizar.
+numpy>=2.0          # o produto escalar da busca densa
+onnxruntime>=1.20   # roda o BGE-M3 sem PyTorch e sem CUDA
+tokenizers>=0.20    # tokenizador do BGE-M3 (sentencepiece do XLM-R)
