@@ -39,7 +39,6 @@
     - >-
       Atencao a litigancia de ma-fe (art. 793-C da CLT) em pedido de dano moral
       sem lastro probatorio minimo.
-  calculo: null
 
 - id: estabilidade_gestante
   nome: Estabilidade gestante - reintegracao ou indenizacao substitutiva
@@ -72,7 +71,6 @@
     - >-
       Datar com precisao a concepcao a partir do exame. O marco inicial define
       todo o calculo.
-  calculo: estabilidade_gestante
 
 - id: estabilidade_acidentaria
   nome: Estabilidade acidentaria - reintegracao ou indenizacao substitutiva
@@ -113,7 +111,6 @@
     - >-
       Doenca ocupacional constatada apos a dispensa dispensa o requisito do
       afastamento previo (Sumula 378, II, parte final). Caminho frequente em LER/DORT.
-  calculo: estabilidade_acidentaria
 
 - id: indenizacao_acidente
   nome: Indenizacao por acidente do trabalho ou doenca ocupacional
@@ -153,4 +150,3 @@
     - >-
       Pericia medica obrigatoria. Requerer na inicial com quesitos e ja apontar o
       valor pretendido de forma fundamentada.
-  calculo: null

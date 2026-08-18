@@ -10,8 +10,8 @@ cada um testa esta em EXEMPLOS.md.
 from app import persistencia
 
 # --- 1. Marcio: o caso completo, ainda a ajuizar ----------------------------
-# Exercita a cascata (adicionais majoram a base das horas extras) e a regra do
-# art. 193, par. 2o: insalubridade e periculosidade nao acumulam.
+# Caso denso: aciona insalubridade e periculosidade ao mesmo tempo, que nao se
+# acumulam (art. 193, par. 2o), e ponto britanico, que aciona a Sumula 338.
 MARCIO = {
     "data_admissao": "2019-03-15",
     "data_saida": "2026-04-30",
@@ -49,19 +49,6 @@ MARCIO = {
     "doenca_ocupacional": False,
     "gestante_na_dispensa": False,
     "hipossuficiente": True,
-    # quantificacao
-    "grau_insalubridade": "medio",
-    "base_insalubridade": "salario_minimo",
-    "he_horas_mes": 40,
-    "he_adicional": 50,
-    "noturno_horas_mes": 30,
-    "intervalo_minutos_suprimidos": 30,
-    "intervalo_dias_mes": 22,
-    "saldo_salario_dias": 30,
-    "ferias_vencidas": 1,
-    "verbas_incontroversas": 3500.0,
-    "seguro_valor_parcela": 1800.0,
-    "seguro_parcelas": 5,
 }
 
 # --- 2. Regina: pejotizacao, com lacunas de proposito -----------------------
@@ -83,8 +70,6 @@ REGINA = {
     "modalidade_saida": "sem_formalizacao",
     "verbas_pagas": "nenhuma",
     "hipossuficiente": True,
-    "he_horas_mes": 25,
-    "saldo_salario_dias": 20,
 }
 
 # --- 3. Joao: processo ja ajuizado em 2019 ----------------------------------
@@ -122,17 +107,10 @@ JOAO = {
     "doenca_ocupacional": False,
     "gestante_na_dispensa": False,
     "hipossuficiente": True,
-    "he_horas_mes": 40,
-    "he_adicional": 50,
-    "intervalo_minutos_suprimidos": 30,
-    "intervalo_dias_mes": 22,
-    "saldo_salario_dias": 30,
-    "ferias_vencidas": 0,
-    "verbas_incontroversas": 2800.0,
 }
 
 CASOS = [
-    ("1. Marcio - caso completo (cascata e adicionais alternativos)", MARCIO),
+    ("1. Marcio - caso completo (adicionais alternativos, Sumula 338)", MARCIO),
     ("2. Regina - pejotizacao com lacunas (coluna 'a investigar')", REGINA),
     ("3. Joao - ajuizado em 2019 (cisao pela Reforma)", JOAO),
 ]

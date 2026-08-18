@@ -14,7 +14,6 @@
 
 {% block corpo %}
 {% set a = analise %}
-{% set c = calculo %}
 <article class="relatorio">
 
   <h1>Relat&oacute;rio de triagem</h1>
@@ -40,73 +39,6 @@
       Os pedidos assinalados abaixo t&ecirc;m regra distinta antes e depois dessa data e devem ser
       formulados de forma cindida por per&iacute;odo.
     </div>
-  {% endif %}
-
-  {% if c.disponivel %}
-    <h2>Apura&ccedil;&atilde;o de valores</h2>
-    <p class="fund">
-      Per&iacute;odo apurado: <b>{{ c.periodo }}</b> &middot;
-      remunera&ccedil;&atilde;o base: <b>R$ {{ c.remuneracao | moeda }}</b>
-    </p>
-
-    <table class="valores">
-      <thead>
-        <tr><th>Verba</th><th>Principal</th><th>Reflexos</th><th>Total</th></tr>
-      </thead>
-      <tbody>
-        {% for v in c.verbas %}
-          <tr {% if v.alternativa %}class="alternativa"{% endif %}>
-            <td>{{ v.nome }}{% if v.alternativa %} <em>(alternativo &mdash; n&atilde;o somado)</em>{% endif %}</td>
-            <td>{{ v.principal | moeda }}</td>
-            <td>{{ v.total_reflexos | moeda }}</td>
-            <td>{{ v.total | moeda }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-      <tfoot>
-        <tr>
-          <th>Total</th>
-          <th>{{ c.total_principal | moeda }}</th>
-          <th>{{ c.total_reflexos | moeda }}</th>
-          <th>{{ c.total | moeda }}</th>
-        </tr>
-      </tfoot>
-    </table>
-
-    {% for obs in c.observacoes %}<div class="caixa">{{ obs }}</div>{% endfor %}
-
-    {% if c.pendentes %}
-      <p class="fund"><b>Sem valor apurado &mdash; falta quantificar:</b></p>
-      <ul>
-        {% for v in c.pendentes %}
-          <li>{{ v.nome }}:
-            {% for campo in v.faltam %}{{ perguntas_por_id[campo].texto | safe }}{% if not loop.last %}; {% endif %}{% endfor %}
-          </li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-
-    <h2>Mem&oacute;ria de c&aacute;lculo</h2>
-    <p class="fund">Toda opera&ccedil;&atilde;o, na ordem em que foi feita. Confer&iacute;vel linha a linha.</p>
-    {% for v in c.verbas %}
-      <h3>{{ v.nome }}{% if v.alternativa %} <em>(alternativo)</em>{% endif %}</h3>
-      <table class="memoria">
-        {% for l in v.memoria %}
-          <tr><td>{{ l.descricao }}</td><td class="formula">{{ l.formula }}</td><td class="num">{{ l.valor | moeda }}</td></tr>
-        {% endfor %}
-        {% if v.reflexos %}
-          <tr class="sub"><td colspan="3">Reflexos</td></tr>
-          {% for l in v.reflexos %}
-            <tr><td>{{ l.descricao }}</td><td class="formula">{{ l.formula }}</td><td class="num">{{ l.valor | moeda }}</td></tr>
-          {% endfor %}
-        {% endif %}
-        <tr class="total-linha"><td colspan="2">Total da verba</td><td class="num">{{ v.total | moeda }}</td></tr>
-      </table>
-      {% for obs in v.observacoes %}<div class="caixa">{{ obs }}</div>{% endfor %}
-    {% endfor %}
-  {% else %}
-    <h2>Apura&ccedil;&atilde;o de valores</h2>
-    <p class="fund">{{ c.motivo }}</p>
   {% endif %}
 
   <h2>Pedidos cab&iacute;veis</h2>
@@ -177,9 +109,10 @@
   </ul>
 
   <div class="caixa">
-    Documento de <b>triagem interna</b>. N&atilde;o &eacute; pe&ccedil;a nem parecer. Os valores s&atilde;o
-    nominais, sem corre&ccedil;&atilde;o, juros ou tributos, e toda cita&ccedil;&atilde;o marcada com
-    &ldquo;conferir no &iacute;ndice&rdquo; precisa ser validada na fonte antes de ser usada.
+    Documento de <b>triagem interna</b>. N&atilde;o &eacute; pe&ccedil;a nem parecer. N&atilde;o apura
+    valores: a indica&ccedil;&atilde;o exigida pelo art. 840, &sect;1&ordm;, da CLT vem de fora. Toda
+    cita&ccedil;&atilde;o marcada com &ldquo;conferir no &iacute;ndice&rdquo; precisa ser validada na
+    fonte antes de ser usada.
   </div>
 </article>
 

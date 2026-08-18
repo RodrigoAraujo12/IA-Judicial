@@ -69,7 +69,6 @@
     - >-
       Pedir sempre com a ressalva de que os valores sao meramente estimativos
       (art. 840, par. 1o, da CLT).
-  calculo: horas_extras
 
 - id: intervalo_intrajornada
   nome: Intervalo intrajornada suprimido
@@ -111,7 +110,6 @@
     - >-
       Contrato que atravessa 11/11/2017 exige pedido cindido por periodo: regra e
       natureza juridica sao diferentes antes e depois. Nao unificar.
-  calculo: intervalo_intrajornada
 
 - id: intervalo_interjornada
   nome: Intervalo interjornada desrespeitado
@@ -135,7 +133,6 @@
   reflexos: [rsr, decimo_terceiro, ferias_um_terco, fgts_40, aviso_previo]
   alertas:
     - Verificar cumulacao com horas extras para evitar bis in idem sobre a mesma hora.
-  calculo: intervalo_interjornada
 
 - id: adicional_noturno
   nome: Adicional noturno e hora ficta
@@ -168,4 +165,3 @@
     - >-
       Se houve transferencia para o turno diurno, verificar a Sumula 265 do TST
       (perda do direito ao adicional).
-  calculo: adicional_noturno

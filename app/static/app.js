@@ -2,8 +2,8 @@
 //  1. visibilidade condicional simples, avaliada localmente para nao perder o
 //     foco enquanto se digita;
 //  2. atualizacao do painel lateral, sempre calculado no servidor;
-//  3. visibilidade das perguntas de QUANTIFICACAO, que depende da triagem e por
-//     isso vem pronta do servidor junto com o painel.
+//  3. visibilidade das perguntas POS-TRIAGEM, que depende do resultado dela e
+//     por isso vem pronta do servidor junto com o painel.
 //
 // O padrao e o mesmo do HTMX (POST -> fragmento de HTML -> swap). Quando o
 // formulario crescer, trocar por HTMX e substituir estas linhas por
@@ -73,12 +73,12 @@
     }
   }
 
-  // Quantificacao: o servidor decide, porque depende do resultado da triagem.
-  function aplicarQuantificacao() {
-    const dados = document.getElementById("quant-visiveis");
+  // Pos-triagem: o servidor decide, porque depende do resultado da triagem.
+  function aplicarPosTriagem() {
+    const dados = document.getElementById("pos-triagem");
     if (!dados) return;
     const visiveis = new Set(JSON.parse(dados.textContent));
-    document.querySelectorAll(".pergunta[data-quant]").forEach((bloco) => {
+    document.querySelectorAll(".pergunta[data-pos-triagem]").forEach((bloco) => {
       bloco.hidden = !visiveis.has(bloco.dataset.id);
     });
   }
@@ -87,7 +87,7 @@
   async function atualizarPainel() {
     const resposta = await fetch("/analise", { method: "POST", body: new FormData(form) });
     painel.innerHTML = await resposta.text();
-    aplicarQuantificacao();
+    aplicarPosTriagem();
   }
 
   function aoMudar() {
@@ -113,5 +113,5 @@
   }
 
   aplicarVisibilidade();
-  aplicarQuantificacao();
+  aplicarPosTriagem();
 })();

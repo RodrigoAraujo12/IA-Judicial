@@ -75,8 +75,6 @@ class Pedido(BaseModel):
     # True quando a regra muda de tal forma que o pedido precisa ser formulado
     # em separado por periodo. `variacao_temporal` sozinha e apenas informativa.
     cindir: bool = False
-    # id do modulo da calculadora (Fase 2). None = ainda sem calculo.
-    calculo: str | None = None
 
 
 class Armadilha(BaseModel):
@@ -104,9 +102,12 @@ class Pergunta(BaseModel):
     opcoes: list[Opcao] = Field(default_factory=list)
     ajuda: str | None = None
     mostrar_se: list[list[Condicao]] = Field(default_factory=list)
-    # Pergunta de quantificacao: so aparece se algum destes pedidos estiver em
+    # Pergunta de aprofundamento: so aparece se algum destes pedidos estiver em
     # jogo. Avaliada num segundo passe, depois que os pedidos ja foram triados -
     # por isso nunca pode ser referenciada no `quando` de um pedido.
+    # Hoje sem uso: as perguntas de quantificacao sairam junto com a calculadora.
+    # O mecanismo fica porque a redacao da peca (fase 4) precisa do mesmo padrao -
+    # detalhe que so faz sentido perguntar depois que o pedido se confirma.
     mostrar_se_pedido: list[str] = Field(default_factory=list)
     obrigatoria: bool = False
     sufixo: str | None = None

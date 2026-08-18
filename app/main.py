@@ -1,4 +1,4 @@
-"""Entrevista guiada, triagem de pedidos e calculo.
+"""Entrevista guiada e triagem de pedidos.
 
 Roda local, sem IA. Sobe com:
     uvicorn app.main:app --reload
@@ -17,8 +17,6 @@ from fastapi.templating import Jinja2Templates
 from starlette.datastructures import FormData
 
 from app import persistencia
-from app.calculo.dinheiro import fmt
-from app.calculo.motor import calcular
 from app.catalogo.loader import carregar
 from app.motor import analisar
 from app.schema import Catalogo
@@ -28,7 +26,6 @@ BASE = Path(__file__).parent
 app = FastAPI(title="Triagem trabalhista")
 app.mount("/static", StaticFiles(directory=BASE / "static"), name="static")
 templates = Jinja2Templates(directory=BASE / "templates")
-templates.env.filters["moeda"] = fmt
 
 # Estoura na subida se algum YAML estiver quebrado ou inconsistente.
 CATALOGO: Catalogo = carregar()
@@ -78,7 +75,7 @@ def parse_respostas(form: FormData) -> dict[str, Any]:
             case "numero":
                 try:
                     valor = float(bruto.replace(",", "."))
-                    # Inteiro vira int para a memoria de calculo nao imprimir "40.0h".
+                    # Inteiro vira int para o relatorio nao imprimir "40.0h".
                     respostas[pergunta.id] = int(valor) if valor.is_integer() else valor
                 except ValueError:
                     pass
@@ -94,12 +91,11 @@ def _contexto(respostas: dict[str, Any], caso_id: int | None = None, nome: str =
         "respostas": respostas,
         "perguntas_por_id": PERGUNTAS_POR_ID,
         "analise": analise,
-        "calculo": calcular(CATALOGO, respostas, analise),
         "visiveis": analise.visiveis,
         "caso_id": caso_id,
         "caso_nome": nome,
         # O JS reavalia a visibilidade simples sem ida ao servidor; as perguntas
-        # de quantificacao dependem da triagem e vem prontas do servidor.
+        # que dependem da triagem vem prontas do servidor.
         "regras_visibilidade": json.dumps(
             {
                 p.id: [[c.model_dump() for c in grupo] for grupo in p.mostrar_se]

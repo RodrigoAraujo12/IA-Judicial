@@ -69,19 +69,19 @@ def _conferir_campos(catalogo: Catalogo) -> None:
         checar(f"pergunta '{pergunta.id}'", pergunta.mostrar_se)
 
     ids_pedido = {p.id for p in catalogo.pedidos}
-    quantificacao = {p.id for p in catalogo.entrevista.perguntas if p.mostrar_se_pedido}
+    pos_triagem = {p.id for p in catalogo.entrevista.perguntas if p.mostrar_se_pedido}
 
     for pergunta in catalogo.entrevista.perguntas:
         for pid in pergunta.mostrar_se_pedido:
             if pid not in ids_pedido:
                 problemas.append(f"pergunta '{pergunta.id}' referencia pedido inexistente '{pid}'")
 
-    # Pergunta de quantificacao e avaliada DEPOIS da triagem. Se um pedido a usasse
+    # Pergunta de segundo passe e avaliada DEPOIS da triagem. Se um pedido a usasse
     # em `quando`, a triagem dependeria do proprio resultado.
     for pedido in catalogo.pedidos:
         for grupo in pedido.quando:
             for cond in grupo:
-                if cond.campo in quantificacao:
+                if cond.campo in pos_triagem:
                     problemas.append(
                         f"pedido '{pedido.id}' usa '{cond.campo}' em `quando`, mas essa pergunta "
                         "so aparece apos a triagem (dependencia circular)"

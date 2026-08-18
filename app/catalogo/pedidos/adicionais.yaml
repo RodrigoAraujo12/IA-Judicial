@@ -60,7 +60,6 @@
     - >-
       Insalubridade e periculosidade nao se acumulam (art. 193, par. 2o). Pedir em
       carater alternativo/sucessivo, pelo mais benefico.
-  calculo: insalubridade
 
 - id: periculosidade
   nome: Adicional de periculosidade
@@ -100,7 +99,6 @@
       eventual. Construir a prova testemunhal em torno da rotina diaria.
     - >-
       Nao acumula com insalubridade (art. 193, par. 2o). Pedir pelo mais benefico.
-  calculo: periculosidade
 
 - id: adicional_transferencia
   nome: Adicional de transferencia
@@ -130,4 +128,3 @@
     - >-
       O no do pedido e provar a PROVISORIEDADE. Transferencia definitiva nao gera
       adicional. Levantar documentos que indiquem prazo ou retorno previsto.
-  calculo: adicional_transferencia

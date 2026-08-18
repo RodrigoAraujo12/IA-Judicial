@@ -1,5 +1,4 @@
 {% set a = analise %}
-{% set c = calculo %}
 
 {% if a.prescricao %}
   {% set pr = a.prescricao %}
@@ -43,34 +42,6 @@
 {% endif %}
 
 <div class="bloco">
-  <p class="rotulo">Valores</p>
-  {% if c.disponivel %}
-    <div class="total">
-      <span class="cifra">R$ {{ c.total | moeda }}</span>
-      <span class="nota">principal R$ {{ c.total_principal | moeda }}
-      &middot; reflexos R$ {{ c.total_reflexos | moeda }}</span>
-      <span class="nota">apura&ccedil;&atilde;o de {{ c.periodo }}</span>
-    </div>
-    {% for v in c.verbas %}
-      <div class="linha-valor {% if v.alternativa %}alternativa{% endif %}">
-        <span class="nome">{{ v.nome }}{% if v.alternativa %} <em>(alternativo)</em>{% endif %}</span>
-        <span class="cifra-pequena">{{ v.total | moeda }}</span>
-      </div>
-    {% endfor %}
-    {% for v in c.pendentes %}
-      <div class="item possivel">
-        <span class="nome">{{ v.nome }}</span>
-        <span class="nota">Falta quantificar:
-          {% for campo in v.faltam %}{{ perguntas_por_id[campo].texto | safe }}{% if not loop.last %}; {% endif %}{% endfor %}
-        </span>
-      </div>
-    {% endfor %}
-  {% else %}
-    <p class="vazio">{{ c.motivo }}</p>
-  {% endif %}
-</div>
-
-<div class="bloco">
   <p class="rotulo">Pedidos cab&iacute;veis <span class="contador">{{ a.cabiveis | length }}</span></p>
   {% for av in a.cabiveis %}
     <div class="item cabivel">
@@ -107,4 +78,4 @@
   {% endfor %}
 </div>
 
-<script type="application/json" id="quant-visiveis">{{ a.visiveis_quant | tojson }}</script>
+<script type="application/json" id="pos-triagem">{{ a.visiveis_pos_triagem | tojson }}</script>

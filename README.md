@@ -1,25 +1,26 @@
-# Triagem trabalhista — Fases 1 e 2
+# Triagem trabalhista
 
 Entrevista guiada para atendimento de reclamante, com mapeamento automático de
-pedidos cabíveis, verificações de risco, conferência de prescrição e **apuração
-de valores com memória de cálculo**.
+pedidos cabíveis, verificações de risco e conferência de prescrição.
 
-**Não usa IA.** É um motor de regras sobre um catálogo em YAML, mais uma
-calculadora determinística em `Decimal`. Isso é deliberado: esta é a camada que
-não pode alucinar e que ninguém copia.
+**A triagem não usa IA.** É um motor de regras sobre um catálogo em YAML. Isso é
+deliberado: esta é a camada que não pode alucinar e que ninguém copia. A IA entra
+na camada de cima — o índice do corpus normativo e, depois, a redação da peça.
 
 ## Rodar
 
 ```
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+.venv\Scripts\uvicorn app.main:app --reload
 ```
 
 Abre em <http://127.0.0.1:8000>. Testes rápidos, sem servidor:
 
 ```
 python testar.py           # triagem
-python testar_calculo.py   # calculadora, com dois cenários
+python testar_refs.py      # referências do catálogo -> dispositivos
+python testar_corpus.py    # esquema do corpus: vigência e busca lexical
 ```
 
 ## O que faz
@@ -29,49 +30,18 @@ python testar_calculo.py   # calculadora, com dois cenários
   - *cabível* — os requisitos estão confirmados;
   - *a investigar* — falta uma resposta para decidir, **e o sistema diz qual**;
   - *afastado* — alguma condição foi negada.
-- **Prescrição** bienal e quinquenal. O corte quinquenal não é aviso na tela:
-  ele **limita os meses que entram na conta**.
+- **Prescrição** bienal e quinquenal, contadas da data do ajuizamento quando a
+  ação já existe — usar hoje num processo antigo encolheria o período apurável.
 - **Corte da Reforma** (11/11/2017): pedidos com regra e natureza jurídica
-  distintas são apurados de forma cindida por período.
-- **Cálculo** de 16 verbas com reflexos, e **memória linha a linha** com a
-  fórmula de cada operação.
+  distintas são marcados para formulação cindida por período.
 - **Verificações do polo ativo** — ressalva de valores estimativos, justiça
   gratuita, sucumbência, art. 844 §2º, competência, quesitos periciais.
+- **Lista de documentos a solicitar**, montada a partir dos pedidos em jogo.
 - **Relatório** imprimível, e casos salvos em SQLite.
 
 O terceiro estado é o coração da triagem. Sem ele o sistema descartaria pedidos
 em silêncio só porque uma pergunta ainda não foi feita — que é exatamente o erro
 que ele existe para evitar.
-
-## A calculadora
-
-Três decisões estruturais:
-
-**`Decimal`, nunca `float`.** O cálculo soma centenas de parcelas ao longo de
-anos; erro de arredondamento binário aparece no total e destrói a credibilidade
-da memória na primeira conferência da parte contrária.
-
-**A ordem de execução importa.** Adicionais habituais precisam ser apurados
-*antes* das horas extras, porque majoram a base (Súmula 264 do TST). A cascata
-está em [`app/calculo/motor.py`](app/calculo/motor.py):
-
-1. insalubridade × periculosidade — não acumulam (art. 193 §2º); vence a mais
-   benéfica e a outra fica marcada como alternativa, fora do total;
-2. adicional noturno, sobre a base já majorada;
-3. demais verbas, sobre a base com todos os adicionais;
-4. rescisórias, multas e estabilidades.
-
-**Se um número não pode ser explicado linha a linha, ele não entra no pedido.**
-Toda operação vira uma linha da memória com a fórmula em texto. É por isso que a
-calculadora é determinística e não sai de modelo de linguagem.
-
-### Parâmetros que você mantém
-
-[`app/calculo/parametros.yaml`](app/calculo/parametros.yaml) guarda salário
-mínimo por competência, divisores e percentuais. **Esses valores não são
-afirmados pelo sistema** — você confere e mantém. Se a apuração passar da última
-competência da tabela, a calculadora avisa em vez de usar valor defasado em
-silêncio.
 
 ## Estrutura
 
@@ -79,33 +49,21 @@ silêncio.
 app/
   schema.py              contratos de dados (pydantic)
   motor.py               avaliação de três estados, prescrição, regimes
-  persistencia.py        SQLite — fonte da verdade
+  persistencia.py        SQLite — casos, a fonte da verdade
   main.py                FastAPI
   catalogo/
     loader.py            carga + validação cruzada dos YAML
-    entrevista.yaml      roteiro de perguntas (57)
+    entrevista.yaml      roteiro de perguntas (41)
     armadilhas.yaml      verificações que não são pedidos (9)
     pedidos/*.yaml       o catálogo — 21 pedidos
-  calculo/
-    dinheiro.py          aritmética Decimal e formatação BRL
-    periodo.py           corte quinquenal, cisão pela Reforma, competências
-    verbas.py            16 módulos de cálculo, um por verba
-    motor.py             orquestrador — a cascata
-    parametros.yaml      valores que você mantém
+  corpus/
+    refs.py              referência do catálogo -> dispositivo endereçável
+    banco.py             índice normativo em SQLite: vigência, FTS5, vetores
   templates/             Jinja2
   static/                CSS e JS (sem dependência externa, sem CDN)
 dados/casos.db           criado no primeiro salvamento
+dados/corpus.db          índice do corpus — reconstruível e descartável
 ```
-
-## Duas passadas na entrevista
-
-A triagem responde **se** o pedido cabe; a quantificação apura **quanto**. As
-perguntas de quantificação (`mostrar_se_pedido`) só aparecem depois que o pedido
-correspondente é confirmado — por isso são avaliadas num segundo passe.
-
-O loader recusa o catálogo se um pedido usar uma pergunta de quantificação no
-seu `quando`: isso criaria dependência circular, já que a triagem passaria a
-depender do próprio resultado.
 
 ## Como editar o catálogo
 
@@ -122,54 +80,73 @@ Campos de `Pedido` que merecem atenção:
 | `cindir` | `true` só quando a regra muda a ponto de exigir pedidos separados por período (ex.: intervalo intrajornada). `variacao_temporal` sozinha é informativa. |
 | `controverso` | Em `fundamentos`, marca tese em disputa. O relatório imprime "conferir no índice" em vez de afirmar. |
 
+## O corpus normativo
+
+Os 73 `fundamentos` do catálogo já formam um grafo de citações: 68 referências
+distintas, tipadas, ligando cada pedido às normas que o sustentam. O índice se
+apoia nisso em vez de começar cego.
+
+**Três vias de recuperação.** A ordem importa:
+
+0. **Lookup determinístico.** `fundamento.ref` → dispositivo. Não é busca, é
+   *join*, e cobre o uso mais frequente: conferir a norma que o relatório citou.
+   [`app/corpus/refs.py`](app/corpus/refs.py) resolve as 68 referências do
+   catálogo em 105 dispositivos, incluindo faixas (`arts. 223-A a 223-G`),
+   listas (`par. 3o e par. 4o`) e cadeias (`art. 10, II, 'b'`).
+1. **Esparsa (BM25/FTS5).** Consulta jurídica é cheia de token exato — "Súmula
+   437", "art. 384". Vetor denso troca número; BM25 não.
+2. **Densa (BGE-M3, 1024d).** Para a pergunta em linguagem de cliente.
+
+Fusão por RRF. Reranking só se a precisão não bastar — o próprio BGE-M3 devolve
+vetores ColBERT, o que evita carregar um segundo modelo.
+
+**Vigência é por dispositivo, não por obra.** O art. 71 §4º tem uma redação até
+10/11/2017 e outra depois — a Reforma mudou a regra *e* a natureza jurídica. Um
+índice que guarda só a redação atual responde a pergunta errada num contrato de
+2016, com a mesma cara de quem acerta. Por isso a chave em
+[`app/corpus/banco.py`](app/corpus/banco.py) é `(urn, vigencia_inicio)` e toda
+consulta passa por uma data do caso.
+
+**Nada é citável sem procedência.** Cada dispositivo aponta para uma fonte com
+URL, data de captura e sha256. Citação que não se rastreia até lá não entra na
+peça.
+
 ## Estado
 
-Fases 1 e 2 completas. Próximas:
+Triagem completa. Em andamento e a fazer:
 
-3. Corpus (CLT, súmulas e OJs do TST, NRs) em SQLite + Qdrant embutido, com
-   BGE-M3 (denso + esparso) e fusão RRF.
-4. Geração da inicial por preenchimento de slots, com citação obrigatória,
-   validador de citações e exportação em DOCX.
-5. Cartão de ponto (OCR + tabulação).
-6. Consultor de próxima medida para processo parado.
-
-## ⚠ As fórmulas de cálculo ainda NÃO foram validadas
-
-As 16 fórmulas em [`app/calculo/verbas.py`](app/calculo/verbas.py) foram escritas
-sem conferência contra fonte autoritativa. Os **parâmetros legais** (divisor 220,
-adicional de 50%, noturno de 20%, periculosidade de 30%, FGTS 8% + 40%, aviso da
-Lei 12.506/2011) são texto de lei e têm confiança alta. As **fórmulas de reflexo**
-não têm.
-
-Pontos já identificados como provavelmente incorretos:
-
-| Ponto | Problema |
-|---|---|
-| FGTS sobre férias indenizadas | `reflexos_sobre()` aplica 8% sobre o conjunto, mas férias indenizadas e o terço ficam fora da base (art. 15 §6º da Lei 8.036/90 c/c art. 28 §9º da Lei 8.212/91) |
-| Média dos reflexos de horas extras | A Súmula 347 do TST manda usar **média física** (número de horas); o código usa média por valor |
-| RSR e o sábado | Só domingos entram como repouso; em semana de 5 dias o sábado costuma entrar também |
-| Avos de férias | Apurados pelo ano civil da saída, e não pelo período aquisitivo contado do aniversário de admissão |
-
-**Referência para validar:** Manual de Cálculos da Justiça do Trabalho (CSJT) e,
-melhor ainda, comparação linha a linha contra a saída do **PJe-Calc** num caso
-conhecido.
-
-Até isso ser feito, a calculadora serve para **dimensionar ordem de grandeza e
-não esquecer verba** — não para fixar o valor do art. 840 §1º em peça.
+| | | |
+|---|---|---|
+| **Corpus** | em andamento | CLT, CF, súmulas e OJs do TST, NRs. Parser de referências e esquema prontos; falta a ingestão. |
+| **Peças** | a fazer | Modelos de peça por preenchimento de slots, com citação obrigatória, validador de citações e exportação em DOCX. |
+| **Processo parado** | a fazer | Consultor de próxima medida para processo que anda devagar há anos. |
+| **Jurisprudência** | a decidir | Acórdãos, em fase própria: muda a escala e exige rastrear superação de tese, não vigência. |
 
 ## Limites conhecidos
 
 - O conteúdo jurídico do catálogo é um **ponto de partida** e precisa ser
   revisado por quem vai usar. Referências marcadas `controverso: true` são as que
   eu deliberadamente não afirmei.
-- **O cálculo usa o último salário informado** para todo o período. A evolução
-  salarial real exige a ficha financeira — entra com a leitura de contracheques.
-- **Não há correção monetária, juros, INSS nem IRRF.** Os valores são nominais,
-  para dimensionar o pedido do art. 840 §1º. A discussão de correção (ADCs 58 e
-  59) precisa entrar antes de usar em liquidação.
-- **RSR considera apenas domingos.** Feriados variam por município e norma
-  coletiva, então o valor apurado é um piso.
-- Avos de 13º e férias são apurados pelo ano civil da saída; período aquisitivo
-  com marco distinto exige ajuste manual.
-- As horas extras vêm de estimativa do cliente. A apuração definitiva sai da
-  tabulação dos cartões de ponto (fase 5).
+- **O sistema não apura valores.** A indicação exigida pelo art. 840 §1º vem de
+  fora — do contador, do calculista ou do PJe-Calc.
+- Duas referências estão classificadas de forma imprecisa no catálogo e o
+  `testar_refs.py` as aponta: `IN 41/2018 do TST` está como `tipo: lei` (é
+  instrução normativa) e `ADI 5766` como `tipo: tema_stf` (é ação direta). Nenhuma
+  quebra nada hoje; ambas quebrariam o validador de citações.
+- `mostrar_se_pedido` e o segundo passe do motor continuam de pé, mas **hoje sem
+  nenhum usuário** — eram o mecanismo das perguntas de quantificação. Ficaram
+  porque a redação da peça precisa do mesmo padrão: detalhe que só faz sentido
+  perguntar depois que o pedido se confirma.
+
+## O que saiu, e por quê
+
+Havia uma calculadora de 16 verbas com memória linha a linha. Foi removida em
+18/08/2026, a pedido de quem usa o sistema: apuração de valor é trabalho de
+perito e calculista, não de quem redige a inicial.
+
+A decisão tem um custo conhecido — o art. 840 §1º exige valor por pedido, e agora
+esse número vem de fora. Em troca, sai do projeto a camada de maior risco: as
+fórmulas de reflexo nunca foram conferidas contra fonte autoritativa, e um valor
+errado saía com a mesma aparência de certeza que um valor certo.
+
+O histórico está em git, no commit anterior a esta remoção.

@@ -52,9 +52,11 @@ class Analise:
     respondidas: int = 0
     total_visiveis: int = 0
     visiveis: set[str] = field(default_factory=set)
-    # Perguntas de quantificacao visiveis. Dependem do resultado da triagem, entao
-    # so o servidor sabe quais sao - o JS as recebe prontas a cada atualizacao.
-    visiveis_quant: list[str] = field(default_factory=list)
+    # Perguntas que so aparecem depois da triagem. Dependem do resultado dela,
+    # entao so o servidor sabe quais sao - o JS as recebe prontas a cada
+    # atualizacao. Vazio hoje: sem quantificacao, nenhuma pergunta usa o segundo
+    # passe. O mecanismo fica de pe para a redacao da peca (fase 4).
+    visiveis_pos_triagem: list[str] = field(default_factory=list)
 
 
 # --- avaliacao de condicoes -------------------------------------------------
@@ -258,18 +260,18 @@ def analisar(catalogo: Catalogo, respostas: Respostas, hoje: date | None = None)
 
     analise.prescricao = avaliar_prescricao(respostas, hoje)
 
-    # Segundo passe: perguntas de quantificacao dependem do resultado da triagem.
-    # Nao ha circularidade porque as respostas de quantificacao nunca alimentam o
-    # `quando` de um pedido - o loader recusa o catalogo se isso acontecer.
-    # So pedidos CONFIRMADOS liberam quantificacao. Incluir os "a investigar" faria
-    # a secao abrir inteira logo no comeco da entrevista, quando quase tudo ainda
-    # esta indefinido - e o ruido apagaria o sinal.
+    # Segundo passe: perguntas que dependem do resultado da triagem. Nao ha
+    # circularidade porque as respostas dadas aqui nunca alimentam o `quando` de um
+    # pedido - o loader recusa o catalogo se isso acontecer.
+    # So pedidos CONFIRMADOS liberam o segundo passe. Incluir os "a investigar"
+    # abriria tudo logo no comeco da entrevista, quando quase nada esta definido -
+    # e o ruido apagaria o sinal.
     em_jogo = {av.pedido.id for av in analise.cabiveis}
     for p in catalogo.entrevista.perguntas:
         if p.mostrar_se_pedido:
             if any(pid in em_jogo for pid in p.mostrar_se_pedido):
                 analise.visiveis.add(p.id)
-                analise.visiveis_quant.append(p.id)
+                analise.visiveis_pos_triagem.append(p.id)
         elif avaliar_grupos(p.mostrar_se, respostas)[0] is not False:
             analise.visiveis.add(p.id)
 

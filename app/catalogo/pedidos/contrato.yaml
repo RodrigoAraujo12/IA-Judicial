@@ -54,7 +54,6 @@
     - >-
       A prova decisiva quase sempre esta nas mensagens. Orientar o cliente a
       preservar o aparelho e extrair o historico antes que se perca.
-  calculo: null
 
 - id: equiparacao_salarial
   nome: Equiparacao salarial
@@ -104,7 +103,6 @@
       prospera.
     - >-
       A Sumula 6, VIII, joga o onus para a reclamada. Explorar isso na fundamentacao.
-  calculo: equiparacao_salarial
 
 - id: desvio_acumulo_funcao
   nome: Desvio ou acumulo de funcao
@@ -141,7 +139,6 @@
       O acumulo de funcao e construcao jurisprudencial e a posicao VARIA muito
       entre TRTs. Consultar o entendimento do tribunal competente antes de
       dimensionar a expectativa do cliente.
-  calculo: desvio_acumulo_funcao
 
 - id: reversao_justa_causa
   nome: Reversao da justa causa
@@ -181,7 +178,6 @@
       Revertida a justa causa, cumular obrigatoriamente: aviso previo, 13o e
       ferias proporcionais, multa de 40% do FGTS, guias do seguro-desemprego e as
       multas dos arts. 477 e 467.
-  calculo: null
 
 - id: rescisao_indireta
   nome: Rescisao indireta do contrato
@@ -215,4 +211,3 @@
     - >-
       Ausencia de deposito de FGTS e mora salarial contumaz sao as hipoteses de
       maior indice de acolhimento. Instruir com o extrato analitico.
-  calculo: null

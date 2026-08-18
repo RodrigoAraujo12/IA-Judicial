@@ -23,14 +23,9 @@
     {% for secao in catalogo.entrevista.secoes | sort(attribute='ordem') %}
       <section class="secao" id="s-{{ secao.id }}">
         <h2>{{ secao.titulo | safe }}</h2>
-        {% if secao.id == 'quantificacao' %}
-          <p class="ajuda">Aparece conforme a triagem confirma pedidos. A entrevista responde
-          <em>se</em> cabe; aqui se apura <em>quanto</em>.</p>
-        {% endif %}
-
         {% for p in catalogo.entrevista.perguntas if p.secao == secao.id %}
           <div class="pergunta" data-id="{{ p.id }}"
-               {% if p.mostrar_se_pedido %}data-quant="1"{% endif %}
+               {% if p.mostrar_se_pedido %}data-pos-triagem="1"{% endif %}
                {% if p.id not in visiveis %}hidden{% endif %}>
 
             {% if p.tipo in ('bool', 'multipla') %}

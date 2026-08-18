@@ -38,7 +38,6 @@
       Conferir a base de calculo: horas extras, adicionais e comissoes habituais
       integram a remuneracao e elevam TODAS as verbas rescisorias. E o erro mais
       comum e o mais caro de deixar passar.
-  calculo: verbas_rescisorias
 
 - id: fgts_40
   nome: FGTS e multa de 40%
@@ -75,7 +74,6 @@
     - >-
       A multa de 40% incide sobre TODOS os depositos do contrato, inclusive os
       nao realizados e os que decorrerem das verbas deferidas nesta acao.
-  calculo: fgts_40
 
 - id: multa_477
   nome: Multa do art. 477, par. 8o, da CLT
@@ -117,7 +115,6 @@
       Se o reconhecimento do vinculo ou a reversao da justa causa for deferido em
       juizo, a multa e devida - nao houve pagamento no prazo. Pedir sempre em
       conjunto com esses pedidos.
-  calculo: multa_477
 
 - id: multa_467
   nome: Multa do art. 467 da CLT
@@ -144,7 +141,6 @@
       So incide sobre a parcela INCONTROVERSA. Se a reclamada controverte tudo na
       contestacao, o pedido tende a ser afastado - mas pedir e barato e o custo de
       nao pedir e perder a verba.
-  calculo: multa_467
 
 - id: seguro_desemprego
   nome: Indenizacao substitutiva do seguro-desemprego
@@ -176,4 +172,3 @@
     - >-
       Pedido de baixo custo e frequentemente esquecido. Sempre verificar quando a
       dispensa e sem justa causa ou quando se pede reversao de justa causa.
-  calculo: seguro_desemprego

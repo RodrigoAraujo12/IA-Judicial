@@ -341,78 +341,9 @@ input.curto { min-width: 8rem; }
 
 .salvo { font-size: 0.78rem; color: var(--accent); font-variant-numeric: tabular-nums; }
 
-/* --- valores no painel --------------------------------------------------- */
-
-.total {
-  display: block;
-  padding: 0.6rem 0 0.8rem;
-  border-bottom: 1px solid var(--rule-strong);
-  margin-bottom: 0.6rem;
-}
-
-.cifra {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.015em;
-  color: var(--accent);
-}
-
-.total .nota { display: block; font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
-
-.linha-valor {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.7rem;
-  align-items: baseline;
-  padding: 0.24rem 0;
-  border-bottom: 1px dotted var(--rule);
-  font-size: 0.83rem;
-}
-
-.linha-valor .nome { font-weight: 400; }
-.cifra-pequena { font-variant-numeric: tabular-nums; white-space: nowrap; }
-.linha-valor.alternativa { color: var(--muted); }
-.linha-valor.alternativa .cifra-pequena { text-decoration: line-through; }
-
 /* --- tabelas do relatorio ------------------------------------------------ */
 
 .relatorio table { width: 100%; border-collapse: collapse; margin: 0.9rem 0 1.2rem; }
-
-table.valores {
-  font-family: var(--ui);
-  font-size: 0.87rem;
-}
-table.valores th, table.valores td { text-align: right; padding: 0.35rem 0.5rem; }
-table.valores th:first-child, table.valores td:first-child { text-align: left; }
-table.valores thead th {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--faint);
-  border-bottom: 1px solid var(--rule-strong);
-}
-table.valores tbody td { border-bottom: 1px dotted var(--rule); font-variant-numeric: tabular-nums; }
-table.valores tfoot th { border-top: 1px solid var(--rule-strong); font-variant-numeric: tabular-nums; }
-table.valores tr.alternativa { color: var(--muted); }
-
-table.memoria {
-  font-family: var(--ui);
-  font-size: 0.8rem;
-}
-table.memoria td { padding: 0.26rem 0.5rem; border-bottom: 1px dotted var(--rule); vertical-align: top; }
-table.memoria td.formula { color: var(--muted); font-family: var(--mono); font-size: 0.74rem; }
-table.memoria td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-table.memoria tr.sub td {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--faint);
-  border-bottom: 1px solid var(--rule-strong);
-  padding-top: 0.6rem;
-}
-table.memoria tr.total-linha td { font-weight: 600; border-bottom: 1px solid var(--rule-strong); }
 
 /* --- lista de casos ------------------------------------------------------ */
 
@@ -435,5 +366,4 @@ table.memoria tr.total-linha td { font-weight: 600; border-bottom: 1px solid var
   body { background: #fff; }
   .relatorio { margin: 0; max-width: none; }
   .caixa { break-inside: avoid; }
-  table.memoria { break-inside: avoid; }
 }
