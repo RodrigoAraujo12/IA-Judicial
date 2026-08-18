@@ -12,8 +12,13 @@ na camada de cima — o índice do corpus normativo e, depois, a redação da pe
 ```
 python -m venv .venv
 .venv\Scripts\pip install -r requirements.txt
-.venv\Scripts\uvicorn app.main:app --reload
+.venv\Scripts\python -m uvicorn app.main:app --reload --reload-dir app
 ```
+
+`--reload-dir app` limita o watcher ao código. Sem ele o reloader vigia também
+`dados/`, que guarda a captura da CLT (3,5 MB) e o índice. Se o `--reload` der
+problema no seu terminal, tire-o: ele só recarrega o servidor quando o código
+muda, e não é necessário para usar o sistema.
 
 Abre em <http://127.0.0.1:8000>. Duas telas: a **entrevista** (`/`) e a
 **consulta à lei** (`/corpus`), que precisa do corpus montado.
