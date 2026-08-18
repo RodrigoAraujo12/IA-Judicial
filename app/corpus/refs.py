@@ -144,7 +144,16 @@ def _artigos_e_subdivisoes(texto: str) -> tuple[list[str], list[tuple[str, str]]
         inclui_paragrafos = True
         texto = re.sub(r"\s*\be\s+par[aá]grafos\b", "", texto, flags=re.I)
 
-    texto = re.sub(r"^arts?\.\s*", "", texto.strip(), flags=re.I)
+    # "art. 71", "art 71", "artigo 71", "arts. 58": o catalogo usa a primeira
+    # forma, gente digitando usa todas. Exige ponto OU espaco depois, para
+    # "artigo" nao ser cortado no meio.
+    texto = re.sub(r"^art(?:igo)?s?(?:\.\s*|\s+)", "", texto.strip(), flags=re.I)
+    # O catalogo escreve "art. 71, par. 4o", com virgula. Gente digitando escreve
+    # "art. 71 §4o" e "art. 71 par. 4o", sem. Sem separar aqui, "71 §4o" vira um
+    # token unico que nao casa artigo nem subdivisao, e a consulta volta vazia -
+    # justo na forma mais natural de escrever a referencia.
+    texto = re.sub(r"(?<=\d)\s*(?=§)", ", ", texto)
+    texto = re.sub(r"(?<=\d)[\s,]+(?=par[.aá]|inc[.iı]|al[ií]nea)", ", ", texto, flags=re.I)
     # Marca a faixa antes de fatiar, para "129 a 147" nao virar dois itens soltos.
     texto = re.sub(r"\s+a\s+(?=\d)", f" {_FAIXA} ", texto)
     tokens = [t for t in re.split(r",|\se\s", texto, flags=re.I) if t.strip()]

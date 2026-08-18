@@ -41,6 +41,11 @@ def _texto_indexado(rotulo: str, texto: str, caput: str | None) -> str:
     justamente um dos mais pedidos.
     """
     partes = [rotulo]
+    # O rotulo exibido usa "§ 4º", que e como advogado escreve. Mas o escritorio
+    # digita "par. 4" tanto quanto, e "§" nao e tokenizavel pelo FTS5. As duas
+    # formas entram no indice para que a busca nao dependa do teclado.
+    if "§" in rotulo:
+        partes.append(rotulo.replace("§", "paragrafo par."))
     if caput:
         partes.append(caput[:240])
     partes.append(texto)

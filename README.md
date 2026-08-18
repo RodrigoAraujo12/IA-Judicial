@@ -15,7 +15,10 @@ python -m venv .venv
 .venv\Scripts\uvicorn app.main:app --reload
 ```
 
-Abre em <http://127.0.0.1:8000>. Testes rápidos, sem servidor:
+Abre em <http://127.0.0.1:8000>. Duas telas: a **entrevista** (`/`) e a
+**consulta à lei** (`/corpus`), que precisa do corpus montado.
+
+Testes rápidos, sem servidor:
 
 ```
 python testar.py           # triagem
@@ -24,11 +27,15 @@ python testar_corpus.py    # esquema do corpus: vigência e busca lexical
 python testar_busca.py     # recuperação na CLT (exige o corpus ingerido)
 ```
 
-Para montar o corpus:
+Para montar o corpus, uma vez só (leva menos de um minuto):
 
 ```
 python -m app.corpus.indexar clt
 ```
+
+Em <http://127.0.0.1:8000/corpus> a consulta aceita tanto referência
+(`art. 71 §4º`, `arts. 58 e 59`, `art. 223-A`) quanto pergunta em linguagem
+corrente — e sempre com a data em que a norma deve estar vigente.
 
 ## O que faz
 
@@ -69,7 +76,7 @@ app/
     planalto.py          ingestão do HTML do Planalto
     indexar.py           CLI de ingestão, com conferência contra o catálogo
     busca.py             as vias de recuperação e a fusão RRF
-  templates/             Jinja2
+  templates/             Jinja2 — entrevista, relatório, casos e consulta ao corpus
   static/                CSS e JS (sem dependência externa, sem CDN)
 dados/casos.db           criado no primeiro salvamento
 dados/corpus.db          índice do corpus — reconstruível e descartável

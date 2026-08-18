@@ -367,3 +367,88 @@ input.curto { min-width: 8rem; }
   .relatorio { margin: 0; max-width: none; }
   .caixa { break-inside: avoid; }
 }
+
+/* --- consulta ao corpus --------------------------------------------------- */
+
+.lista.larga { max-width: 52rem; }
+
+.busca {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+.busca input[type="search"] {
+  flex: 1 1 22rem;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.95rem;
+}
+.busca .data {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.busca .data input { padding: 0.4rem; }
+
+.numeros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.4rem;
+  margin: 0.5rem 0 1rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.numeros b {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.05rem;
+  margin-right: 0.25rem;
+}
+
+.dispositivo {
+  padding: 0.7rem 0 0.7rem 0.7rem;
+  border-left: 2px solid var(--rule-strong);
+  border-bottom: 1px dotted var(--rule);
+  margin-bottom: 0.4rem;
+}
+.dispositivo:hover { border-left-color: var(--accent); background: var(--surface); }
+.dispositivo .nome { font-weight: 600; font-size: 0.9rem; }
+.dispositivo .urn {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--faint);
+  margin-left: 0.5rem;
+}
+/* Serifa porque isto e texto de lei, nao rotulo de interface - a mesma regra que
+   separa o relatorio do formulario no resto do sistema. */
+.texto-lei {
+  font-family: var(--doc);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 0.3rem 0;
+}
+/* `.caixa` so existia dentro de `.relatorio`. A consulta ao corpus e outra
+   pagina e precisa da mesma caixa, entao a base vem para fora do escopo. */
+.lista .caixa {
+  font-family: var(--ui);
+  font-size: 0.86rem;
+  padding: 0.7rem 0.9rem;
+  border-left: 3px solid var(--rule-strong);
+  background: var(--surface);
+  margin: 0.8rem 0;
+}
+.lista .caixa code {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  background: var(--accent-bg);
+  padding: 0.1rem 0.3rem;
+}
+.lista .caixa.alerta {
+  border-left-color: var(--alert);
+  background: var(--alert-bg);
+  color: var(--alert);
+}

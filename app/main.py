@@ -7,6 +7,7 @@ Roda local, sem IA. Sobe com:
 from __future__ import annotations
 
 import json
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +19,8 @@ from starlette.datastructures import FormData
 
 from app import persistencia
 from app.catalogo.loader import carregar
+from app.corpus import banco as corpus_banco
+from app.corpus import busca as corpus_busca
 from app.motor import analisar
 from app.schema import Catalogo
 
@@ -151,3 +154,40 @@ async def caso_abrir(request: Request, caso_id: int):
 @app.get("/casos", response_class=HTMLResponse)
 async def casos(request: Request):
     return templates.TemplateResponse(request, "casos.html", {"casos": persistencia.listar()})
+
+
+# --- corpus normativo -------------------------------------------------------
+
+
+@app.get("/corpus", response_class=HTMLResponse)
+async def corpus(request: Request, q: str = "", em: str = ""):
+    """Consulta ao corpus. GET com query string para o resultado ser linkavel.
+
+    `em` e a data em que a norma deve estar vigente. Nunca some do formulario: uma
+    busca juridica sem data responde para o presente e cala sobre o resto, que e o
+    erro que este indice existe para nao cometer.
+    """
+    disponivel = corpus_banco.BANCO.exists()
+    try:
+        quando = date.fromisoformat(em) if em else date.today()
+    except ValueError:
+        quando = date.today()
+
+    contexto: dict[str, Any] = {
+        "disponivel": disponivel,
+        "consulta": q,
+        "quando": quando.isoformat(),
+        "resultado": None,
+        "estatisticas": {},
+    }
+
+    if disponivel:
+        con = corpus_banco.conectar()
+        try:
+            contexto["estatisticas"] = corpus_banco.estatisticas(con)
+            if q.strip():
+                contexto["resultado"] = corpus_busca.buscar(con, q, quando, limite=20)
+        finally:
+            con.close()
+
+    return templates.TemplateResponse(request, "corpus.html", contexto)

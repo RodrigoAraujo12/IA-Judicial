@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block titulo %}Consulta ao corpus{% endblock %}
+
+{% block progresso %}
+<span class="progresso"><a href="/">Nova entrevista</a> &middot; <a href="/casos">Casos salvos</a></span>
+{% endblock %}
+
+{% block corpo %}
+<article class="lista larga">
+
+  {% if not disponivel %}
+    <p class="rotulo">Corpus n&atilde;o montado</p>
+    <div class="caixa">
+      Nenhuma norma indexada ainda. Rode uma vez, no diret&oacute;rio do projeto:
+      <br><code>python -m app.corpus.indexar clt</code>
+      <br>Leva menos de um minuto e s&oacute; precisa ser refeito quando a lei mudar.
+    </div>
+  {% else %}
+
+    <form class="busca" method="get" action="/corpus">
+      <input type="search" name="q" value="{{ consulta }}" autofocus
+             placeholder="intervalo intrajornada suprimido &nbsp;|&nbsp; art. 71 &sect;4&ordm; &nbsp;|&nbsp; justa causa">
+      <label class="data">
+        vigente em
+        <input type="date" name="em" value="{{ quando }}">
+      </label>
+      <button type="submit">Consultar</button>
+    </form>
+
+    <p class="ajuda">
+      A data n&atilde;o &eacute; enfeite: ela decide qual reda&ccedil;&atilde;o responde. Um contrato de 2016
+      recebe a lei de 2016. Experimente <b>art. 384</b> em 2016 e hoje.
+    </p>
+
+    {% if consulta %}
+      {% if resultado.aviso %}
+        <div class="caixa alerta">{{ resultado.aviso }}</div>
+      {% endif %}
+
+      <p class="rotulo">
+        Resultados <span class="contador">{{ resultado.achados | length }}</span>
+        {% if resultado.achados %}<span class="nota">via {{ resultado.via }}</span>{% endif %}
+      </p>
+
+      {% for a in resultado.achados %}
+        <div class="dispositivo">
+          <span class="nome">{{ a.rotulo }}</span>
+          <span class="urn">{{ a.urn }}</span>
+          <p class="texto-lei">{{ a.texto }}</p>
+          <span class="nota">
+            vigora desde {{ a.vigencia_inicio }}{% if a.vigencia_fim %} at&eacute; {{ a.vigencia_fim }}{% endif %}
+            {%- if a.alterado_por %} &middot; {{ a.alterado_por }}{% endif %}
+          </span>
+        </div>
+      {% else %}
+        {% if not resultado.aviso %}
+          <p class="vazio">Nada encontrado para essa consulta nessa data.</p>
+        {% endif %}
+      {% endfor %}
+
+    {% else %}
+      <p class="rotulo">No &iacute;ndice</p>
+      <div class="numeros">
+        {% for chave, valor in estatisticas.items() %}
+          <span><b>{{ valor }}</b> {{ chave | replace('_', ' ') }}</span>
+        {% endfor %}
+      </div>
+      <p class="ajuda">
+        Cada dispositivo aponta para a fonte de onde veio, com URL, data de captura e
+        sha256. Cita&ccedil;&atilde;o que n&atilde;o se rastreia at&eacute; l&aacute; n&atilde;o entra na pe&ccedil;a.
+      </p>
+    {% endif %}
+
+  {% endif %}
+</article>
+{% endblock %}

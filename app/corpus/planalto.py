@@ -261,26 +261,31 @@ def dispositivos(bruto: bytes, obra: str, inicio: str | None = None) -> list[Tre
 
         especie = rotulo = None
         urn = pai = None
+        corte = 0  # onde termina o identificador ("Art. 71 -", "§ 4o", "I -")
 
         if m := _ARTIGO.match(texto):
+            corte = m.end()
             numero = m.group(1) + (f"-{m.group(2)}" if m.group(2) else "")
             artigo, sub = numero, None
             urn = f"{obra}/art-{numero}"
             especie, rotulo, pai = "artigo", f"art. {numero}", None
 
-        elif artigo and _PAR_UNICO.match(texto):
+        elif artigo and (m := _PAR_UNICO.match(texto)):
+            corte = m.end()
             sub = "par-unico"
             urn = f"{obra}/art-{artigo}/par-unico"
-            especie, rotulo = "paragrafo", f"art. {artigo}, paragrafo unico"
+            especie, rotulo = "paragrafo", f"art. {artigo}, parágrafo único"
             pai = f"{obra}/art-{artigo}"
 
         elif artigo and (m := _PARAGRAFO.match(texto)):
+            corte = m.end()
             sub = f"par-{m.group(1)}"
             urn = f"{obra}/art-{artigo}/{sub}"
-            especie, rotulo = "paragrafo", f"art. {artigo}, par. {m.group(1)}o"
+            especie, rotulo = "paragrafo", f"art. {artigo}, § {m.group(1)}º"
             pai = f"{obra}/art-{artigo}"
 
         elif artigo and (m := _INCISO.match(texto)):
+            corte = m.end()
             romano = m.group(1).upper()
             base = f"{obra}/art-{artigo}"
             # Inciso pendura no paragrafo corrente quando ha um; senao, no caput.
@@ -291,21 +296,26 @@ def dispositivos(bruto: bytes, obra: str, inicio: str | None = None) -> list[Tre
             pai = base
 
         elif artigo and (m := _ALINEA.match(texto)):
+            corte = m.end()
             letra = m.group(1)
             base = f"{obra}/art-{artigo}"
             if sub:
                 base = f"{base}/{sub}"
             urn = f"{base}/al-{letra}"
-            especie, rotulo = "alinea", f"art. {artigo}, '{letra}'"
+            especie, rotulo = "alinea", f"art. {artigo}, alínea '{letra}'"
             pai = base
 
         if not urn:
             continue
 
-        # "Art. 235-H. ." e "Art. 390-A. ." aparecem no documento: o rotulo ficou
-        # num bloco e o texto foi para outro. Indexar a casca poluiria a busca com
-        # dispositivos sem conteudo, que casam qualquer consulta pelo rotulo.
-        if len(texto) - len(rotulo) < 12:
+        # "Art. 235-H. ." e "Art. 390-A. ." aparecem no documento: o identificador
+        # ficou num bloco e o texto foi para outro. Indexar a casca poluiria a
+        # busca com dispositivos sem conteudo, que casam qualquer consulta.
+        #
+        # A medida e o que sobra DEPOIS do identificador, nunca o tamanho do
+        # rotulo: rotulo e texto de exibicao, e mudar "par. 4o" para "§ 4o"
+        # mexeria no criterio de descarte sem ninguem perceber.
+        if len(texto[corte:].strip(" .-–")) < 12:
             continue
 
         ordem += 1
