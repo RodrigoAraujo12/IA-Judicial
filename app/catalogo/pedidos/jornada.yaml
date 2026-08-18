@@ -1,0 +1,171 @@
+# Pedidos ligados a jornada de trabalho.
+# Campo `quando`: grupos de condicoes. Dentro do grupo vale E, entre grupos vale OU.
+
+- id: horas_extras
+  nome: Horas extras e reflexos
+  grupo: jornada
+  resumo: >-
+    Labor alem da jornada contratual sem a devida contraprestacao, com adicional
+    minimo de 50% e integracao as demais verbas.
+  quando:
+    - - campo: horas_extras_habituais
+        op: verdadeiro
+      - campo: horas_extras_pagas
+        op: falso
+    - - campo: controle_ponto
+        op: em
+        valor: [sim_britanico, nao_havia]
+  requisitos:
+    - descricao: Labor alem de 8h diarias ou 44h semanais (ou da jornada contratual menor)
+      prova: [cartoes de ponto, testemunhas, registros de acesso, e-mails fora do horario]
+    - descricao: Habitualidade da prestacao extraordinaria
+      prova: [cartoes de ponto do periodo, contracheques]
+    - descricao: Ausencia ou insuficiencia de pagamento
+      prova: [contracheques, ficha financeira]
+  fundamentos:
+    - tipo: cf
+      ref: "art. 7o, XIII e XVI"
+      nota: Jornada de 8h/44h e adicional minimo de 50%.
+    - tipo: clt
+      ref: "arts. 58 e 59"
+    - tipo: sumula_tst
+      ref: "Sumula 85"
+      nota: Compensacao de jornada e banco de horas.
+    - tipo: sumula_tst
+      ref: "Sumula 264"
+      nota: Base de calculo integra todas as parcelas de natureza salarial.
+    - tipo: sumula_tst
+      ref: "Sumula 172"
+      nota: Horas extras habituais integram o RSR.
+    - tipo: sumula_tst
+      ref: "Sumula 338"
+      nota: >-
+        Nao apresentacao injustificada dos controles de jornada gera presuncao
+        relativa de veracidade da jornada da inicial.
+    - tipo: sumula_tst
+      ref: "Sumula 347"
+      nota: Habituais, apuram-se pela media fisica.
+  provas:
+    - Cartoes de ponto de todo o periodo imprescrito
+    - Contracheques / ficha financeira
+    - Testemunhas
+  reflexos: [rsr, decimo_terceiro, ferias_um_terco, fgts_40, aviso_previo]
+  variacao_temporal:
+    - regime: pre_reforma
+      regra: >-
+        Regime de 12x36 exigia previsao em norma coletiva (Sumula 444 do TST).
+    - regime: pos_reforma
+      regra: >-
+        Art. 59-A da CLT passou a admitir 12x36 por acordo individual escrito.
+  alertas:
+    - >-
+      Empresa com mais de 20 empregados e obrigada a manter controle de jornada
+      (art. 74, par. 2o, da CLT, redacao pos-reforma; eram 10 antes). Se nao
+      apresentar, requerer a aplicacao da Sumula 338 do TST.
+    - >-
+      A OJ 394 da SDI-1 (repercussao do RSR majorado por horas extras nas demais
+      verbas) foi revista em 2023 com modulacao de efeitos. CONFERIR a redacao e a
+      data de corte vigentes no indice antes de redigir - nao citar de memoria.
+    - >-
+      Pedir sempre com a ressalva de que os valores sao meramente estimativos
+      (art. 840, par. 1o, da CLT).
+  calculo: horas_extras
+
+- id: intervalo_intrajornada
+  nome: Intervalo intrajornada suprimido
+  grupo: jornada
+  resumo: >-
+    Supressao total ou parcial do intervalo para repouso e alimentacao em jornada
+    superior a 6 horas.
+  quando:
+    - - campo: intervalo_gozado
+        op: em
+        valor: [parcial, nenhum]
+  requisitos:
+    - descricao: Jornada superior a 6 horas diarias
+      prova: [cartoes de ponto, testemunhas]
+    - descricao: Gozo parcial ou ausencia total do intervalo minimo de 1 hora
+      prova: [cartoes de ponto, testemunhas]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 71, par. 4o"
+    - tipo: sumula_tst
+      ref: "Sumula 437"
+      nota: Aplicavel ao periodo anterior a Reforma.
+  provas:
+    - Cartoes de ponto (atencao a pre-assinalacao do intervalo)
+    - Testemunhas
+  reflexos: [rsr, decimo_terceiro, ferias_um_terco, fgts_40, aviso_previo]
+  # Regra E natureza juridica mudam: nao da para formular num pedido so.
+  cindir: true
+  variacao_temporal:
+    - regime: pre_reforma
+      regra: >-
+        Supressao ainda que parcial gera pagamento do periodo INTEGRAL do intervalo,
+        acrescido de 50%, com natureza SALARIAL e reflexos (Sumula 437, I e III, do TST).
+    - regime: pos_reforma
+      regra: >-
+        Paga-se apenas o periodo efetivamente SUPRIMIDO, acrescido de 50%, com
+        natureza INDENIZATORIA e, portanto, sem reflexos.
+  alertas:
+    - >-
+      Contrato que atravessa 11/11/2017 exige pedido cindido por periodo: regra e
+      natureza juridica sao diferentes antes e depois. Nao unificar.
+  calculo: intervalo_intrajornada
+
+- id: intervalo_interjornada
+  nome: Intervalo interjornada desrespeitado
+  grupo: jornada
+  resumo: Ausencia do descanso minimo de 11 horas entre duas jornadas.
+  quando:
+    - - campo: interjornada_violada
+        op: verdadeiro
+  requisitos:
+    - descricao: Intervalo inferior a 11 horas consecutivas entre jornadas
+      prova: [cartoes de ponto, escalas de trabalho]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 66"
+    - tipo: oj_tst
+      ref: "OJ 355 da SDI-1"
+      nota: >-
+        Desrespeito ao interjornada gera pagamento das horas suprimidas como
+        extraordinarias, por aplicacao analogica do art. 71, par. 4o, da CLT.
+  provas: [cartoes de ponto, escalas, testemunhas]
+  reflexos: [rsr, decimo_terceiro, ferias_um_terco, fgts_40, aviso_previo]
+  alertas:
+    - Verificar cumulacao com horas extras para evitar bis in idem sobre a mesma hora.
+  calculo: intervalo_interjornada
+
+- id: adicional_noturno
+  nome: Adicional noturno e hora ficta
+  grupo: jornada
+  resumo: >-
+    Labor entre 22h e 5h com adicional de 20% e hora computada como 52min30s.
+  quando:
+    - - campo: trabalho_noturno
+        op: verdadeiro
+  requisitos:
+    - descricao: Labor no periodo das 22h as 5h (trabalhador urbano)
+      prova: [cartoes de ponto, escalas]
+    - descricao: Ausencia ou insuficiencia de pagamento do adicional
+      prova: [contracheques]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 73 e paragrafos"
+      nota: Adicional de 20% e hora ficta de 52min30s.
+    - tipo: sumula_tst
+      ref: "Sumula 60"
+      nota: >-
+        I - integra o salario para todos os efeitos. II - prorrogacao da jornada
+        noturna em horario diurno tambem rende adicional (art. 73, par. 5o).
+  provas: [cartoes de ponto, contracheques, testemunhas]
+  reflexos: [rsr, decimo_terceiro, ferias_um_terco, fgts_40, aviso_previo, horas_extras]
+  alertas:
+    - >-
+      Nao esquecer da hora ficta: o computo reduzido gera horas extras adicionais
+      que costumam passar batido no calculo.
+    - >-
+      Se houve transferencia para o turno diurno, verificar a Sumula 265 do TST
+      (perda do direito ao adicional).
+  calculo: adicional_noturno

@@ -1,0 +1,133 @@
+# Adicionais de natureza salarial que dependem de condicao especial de trabalho.
+
+- id: insalubridade
+  nome: Adicional de insalubridade
+  grupo: adicionais
+  resumo: >-
+    Exposicao a agente nocivo previsto na NR-15, acima dos limites de tolerancia,
+    sem neutralizacao eficaz.
+  quando:
+    - - campo: exposicao_agente_nocivo
+        op: verdadeiro
+      - campo: adicional_insalubridade_pago
+        op: falso
+  requisitos:
+    - descricao: Exposicao a agente nocivo classificado na NR-15 do extinto MTE
+      prova: [PPP, LTCAT, laudos da empresa, fotos, testemunhas]
+    - descricao: Habitualidade da exposicao
+      prova: [testemunhas, escalas, descricao de funcao]
+    - descricao: Ausencia de EPI eficaz ou de fiscalizacao do uso
+      prova: [fichas de EPI, ausencia de registro de troca, testemunhas]
+  fundamentos:
+    - tipo: clt
+      ref: "arts. 189 a 192"
+    - tipo: clt
+      ref: "art. 195, par. 2o"
+      nota: Pericia tecnica e OBRIGATORIA. Requerer expressamente na inicial.
+    - tipo: nr
+      ref: "NR-15"
+      nota: Enquadramento e limites de tolerancia por agente.
+    - tipo: sumula_tst
+      ref: "Sumula 448"
+      nota: >-
+        Nao basta a exposicao: o agente precisa estar enquadrado na relacao
+        oficial da NR-15.
+    - tipo: sumula_tst
+      ref: "Sumula 80"
+      nota: O fornecimento de EPI eficaz elide a insalubridade.
+    - tipo: sumula_tst
+      ref: "Sumula 289"
+      nota: >-
+        Nao basta fornecer o EPI: o empregador deve fiscalizar o uso efetivo.
+        Este e o ponto de ataque mais produtivo do polo ativo.
+    - tipo: sv_stf
+      ref: "Sumula Vinculante 4 do STF"
+      controverso: true
+      nota: >-
+        Base de calculo do adicional e tema em disputa (interacao com a Sumula 228
+        do TST, cuja aplicacao foi suspensa). CONFERIR a posicao atual e a do TRT
+        competente no indice antes de fixar a base.
+  provas:
+    - PPP (Perfil Profissiografico Previdenciario)
+    - LTCAT / PPRA / PGR da empresa
+    - Fichas de entrega de EPI
+    - Testemunhas
+  reflexos: [rsr, decimo_terceiro, ferias_um_terco, fgts_40, aviso_previo, horas_extras]
+  alertas:
+    - >-
+      Pericia obrigatoria: requerer na inicial e ja indicar quesitos. Honorarios
+      periciais sao a causa numero 1 de processo parado por anos nesta materia.
+    - >-
+      Insalubridade e periculosidade nao se acumulam (art. 193, par. 2o). Pedir em
+      carater alternativo/sucessivo, pelo mais benefico.
+  calculo: insalubridade
+
+- id: periculosidade
+  nome: Adicional de periculosidade
+  grupo: adicionais
+  resumo: >-
+    Exposicao permanente ou intermitente a condicao de risco acentuado, com
+    adicional de 30% sobre o salario base.
+  quando:
+    - - campo: exposicao_perigo
+        op: verdadeiro
+      - campo: adicional_periculosidade_pago
+        op: falso
+  requisitos:
+    - descricao: Exposicao a inflamaveis, explosivos, energia eletrica, radiacao, roubo ou motocicleta
+      prova: [PPP, LTCAT, descricao de funcao, testemunhas]
+    - descricao: Exposicao permanente ou intermitente (a eventual/fortuita nao gera direito)
+      prova: [testemunhas, escalas, rotina de trabalho]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 193"
+      nota: Adicional de 30% sobre o salario base, sem os acrescimos de outros adicionais.
+    - tipo: clt
+      ref: "art. 195, par. 2o"
+      nota: Pericia tecnica obrigatoria.
+    - tipo: nr
+      ref: "NR-16"
+    - tipo: sumula_tst
+      ref: "Sumula 364"
+      nota: >-
+        Exposicao INTERMITENTE gera direito ao adicional integral. Apenas a
+        exposicao eventual ou por tempo extremamente reduzido afasta o direito.
+  provas: [PPP, LTCAT, testemunhas, fotos do local]
+  reflexos: [rsr, decimo_terceiro, ferias_um_terco, fgts_40, aviso_previo, horas_extras]
+  alertas:
+    - >-
+      A Sumula 364 e a chave do polo ativo: a defesa quase sempre alega exposicao
+      eventual. Construir a prova testemunhal em torno da rotina diaria.
+    - >-
+      Nao acumula com insalubridade (art. 193, par. 2o). Pedir pelo mais benefico.
+  calculo: periculosidade
+
+- id: adicional_transferencia
+  nome: Adicional de transferencia
+  grupo: adicionais
+  resumo: Transferencia provisoria com mudanca de domicilio, adicional de 25%.
+  quando:
+    - - campo: transferencia
+        op: verdadeiro
+      - campo: transferencia_provisoria
+        op: verdadeiro
+  requisitos:
+    - descricao: Transferencia que implicou mudanca de domicilio
+      prova: [comprovantes de residencia, contrato, e-mails]
+    - descricao: Carater provisorio da transferencia
+      prova: [testemunhas, documentos internos, retorno posterior]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 469, par. 3o"
+    - tipo: oj_tst
+      ref: "OJ 113 da SDI-1"
+      nota: >-
+        O adicional e devido enquanto durar a transferencia provisoria, ainda que
+        o empregado exerca cargo de confianca.
+  provas: [comprovantes de residencia, documentos de transferencia, testemunhas]
+  reflexos: [rsr, decimo_terceiro, ferias_um_terco, fgts_40, aviso_previo]
+  alertas:
+    - >-
+      O no do pedido e provar a PROVISORIEDADE. Transferencia definitiva nao gera
+      adicional. Levantar documentos que indiquem prazo ou retorno previsto.
+  calculo: adicional_transferencia

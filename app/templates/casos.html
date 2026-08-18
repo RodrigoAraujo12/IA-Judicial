@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block titulo %}Casos salvos{% endblock %}
+
+{% block progresso %}
+<span class="progresso"><a href="/">Nova entrevista</a></span>
+{% endblock %}
+
+{% block corpo %}
+<article class="lista">
+  <p class="rotulo">Casos salvos <span class="contador">{{ casos | length }}</span></p>
+  {% for caso in casos %}
+    <a class="caso" href="/caso/{{ caso.id }}">
+      <span class="nome">{{ caso.nome }}</span>
+      <span class="nota">atualizado em {{ caso.atualizado_em.replace('T', ' ') }}</span>
+    </a>
+  {% else %}
+    <p class="vazio">Nenhum caso salvo ainda.</p>
+  {% endfor %}
+</article>
+{% endblock %}

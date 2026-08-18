@@ -1,0 +1,156 @@
+# Danos extrapatrimoniais, saude do trabalhador e garantias de emprego.
+
+- id: dano_moral
+  nome: Indenizacao por dano moral
+  grupo: danos
+  resumo: >-
+    Lesao a bem juridico extrapatrimonial do trabalhador decorrente da relacao de
+    emprego.
+  quando:
+    - - campo: assedio_moral
+        op: verdadeiro
+    - - campo: dano_moral_situacoes
+        op: preenchido
+  requisitos:
+    - descricao: Conduta patronal lesiva (ato comissivo ou omissivo)
+      prova: [testemunhas, mensagens, gravacoes, boletim de ocorrencia]
+    - descricao: Lesao a bem extrapatrimonial (honra, imagem, intimidade, saude)
+      prova: [prontuarios, laudos, testemunhas]
+    - descricao: Nexo causal com o contrato de trabalho
+      prova: [testemunhas, documentos internos]
+  fundamentos:
+    - tipo: cf
+      ref: "art. 5o, V e X"
+    - tipo: clt
+      ref: "arts. 223-A a 223-G"
+      controverso: true
+      nota: >-
+        A tarifacao do art. 223-G, par. 1o, foi objeto de ADIs no STF. CONFERIR no
+        indice se os parametros valem como teto ou como referencia orientativa
+        antes de fixar o valor do pedido.
+    - tipo: lei
+      ref: "Codigo Civil, arts. 186 e 927"
+  provas: [testemunhas, mensagens, gravacoes, laudos medicos, atestados]
+  reflexos: []
+  alertas:
+    - >-
+      Descrever FATOS concretos e datados na causa de pedir. Alegacao generica de
+      assedio, sem narrativa especifica, e a principal causa de improcedencia.
+    - >-
+      Atencao a litigancia de ma-fe (art. 793-C da CLT) em pedido de dano moral
+      sem lastro probatorio minimo.
+  calculo: null
+
+- id: estabilidade_gestante
+  nome: Estabilidade gestante - reintegracao ou indenizacao substitutiva
+  grupo: danos
+  resumo: >-
+    Garantia de emprego da confirmacao da gravidez ate cinco meses apos o parto.
+  quando:
+    - - campo: gestante_na_dispensa
+        op: verdadeiro
+  requisitos:
+    - descricao: Gravidez existente na data da dispensa (ainda que desconhecida)
+      prova: [exame de ultrassom, cartao de pre-natal, certidao de nascimento]
+    - descricao: Dispensa sem justa causa dentro do periodo de garantia
+      prova: [TRCT, CTPS]
+  fundamentos:
+    - tipo: cf
+      ref: "ADCT, art. 10, II, 'b'"
+    - tipo: sumula_tst
+      ref: "Sumula 244"
+      nota: >-
+        I - o desconhecimento do estado gravidico pelo empregador NAO afasta o
+        direito. III - a garantia alcanca tambem o contrato por prazo determinado.
+  provas: [exames com data, cartao de pre-natal, certidao de nascimento, TRCT]
+  reflexos: []
+  alertas:
+    - >-
+      Verificar o momento: se o periodo de estabilidade ja se exauriu, o pedido e
+      de INDENIZACAO SUBSTITUTIVA dos salarios e vantagens do periodo, nao de
+      reintegracao.
+    - >-
+      Datar com precisao a concepcao a partir do exame. O marco inicial define
+      todo o calculo.
+  calculo: estabilidade_gestante
+
+- id: estabilidade_acidentaria
+  nome: Estabilidade acidentaria - reintegracao ou indenizacao substitutiva
+  grupo: danos
+  resumo: >-
+    Garantia de emprego de doze meses apos a cessacao do auxilio-doenca
+    acidentario.
+  quando:
+    - - campo: afastamento_acidentario
+        op: verdadeiro
+    - - campo: doenca_ocupacional
+        op: verdadeiro
+  requisitos:
+    - descricao: Afastamento superior a 15 dias com percepcao de auxilio-doenca acidentario
+      prova: [CAT, comunicado do INSS, carta de concessao do beneficio]
+    - descricao: Alternativamente, doenca ocupacional com nexo constatado apos a dispensa
+      prova: [laudo medico, PPP, pericia]
+    - descricao: Dispensa dentro dos 12 meses seguintes a cessacao do beneficio
+      prova: [TRCT, extrato do INSS]
+  fundamentos:
+    - tipo: lei
+      ref: "Lei 8.213/91, art. 118"
+    - tipo: sumula_tst
+      ref: "Sumula 378"
+      nota: >-
+        II - requisitos: afastamento por mais de 15 dias e percepcao de
+        auxilio-doenca acidentario, SALVO constatacao apos a dispensa de doenca
+        profissional com nexo causal. III - alcanca o contrato por prazo determinado.
+    - tipo: lei
+      ref: "Lei 8.213/91, art. 20"
+      nota: Equipara doenca ocupacional a acidente do trabalho.
+  provas: [CAT, carta de concessao do INSS, PPP, laudos, prontuario]
+  reflexos: []
+  alertas:
+    - >-
+      Se a empresa nao emitiu a CAT, isso NAO afasta o direito - e reforca a tese.
+      Requerer expedicao de oficio ao INSS para juntada do historico de beneficios.
+    - >-
+      Doenca ocupacional constatada apos a dispensa dispensa o requisito do
+      afastamento previo (Sumula 378, II, parte final). Caminho frequente em LER/DORT.
+  calculo: estabilidade_acidentaria
+
+- id: indenizacao_acidente
+  nome: Indenizacao por acidente do trabalho ou doenca ocupacional
+  grupo: danos
+  resumo: >-
+    Reparacao por danos material, moral e estetico decorrentes de acidente ou
+    doenca com nexo ocupacional.
+  quando:
+    - - campo: afastamento_acidentario
+        op: verdadeiro
+    - - campo: doenca_ocupacional
+        op: verdadeiro
+  requisitos:
+    - descricao: Dano (lesao, incapacidade total ou parcial, temporaria ou permanente)
+      prova: [laudos, prontuario, pericia medica]
+    - descricao: Nexo causal ou concausal com a atividade
+      prova: [PPP, LTCAT, CAT, pericia]
+    - descricao: Culpa do empregador, ou atividade de risco que atraia responsabilidade objetiva
+      prova: [ausencia de EPI, ausencia de treinamento, NRs descumpridas]
+  fundamentos:
+    - tipo: cf
+      ref: "art. 7o, XXVIII"
+    - tipo: lei
+      ref: "Codigo Civil, arts. 186, 927 e 950"
+      nota: >-
+        Paragrafo unico do art. 927: responsabilidade objetiva quando a atividade
+        normalmente desenvolvida implicar risco.
+    - tipo: clt
+      ref: "arts. 157 e 158"
+      nota: Deveres de cumprimento e fiscalizacao das normas de seguranca.
+  provas: [CAT, prontuario, laudos, PPP, fichas de EPI, testemunhas]
+  reflexos: []
+  alertas:
+    - >-
+      Cumular os tres danos quando cabiveis: material (pensionamento do art. 950
+      do CC), moral e estetico. Pedir apenas o moral e desperdicio frequente.
+    - >-
+      Pericia medica obrigatoria. Requerer na inicial com quesitos e ja apontar o
+      valor pretendido de forma fundamentada.
+  calculo: null

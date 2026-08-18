@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Triagem trabalhista{% endblock %}</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="topo">
+    <h1>Triagem trabalhista</h1>
+    <span class="sub">reclamante &middot; triagem e c&aacute;lculo</span>
+    {% block progresso %}{% endblock %}
+  </header>
+  {% block corpo %}{% endblock %}
+</body>
+</html>

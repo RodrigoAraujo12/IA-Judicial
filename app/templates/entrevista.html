@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block progresso %}
+<span class="progresso"><a href="/casos">Casos salvos</a></span>
+{% endblock %}
+
+{% block corpo %}
+<script type="application/json" id="regras">{{ regras_visibilidade | safe }}</script>
+<script type="application/json" id="tipos">{{ tipos | safe }}</script>
+
+<form id="entrevista" method="post" action="/relatorio">
+<input type="hidden" name="caso_id" id="caso_id" value="{{ caso_id or '' }}">
+<div class="quadro">
+
+  <nav class="rail">
+    <p class="rotulo">Roteiro</p>
+    {% for secao in catalogo.entrevista.secoes | sort(attribute='ordem') %}
+      <a href="#s-{{ secao.id }}">{{ secao.titulo | safe }}</a>
+    {% endfor %}
+  </nav>
+
+  <main class="principal">
+    {% for secao in catalogo.entrevista.secoes | sort(attribute='ordem') %}
+      <section class="secao" id="s-{{ secao.id }}">
+        <h2>{{ secao.titulo | safe }}</h2>
+        {% if secao.id == 'quantificacao' %}
+          <p class="ajuda">Aparece conforme a triagem confirma pedidos. A entrevista responde
+          <em>se</em> cabe; aqui se apura <em>quanto</em>.</p>
+        {% endif %}
+
+        {% for p in catalogo.entrevista.perguntas if p.secao == secao.id %}
+          <div class="pergunta" data-id="{{ p.id }}"
+               {% if p.mostrar_se_pedido %}data-quant="1"{% endif %}
+               {% if p.id not in visiveis %}hidden{% endif %}>
+
+            {% if p.tipo in ('bool', 'multipla') %}
+              <span class="texto">{{ p.texto | safe }}{% if p.obrigatoria %}<span class="obrig">*</span>{% endif %}</span>
+            {% else %}
+              <label class="texto" for="c-{{ p.id }}">{{ p.texto | safe }}{% if p.obrigatoria %}<span class="obrig">*</span>{% endif %}</label>
+            {% endif %}
+
+            {% set v = respostas.get(p.id) %}
+
+            {% if p.tipo == 'bool' %}
+              <span class="binario">
+                <label><input type="radio" name="{{ p.id }}" value="sim" {% if v is true %}checked{% endif %}><span>Sim</span></label>
+                <label><input type="radio" name="{{ p.id }}" value="nao" {% if v is false %}checked{% endif %}><span>N&atilde;o</span></label>
+                <label><input type="radio" name="{{ p.id }}" value="" {% if v is none %}checked{% endif %}><span>&mdash;</span></label>
+              </span>
+
+            {% elif p.tipo == 'escolha' %}
+              <select name="{{ p.id }}" id="c-{{ p.id }}">
+                <option value="">&mdash;</option>
+                {% for o in p.opcoes %}
+                  <option value="{{ o.valor }}" {% if v == o.valor %}selected{% endif %}>{{ o.rotulo | safe }}</option>
+                {% endfor %}
+              </select>
+
+            {% elif p.tipo == 'multipla' %}
+              <div class="opcoes">
+                {% for o in p.opcoes %}
+                  <label><input type="checkbox" name="{{ p.id }}" value="{{ o.valor }}"
+                    {% if v and o.valor in v %}checked{% endif %}> {{ o.rotulo | safe }}</label>
+                {% endfor %}
+              </div>
+
+            {% elif p.tipo == 'data' %}
+              <input type="date" name="{{ p.id }}" id="c-{{ p.id }}" value="{{ v or '' }}">
+
+            {% elif p.tipo in ('moeda', 'numero') %}
+              <span class="comsufixo">
+                <input type="text" inputmode="decimal" class="curto" name="{{ p.id }}" id="c-{{ p.id }}"
+                       value="{{ v or '' }}" placeholder="{% if p.tipo == 'moeda' %}0,00{% endif %}">
+                {% if p.sufixo %}<span class="sufixo">{{ p.sufixo | safe }}</span>{% endif %}
+              </span>
+
+            {% else %}
+              <input type="text" name="{{ p.id }}" id="c-{{ p.id }}" value="{{ v or '' }}">
+            {% endif %}
+
+            {% if p.ajuda %}<p class="ajuda">{{ p.ajuda }}</p>{% endif %}
+          </div>
+        {% endfor %}
+      </section>
+    {% endfor %}
+  </main>
+
+  <aside class="lateral" id="analise">
+    {% include "_analise.html" %}
+  </aside>
+
+</div>
+
+<div class="acoes">
+  <input type="text" name="caso_nome" id="caso_nome" class="curto"
+         value="{{ caso_nome }}" placeholder="Nome do caso">
+  <button type="button" id="salvar" class="secundario">Salvar</button>
+  <span id="aviso-salvo" class="salvo"></span>
+  <button type="submit">Gerar relat&oacute;rio do caso</button>
+</div>
+</form>
+
+<script src="/static/app.js"></script>
+{% endblock %}

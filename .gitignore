@@ -1,0 +1,38 @@
+# --- DADOS DE CLIENTE: nunca versionar ---------------------------------------
+# dados/casos.db guarda entrevistas reais - nome, funcao, salario, saude,
+# acidente de trabalho. Dado pessoal e, em previdenciario e acidentario, dado
+# pessoal SENSIVEL (LGPD, art. 5o, II). Commitar uma vez basta para o historico
+# do git carregar isso para sempre, inclusive se o repositorio virar publico.
+dados/
+*.db
+*.sqlite
+*.sqlite3
+
+# Documentos de caso, se algum dia forem gravados em disco
+autos/
+anexos/
+*.docx
+*.pdf
+
+# --- Python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# --- ambiente ----------------------------------------------------------------
+.env
+.env.*
+
+# --- editor e SO -------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini

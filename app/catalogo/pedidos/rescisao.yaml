@@ -1,0 +1,179 @@
+# Verbas e penalidades ligadas ao termino do contrato.
+
+- id: verbas_rescisorias
+  nome: Verbas rescisorias
+  grupo: rescisao
+  resumo: >-
+    Saldo de salario, aviso previo, 13o proporcional, ferias vencidas e
+    proporcionais acrescidas de um terco.
+  quando:
+    - - campo: verbas_pagas
+        op: em
+        valor: [parcial, nenhuma]
+  requisitos:
+    - descricao: Extincao do contrato por modalidade que gere direito as verbas
+      prova: [TRCT, CTPS, comunicado de dispensa]
+    - descricao: Ausencia ou insuficiencia do pagamento
+      prova: [TRCT, extratos bancarios, contracheques]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 477"
+    - tipo: lei
+      ref: "Lei 12.506/2011"
+      nota: >-
+        Aviso previo proporcional: 30 dias mais 3 dias por ano de servico,
+        limitado a 90 dias.
+    - tipo: clt
+      ref: "arts. 129 a 147"
+      nota: Ferias e o terco constitucional.
+    - tipo: sumula_tst
+      ref: "Sumula 212"
+      nota: >-
+        O onus de provar o termino do contrato e do empregador, dada a presuncao
+        de continuidade da relacao de emprego.
+  provas: [TRCT, CTPS, contracheques, extratos bancarios, comunicado de dispensa]
+  reflexos: []
+  alertas:
+    - >-
+      Conferir a base de calculo: horas extras, adicionais e comissoes habituais
+      integram a remuneracao e elevam TODAS as verbas rescisorias. E o erro mais
+      comum e o mais caro de deixar passar.
+  calculo: verbas_rescisorias
+
+- id: fgts_40
+  nome: FGTS e multa de 40%
+  grupo: rescisao
+  resumo: Depositos nao recolhidos e multa rescisoria de 40% sobre o montante.
+  quando:
+    - - campo: fgts_depositado
+        op: em
+        valor: [parcial, nenhum]
+    - - campo: multa_40_paga
+        op: falso
+      - campo: modalidade_saida
+        op: em
+        valor: [sem_justa_causa, rescisao_indireta]
+  requisitos:
+    - descricao: Ausencia ou irregularidade dos depositos mensais
+      prova: [extrato analitico do FGTS, contracheques]
+    - descricao: Modalidade de extincao que gere direito a multa de 40%
+      prova: [TRCT, CTPS]
+  fundamentos:
+    - tipo: lei
+      ref: "Lei 8.036/90, art. 18, par. 1o"
+    - tipo: sumula_tst
+      ref: "Sumula 461"
+      nota: >-
+        O onus de provar o regular recolhimento do FGTS e do EMPREGADOR. Basta
+        alegar a irregularidade na inicial.
+  provas: [extrato analitico do FGTS, TRCT, contracheques]
+  reflexos: []
+  alertas:
+    - >-
+      Requerer a expedicao de oficio a Caixa para juntada do extrato analitico de
+      todo o periodo. A Sumula 461 inverte o onus a seu favor - use isso.
+    - >-
+      A multa de 40% incide sobre TODOS os depositos do contrato, inclusive os
+      nao realizados e os que decorrerem das verbas deferidas nesta acao.
+  calculo: fgts_40
+
+- id: multa_477
+  nome: Multa do art. 477, par. 8o, da CLT
+  grupo: rescisao
+  resumo: >-
+    Penalidade equivalente a um salario do empregado pelo atraso no pagamento das
+    verbas rescisorias.
+  quando:
+    - - campo: prazo_10_dias_cumprido
+        op: falso
+    - - campo: verbas_pagas
+        op: igual
+        valor: nenhuma
+  requisitos:
+    - descricao: Pagamento das verbas fora do prazo legal, ou ausencia de pagamento
+      prova: [TRCT com data, extratos bancarios, comprovante de deposito]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 477, par. 6o"
+      nota: >-
+        Prazo unico de 10 dias corridos contados do termino do contrato (redacao
+        pos-reforma).
+    - tipo: clt
+      ref: "art. 477, par. 8o"
+      nota: Multa em favor do empregado, no valor do seu salario.
+  provas: [TRCT datado, extrato bancario, comunicado de dispensa]
+  reflexos: []
+  # O fato gerador e a propria extincao: vale a regra da data de saida, sem cisao.
+  marco_temporal: rescisao
+  variacao_temporal:
+    - regime: pre_reforma
+      regra: >-
+        Prazo de 1 dia util no aviso previo trabalhado e de 10 dias corridos nas
+        demais hipoteses (art. 477, par. 6o, "a" e "b", redacao anterior).
+    - regime: pos_reforma
+      regra: Prazo unico de 10 dias corridos para todas as modalidades.
+  alertas:
+    - >-
+      Se o reconhecimento do vinculo ou a reversao da justa causa for deferido em
+      juizo, a multa e devida - nao houve pagamento no prazo. Pedir sempre em
+      conjunto com esses pedidos.
+  calculo: multa_477
+
+- id: multa_467
+  nome: Multa do art. 467 da CLT
+  grupo: rescisao
+  resumo: >-
+    Acrescimo de 50% sobre as verbas rescisorias incontroversas nao quitadas ate a
+    primeira audiencia.
+  quando:
+    - - campo: verbas_pagas
+        op: em
+        valor: [parcial, nenhuma]
+  requisitos:
+    - descricao: Existencia de verbas rescisorias incontroversas
+      prova: [TRCT, contestacao da reclamada]
+    - descricao: Nao pagamento ate a primeira audiencia
+      prova: [ata de audiencia]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 467"
+  provas: [TRCT, ata de audiencia]
+  reflexos: []
+  alertas:
+    - >-
+      So incide sobre a parcela INCONTROVERSA. Se a reclamada controverte tudo na
+      contestacao, o pedido tende a ser afastado - mas pedir e barato e o custo de
+      nao pedir e perder a verba.
+  calculo: multa_467
+
+- id: seguro_desemprego
+  nome: Indenizacao substitutiva do seguro-desemprego
+  grupo: rescisao
+  resumo: >-
+    Nao liberacao das guias pelo empregador, impedindo a habilitacao ao beneficio.
+  quando:
+    - - campo: guias_seguro_desemprego
+        op: falso
+      - campo: modalidade_saida
+        op: em
+        valor: [sem_justa_causa, rescisao_indireta]
+  requisitos:
+    - descricao: Dispensa sem justa causa (ou reconhecida como tal em juizo)
+      prova: [TRCT, CTPS]
+    - descricao: Ausencia de entrega das guias ou de baixa que permita o saque
+      prova: [TRCT, declaracao, testemunhas]
+  fundamentos:
+    - tipo: lei
+      ref: "Lei 7.998/90"
+    - tipo: sumula_tst
+      ref: "Sumula 389"
+      nota: >-
+        II - a nao liberacao das guias gera direito a indenizacao substitutiva do
+        valor do beneficio.
+  provas: [TRCT, CTPS, comprovante de tentativa de habilitacao]
+  reflexos: []
+  alertas:
+    - >-
+      Pedido de baixo custo e frequentemente esquecido. Sempre verificar quando a
+      dispensa e sem justa causa ou quando se pede reversao de justa causa.
+  calculo: seguro_desemprego

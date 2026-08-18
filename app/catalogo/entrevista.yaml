@@ -1,0 +1,524 @@
+# Roteiro de entrevista. A ordem e a de uma conversa real com o cliente,
+# nao a ordem do codigo. `mostrar_se` segue a mesma gramatica de `quando`.
+
+secoes:
+  - id: contrato
+    titulo: Contrato de trabalho
+    ordem: 1
+  - id: jornada
+    titulo: Jornada
+    ordem: 2
+  - id: condicoes
+    titulo: Condicoes de trabalho
+    ordem: 3
+  - id: funcao
+    titulo: Funcao e salario
+    ordem: 4
+  - id: rescisao
+    titulo: Rescisao e verbas
+    ordem: 5
+  - id: danos
+    titulo: Saude e danos
+    ordem: 6
+  - id: quantificacao
+    titulo: Quantifica&ccedil;&atilde;o
+    ordem: 7
+  - id: processual
+    titulo: Dados processuais
+    ordem: 8
+
+perguntas:
+  # --- contrato -------------------------------------------------------------
+  - id: data_admissao
+    secao: contrato
+    texto: Data de admissao
+    tipo: data
+    obrigatoria: true
+    ajuda: Se nao havia registro, use a data em que comecou a trabalhar de fato.
+
+  - id: data_saida
+    secao: contrato
+    texto: Data de saida
+    tipo: data
+    obrigatoria: true
+    ajuda: Ultimo dia efetivamente trabalhado ou fim do aviso previo.
+
+  - id: funcao
+    secao: contrato
+    texto: Funcao exercida
+    tipo: texto
+    obrigatoria: true
+    ajuda: A funcao REAL, nao necessariamente a anotada na CTPS.
+
+  - id: salario_base
+    secao: contrato
+    texto: Ultimo salario base
+    tipo: moeda
+    obrigatoria: true
+
+  - id: local_prestacao
+    secao: contrato
+    texto: Municipio onde os servicos eram prestados
+    tipo: texto
+    obrigatoria: true
+    ajuda: Define a competencia territorial (art. 651 da CLT).
+
+  - id: registro_ctps
+    secao: contrato
+    texto: Havia registro em CTPS durante todo o periodo?
+    tipo: bool
+    obrigatoria: true
+
+  - id: vinculo_negado
+    secao: contrato
+    texto: A empresa tratava a relacao como PJ, autonomo, cooperado ou informal?
+    tipo: bool
+    mostrar_se:
+      - - campo: registro_ctps
+          op: falso
+
+  - id: empresa_mais_20_empregados
+    secao: contrato
+    texto: A empresa tinha mais de 20 empregados?
+    tipo: bool
+    ajuda: >-
+      Acima de 20, o controle de jornada e obrigatorio (art. 74, par. 2o).
+      Abaixo disso, a Sumula 338 nao se aplica da mesma forma.
+
+  - id: empresa_ativa
+    secao: contrato
+    texto: A empresa continua em atividade?
+    tipo: bool
+    ajuda: >-
+      Empresa baixada antecipa o problema de execucao. Ja levantar socios e
+      eventual grupo economico.
+
+  # --- jornada --------------------------------------------------------------
+  - id: jornada_contratual
+    secao: jornada
+    texto: Qual era a jornada contratual?
+    tipo: escolha
+    opcoes:
+      - { valor: "44h", rotulo: "44h semanais (8h/dia)" }
+      - { valor: "40h", rotulo: "40h semanais" }
+      - { valor: "36h", rotulo: "36h semanais" }
+      - { valor: "12x36", rotulo: "12x36" }
+      - { valor: "outra", rotulo: "Outra" }
+
+  - id: horas_extras_habituais
+    secao: jornada
+    texto: Trabalhava habitualmente alem da jornada contratual?
+    tipo: bool
+    obrigatoria: true
+
+  - id: horas_extras_pagas
+    secao: jornada
+    texto: As horas extras eram pagas corretamente nos contracheques?
+    tipo: bool
+    mostrar_se:
+      - - campo: horas_extras_habituais
+          op: verdadeiro
+
+  - id: controle_ponto
+    secao: jornada
+    texto: Como era o registro de ponto?
+    tipo: escolha
+    opcoes:
+      - { valor: "sim_fidedigno", rotulo: "Havia registro e refletia a jornada real" }
+      - { valor: "sim_britanico", rotulo: "Havia registro, mas com horarios invariaveis (ponto britanico)" }
+      - { valor: "nao_havia", rotulo: "Nao havia registro" }
+      - { valor: "nao_recebeu_copia", rotulo: "Havia, mas o trabalhador nunca teve copia" }
+    ajuda: >-
+      Ponto britanico e a porta de entrada para a invalidacao dos controles e a
+      inversao do onus da prova.
+
+  - id: intervalo_gozado
+    secao: jornada
+    texto: Como era o intervalo para almoco e descanso?
+    tipo: escolha
+    opcoes:
+      - { valor: "integral", rotulo: "Gozava integralmente (1h ou mais)" }
+      - { valor: "parcial", rotulo: "Gozava parcialmente (menos de 1h)" }
+      - { valor: "nenhum", rotulo: "Nao gozava" }
+
+  - id: interjornada_violada
+    secao: jornada
+    texto: Chegava a ter menos de 11 horas de descanso entre uma jornada e outra?
+    tipo: bool
+    ajuda: Tipico em escalas, plantoes e virada de turno.
+
+  - id: trabalho_noturno
+    secao: jornada
+    texto: Trabalhava entre 22h e 5h?
+    tipo: bool
+
+  # --- condicoes ------------------------------------------------------------
+  - id: exposicao_agente_nocivo
+    secao: condicoes
+    texto: Trabalhava exposto a agente nocivo a saude?
+    tipo: bool
+    ajuda: Ruido, calor, frio, umidade, agentes quimicos, biologicos, poeira.
+
+  - id: agente_nocivo
+    secao: condicoes
+    texto: Quais agentes?
+    tipo: multipla
+    opcoes:
+      - { valor: "ruido", rotulo: "Ruido" }
+      - { valor: "calor", rotulo: "Calor ou frio" }
+      - { valor: "quimicos", rotulo: "Agentes quimicos" }
+      - { valor: "biologicos", rotulo: "Agentes biologicos" }
+      - { valor: "umidade", rotulo: "Umidade" }
+      - { valor: "poeira", rotulo: "Poeira mineral" }
+    mostrar_se:
+      - - campo: exposicao_agente_nocivo
+          op: verdadeiro
+
+  - id: epi_fornecido
+    secao: condicoes
+    texto: A empresa fornecia EPI?
+    tipo: escolha
+    opcoes:
+      - { valor: "nao", rotulo: "Nao fornecia" }
+      - { valor: "sim_sem_fiscalizacao", rotulo: "Fornecia, mas nao fiscalizava nem repunha" }
+      - { valor: "sim_com_fiscalizacao", rotulo: "Fornecia, fiscalizava e repunha com registro" }
+    mostrar_se:
+      - - campo: exposicao_agente_nocivo
+          op: verdadeiro
+    ajuda: >-
+      Sumula 289 do TST: fornecer nao basta, e preciso fiscalizar o uso. Esta e a
+      pergunta que decide o pedido de insalubridade.
+
+  - id: adicional_insalubridade_pago
+    secao: condicoes
+    texto: Recebia adicional de insalubridade?
+    tipo: bool
+    mostrar_se:
+      - - campo: exposicao_agente_nocivo
+          op: verdadeiro
+
+  - id: exposicao_perigo
+    secao: condicoes
+    texto: Trabalhava exposto a condicao de risco acentuado?
+    tipo: bool
+    ajuda: Inflamaveis, explosivos, energia eletrica, radiacao, motocicleta, seguranca patrimonial.
+
+  - id: tipo_perigo
+    secao: condicoes
+    texto: Qual o tipo de risco?
+    tipo: multipla
+    opcoes:
+      - { valor: "inflamaveis", rotulo: "Inflamaveis ou explosivos" }
+      - { valor: "eletricidade", rotulo: "Energia eletrica" }
+      - { valor: "radiacao", rotulo: "Radiacao ionizante" }
+      - { valor: "motocicleta", rotulo: "Uso de motocicleta no trabalho" }
+      - { valor: "seguranca", rotulo: "Seguranca pessoal ou patrimonial" }
+    mostrar_se:
+      - - campo: exposicao_perigo
+          op: verdadeiro
+
+  - id: adicional_periculosidade_pago
+    secao: condicoes
+    texto: Recebia adicional de periculosidade?
+    tipo: bool
+    mostrar_se:
+      - - campo: exposicao_perigo
+          op: verdadeiro
+
+  - id: transferencia
+    secao: condicoes
+    texto: Houve transferencia com mudanca de domicilio?
+    tipo: bool
+
+  - id: transferencia_provisoria
+    secao: condicoes
+    texto: A transferencia era provisoria?
+    tipo: bool
+    mostrar_se:
+      - - campo: transferencia
+          op: verdadeiro
+
+  # --- funcao ---------------------------------------------------------------
+  - id: desvio_ou_acumulo
+    secao: funcao
+    texto: Exercia atribuicoes alem das da funcao contratada?
+    tipo: escolha
+    opcoes:
+      - { valor: "nenhum", rotulo: "Nao" }
+      - { valor: "desvio", rotulo: "Exercia funcao diversa da contratada (desvio)" }
+      - { valor: "acumulo", rotulo: "Exercia duas ou mais funcoes ao mesmo tempo (acumulo)" }
+      - { valor: "substituicao", rotulo: "Substituia outro empregado de forma nao eventual" }
+
+  - id: paradigma_existe
+    secao: funcao
+    texto: Havia colega que fazia o mesmo servico e ganhava mais?
+    tipo: bool
+
+  - id: paradigma_mesma_funcao
+    secao: funcao
+    texto: Esse colega exercia exatamente as mesmas atribuicoes, no mesmo estabelecimento?
+    tipo: bool
+    mostrar_se:
+      - - campo: paradigma_existe
+          op: verdadeiro
+    ajuda: >-
+      Identidade de FUNCAO, nao de cargo. O paradigma precisa ser nomeado na
+      inicial e ter testemunha que conheca as duas rotinas.
+
+  # --- rescisao -------------------------------------------------------------
+  - id: modalidade_saida
+    secao: rescisao
+    texto: Como terminou o contrato?
+    tipo: escolha
+    obrigatoria: true
+    opcoes:
+      - { valor: "sem_justa_causa", rotulo: "Dispensa sem justa causa" }
+      - { valor: "justa_causa", rotulo: "Dispensa por justa causa" }
+      - { valor: "pedido_demissao", rotulo: "Pedido de demissao" }
+      - { valor: "rescisao_indireta", rotulo: "Pretende rescisao indireta" }
+      - { valor: "acordo_484a", rotulo: "Acordo (art. 484-A)" }
+      - { valor: "termino_contrato", rotulo: "Termino de contrato por prazo determinado" }
+      - { valor: "sem_formalizacao", rotulo: "Simplesmente parou de ser chamado" }
+
+  - id: verbas_pagas
+    secao: rescisao
+    texto: As verbas rescisorias foram pagas?
+    tipo: escolha
+    opcoes:
+      - { valor: "integral", rotulo: "Integralmente" }
+      - { valor: "parcial", rotulo: "Parcialmente" }
+      - { valor: "nenhuma", rotulo: "Nao foram pagas" }
+
+  - id: prazo_10_dias_cumprido
+    secao: rescisao
+    texto: O pagamento ocorreu em ate 10 dias do termino do contrato?
+    tipo: bool
+    mostrar_se:
+      - - campo: verbas_pagas
+          op: em
+          valor: [integral, parcial]
+
+  - id: fgts_depositado
+    secao: rescisao
+    texto: O FGTS foi depositado regularmente durante o contrato?
+    tipo: escolha
+    opcoes:
+      - { valor: "integral", rotulo: "Sim, todos os meses" }
+      - { valor: "parcial", rotulo: "Com falhas ou meses em aberto" }
+      - { valor: "nenhum", rotulo: "Nunca houve deposito" }
+      - { valor: "nao_sabe", rotulo: "Nao sabe informar" }
+    ajuda: >-
+      "Nao sabe" e resposta comum e nao e problema: o onus da prova e do
+      empregador (Sumula 461). Requerer oficio a Caixa.
+
+  - id: multa_40_paga
+    secao: rescisao
+    texto: A multa de 40% do FGTS foi paga?
+    tipo: bool
+    mostrar_se:
+      - - campo: modalidade_saida
+          op: em
+          valor: [sem_justa_causa, rescisao_indireta, sem_formalizacao]
+
+  - id: guias_seguro_desemprego
+    secao: rescisao
+    texto: As guias do seguro-desemprego foram entregues?
+    tipo: bool
+    mostrar_se:
+      - - campo: modalidade_saida
+          op: em
+          valor: [sem_justa_causa, rescisao_indireta, sem_formalizacao]
+
+  # --- danos ----------------------------------------------------------------
+  - id: assedio_moral
+    secao: danos
+    texto: Sofreu assedio moral, humilhacao ou tratamento vexatorio?
+    tipo: bool
+    ajuda: >-
+      Se sim, colher FATOS datados e nomes. Alegacao generica e a principal causa
+      de improcedencia neste pedido.
+
+  - id: dano_moral_situacoes
+    secao: danos
+    texto: Alguma destas situacoes ocorreu?
+    tipo: multipla
+    opcoes:
+      - { valor: "revista_intima", rotulo: "Revista intima ou de pertences" }
+      - { valor: "atraso_salarial", rotulo: "Atraso reiterado de salario" }
+      - { valor: "exposicao_publica", rotulo: "Exposicao ou cobranca vexatoria em publico" }
+      - { valor: "discriminacao", rotulo: "Discriminacao" }
+      - { valor: "sem_banheiro", rotulo: "Falta de condicoes minimas de higiene" }
+      - { valor: "acidente", rotulo: "Acidente de trabalho" }
+
+  - id: afastamento_acidentario
+    secao: danos
+    texto: Houve afastamento pelo INSS por acidente de trabalho?
+    tipo: bool
+    ajuda: Afastamento superior a 15 dias com auxilio-doenca ACIDENTARIO (especie 91).
+
+  - id: doenca_ocupacional
+    secao: danos
+    texto: Desenvolveu doenca relacionada ao trabalho?
+    tipo: bool
+    ajuda: LER/DORT, perda auditiva, transtorno mental, doenca de coluna.
+
+  - id: gestante_na_dispensa
+    secao: danos
+    texto: A trabalhadora estava gravida na data da dispensa?
+    tipo: bool
+    ajuda: >-
+      Vale mesmo se ela ou a empresa desconheciam a gravidez a epoca
+      (Sumula 244, I, do TST).
+
+  # --- quantificacao --------------------------------------------------------
+  # Estas perguntas so aparecem depois que o pedido correspondente entra em jogo.
+  # A triagem responde SE cabe; aqui se apura QUANTO.
+
+  - id: he_horas_mes
+    secao: quantificacao
+    texto: Media de horas extras por mes
+    tipo: numero
+    sufixo: horas
+    mostrar_se_pedido: [horas_extras]
+    ajuda: >-
+      Estimativa do cliente enquanto nao houver cartao de ponto. A apuracao
+      definitiva sai da tabulacao dos controles (fase 5).
+
+  - id: he_adicional
+    secao: quantificacao
+    texto: Adicional de horas extras aplicavel
+    tipo: numero
+    sufixo: "%"
+    mostrar_se_pedido: [horas_extras]
+    ajuda: Minimo constitucional de 50%. Conferir percentual mais favoravel em CCT.
+
+  - id: noturno_horas_mes
+    secao: quantificacao
+    texto: Media de horas noturnas por mes (22h as 5h)
+    tipo: numero
+    sufixo: horas
+    mostrar_se_pedido: [adicional_noturno]
+
+  - id: grau_insalubridade
+    secao: quantificacao
+    texto: Grau de insalubridade pleiteado
+    tipo: escolha
+    opcoes:
+      - { valor: "minimo", rotulo: "M&iacute;nimo (10%)" }
+      - { valor: "medio", rotulo: "M&eacute;dio (20%)" }
+      - { valor: "maximo", rotulo: "M&aacute;ximo (40%)" }
+    mostrar_se_pedido: [insalubridade]
+    ajuda: Conferir o enquadramento do agente na NR-15. Definicao final vem da pericia.
+
+  - id: base_insalubridade
+    secao: quantificacao
+    texto: Base de calculo do adicional de insalubridade
+    tipo: escolha
+    opcoes:
+      - { valor: "salario_minimo", rotulo: "Sal&aacute;rio m&iacute;nimo (mais aceita)" }
+      - { valor: "salario_base", rotulo: "Sal&aacute;rio contratual (mais favor&aacute;vel)" }
+    mostrar_se_pedido: [insalubridade]
+    ajuda: >-
+      Tema em disputa (Sumula Vinculante 4 do STF x Sumula 228 do TST, suspensa).
+      Conferir a posicao do TRT competente.
+
+  - id: intervalo_minutos_suprimidos
+    secao: quantificacao
+    texto: Minutos de intervalo suprimidos por dia
+    tipo: numero
+    sufixo: min
+    mostrar_se_pedido: [intervalo_intrajornada]
+    ajuda: >-
+      Usado apenas no periodo pos-Reforma. Ate 10/11/2017 paga-se a hora integral
+      (Sumula 437 do TST), independentemente do que foi suprimido.
+
+  - id: intervalo_dias_mes
+    secao: quantificacao
+    texto: Dias trabalhados por mes
+    tipo: numero
+    sufixo: dias
+    mostrar_se_pedido: [intervalo_intrajornada]
+
+  - id: interjornada_horas_mes
+    secao: quantificacao
+    texto: Horas de interjornada suprimidas por mes
+    tipo: numero
+    sufixo: horas
+    mostrar_se_pedido: [intervalo_interjornada]
+
+  - id: transferencia_meses
+    secao: quantificacao
+    texto: Dura&ccedil;&atilde;o da transfer&ecirc;ncia
+    tipo: numero
+    sufixo: meses
+    mostrar_se_pedido: [adicional_transferencia]
+
+  - id: paradigma_salario
+    secao: quantificacao
+    texto: Sal&aacute;rio do paradigma
+    tipo: moeda
+    mostrar_se_pedido: [equiparacao_salarial]
+
+  - id: acumulo_percentual
+    secao: quantificacao
+    texto: Percentual pleiteado a t&iacute;tulo de plus salarial
+    tipo: numero
+    sufixo: "%"
+    mostrar_se_pedido: [desvio_acumulo_funcao]
+    ajuda: Arbitrado. Conferir os percentuais praticados pelo TRT competente.
+
+  - id: saldo_salario_dias
+    secao: quantificacao
+    texto: Dias de saldo de sal&aacute;rio no m&ecirc;s da sa&iacute;da
+    tipo: numero
+    sufixo: dias
+    mostrar_se_pedido: [verbas_rescisorias]
+
+  - id: ferias_vencidas
+    secao: quantificacao
+    texto: Per&iacute;odos de f&eacute;rias vencidas e n&atilde;o gozadas
+    tipo: numero
+    sufixo: per&iacute;odos
+    mostrar_se_pedido: [verbas_rescisorias]
+
+  - id: verbas_incontroversas
+    secao: quantificacao
+    texto: Valor das verbas rescis&oacute;rias incontroversas
+    tipo: moeda
+    mostrar_se_pedido: [multa_467]
+    ajuda: Base da multa de 50% do art. 467. Normalmente o valor constante do TRCT.
+
+  - id: seguro_valor_parcela
+    secao: quantificacao
+    texto: Valor da parcela do seguro-desemprego
+    tipo: moeda
+    mostrar_se_pedido: [seguro_desemprego]
+
+  - id: seguro_parcelas
+    secao: quantificacao
+    texto: N&uacute;mero de parcelas a que teria direito
+    tipo: numero
+    sufixo: parcelas
+    mostrar_se_pedido: [seguro_desemprego]
+
+  - id: estabilidade_meses_restantes
+    secao: quantificacao
+    texto: Meses de estabilidade n&atilde;o usufru&iacute;dos
+    tipo: numero
+    sufixo: meses
+    mostrar_se_pedido: [estabilidade_gestante, estabilidade_acidentaria]
+
+  # --- processual -----------------------------------------------------------
+  - id: data_ajuizamento
+    secao: processual
+    texto: Data do ajuizamento
+    tipo: data
+    ajuda: >-
+      Em branco, assume hoje. Preencher quando a acao JA foi ajuizada: prescricao
+      bienal e corte quinquenal contam dessa data, nao da data de hoje.
+
+  - id: hipossuficiente
+    secao: processual
+    texto: O cliente declara insuficiencia de recursos para arcar com as custas?
+    tipo: bool
+    obrigatoria: true

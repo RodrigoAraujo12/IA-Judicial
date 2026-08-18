@@ -1,0 +1,218 @@
+# Pedidos que atacam a propria configuracao do contrato ou da funcao exercida.
+
+- id: vinculo_empregaticio
+  nome: Reconhecimento de vinculo empregaticio
+  grupo: contrato
+  resumo: >-
+    Prestacao de servico com pessoalidade, nao eventualidade, onerosidade e
+    subordinacao, mascarada por PJ, autonomo, cooperado ou informalidade.
+  quando:
+    - - campo: vinculo_negado
+        op: verdadeiro
+    - - campo: registro_ctps
+        op: falso
+  requisitos:
+    - descricao: Pessoalidade - o servico era prestado pelo proprio trabalhador
+      prova: [testemunhas, e-mails, cracha, uniforme]
+    - descricao: Nao eventualidade - insercao habitual na atividade da empresa
+      prova: [escalas, controle de frequencia, mensagens]
+    - descricao: Onerosidade - contraprestacao pelo trabalho
+      prova: [notas fiscais, recibos, extratos, comprovantes PIX]
+    - descricao: Subordinacao - sujeicao a ordens, horarios e fiscalizacao
+      prova: [mensagens de WhatsApp, e-mails de ordem, metas, advertencias]
+  fundamentos:
+    - tipo: clt
+      ref: "arts. 2o e 3o"
+    - tipo: clt
+      ref: "art. 9o"
+      nota: >-
+        Nulidade dos atos praticados com o objetivo de desvirtuar a aplicacao da
+        CLT. Fundamento central da pejotizacao.
+    - tipo: sumula_tst
+      ref: "Sumula 331"
+      nota: >-
+        Terceirizacao. Atencao: apos o Tema 725 do STF e a ADPF 324, a
+        terceirizacao e licita em qualquer atividade - o ataque deve mirar a
+        subordinacao DIRETA e a pessoalidade, nao a atividade-fim.
+    - tipo: tema_stf
+      ref: "Tema 725 do STF"
+      controverso: true
+      nota: >-
+        Terceirizacao licita. CONFERIR no indice o estado atual da discussao sobre
+        pejotizacao no STF antes de redigir a fundamentacao.
+  provas:
+    - Mensagens de WhatsApp com ordens, horarios e cobrancas
+    - Notas fiscais e comprovantes de pagamento com periodicidade fixa
+    - Testemunhas (colegas contratados como CLT na mesma funcao)
+    - Cracha, uniforme, e-mail corporativo
+  reflexos: []
+  alertas:
+    - >-
+      Reconhecido o vinculo, TODOS os pedidos decorrentes precisam estar
+      cumulados: anotacao em CTPS, verbas rescisorias, FGTS, 13o, ferias, e as
+      multas dos arts. 477 e 467. Nao pedir o vinculo isolado.
+    - >-
+      A prova decisiva quase sempre esta nas mensagens. Orientar o cliente a
+      preservar o aparelho e extrair o historico antes que se perca.
+  calculo: null
+
+- id: equiparacao_salarial
+  nome: Equiparacao salarial
+  grupo: contrato
+  resumo: >-
+    Identidade de funcao com paradigma que percebe remuneracao superior, sem
+    diferenca de produtividade ou perfeicao tecnica.
+  quando:
+    - - campo: paradigma_existe
+        op: verdadeiro
+      - campo: paradigma_mesma_funcao
+        op: verdadeiro
+  requisitos:
+    - descricao: Identidade de funcao (nao de cargo ou nomenclatura)
+      prova: [testemunhas, descricao de atividades, organograma]
+    - descricao: Mesmo empregador e mesmo estabelecimento empresarial
+      prova: [CTPS, contracheques]
+    - descricao: Diferenca de tempo na funcao nao superior a 4 anos e, na empresa, a 2 anos
+      prova: [CTPS do paradigma, ficha de registro]
+    - descricao: Ausencia de quadro de carreira homologado
+      prova: [regulamento interno, plano de cargos]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 461"
+    - tipo: sumula_tst
+      ref: "Sumula 6"
+      nota: >-
+        VIII - o onus da prova do fato impeditivo (diferente produtividade ou
+        perfeicao tecnica, quadro de carreira) e do EMPREGADOR.
+  provas: [testemunhas, contracheques do paradigma, organograma]
+  reflexos: [rsr, decimo_terceiro, ferias_um_terco, fgts_40, aviso_previo, horas_extras]
+  # Os requisitos sao outros antes e depois: a comparacao com o paradigma muda.
+  cindir: true
+  variacao_temporal:
+    - regime: pre_reforma
+      regra: >-
+        Exigia-se mesma LOCALIDADE e diferenca de tempo na funcao de ate 2 anos.
+        Nao havia o requisito de tempo de empresa.
+    - regime: pos_reforma
+      regra: >-
+        Exige-se mesmo ESTABELECIMENTO, diferenca de ate 4 anos na funcao e de ate
+        2 anos de empresa. Vedada a equiparacao em cadeia (art. 461, par. 5o).
+  alertas:
+    - >-
+      Indicar o paradigma NOMINALMENTE na inicial e arrolar testemunha que
+      conheca as duas rotinas. Pedido generico sem paradigma identificado nao
+      prospera.
+    - >-
+      A Sumula 6, VIII, joga o onus para a reclamada. Explorar isso na fundamentacao.
+  calculo: equiparacao_salarial
+
+- id: desvio_acumulo_funcao
+  nome: Desvio ou acumulo de funcao
+  grupo: contrato
+  resumo: >-
+    Exercicio habitual de atribuicoes estranhas ou superiores as da funcao
+    contratada, sem a devida contraprestacao.
+  quando:
+    - - campo: desvio_ou_acumulo
+        op: em
+        valor: [desvio, acumulo, substituicao]
+  requisitos:
+    - descricao: Exercicio habitual de atribuicoes alheias a funcao contratada
+      prova: [testemunhas, e-mails, escalas, descricao de cargo]
+    - descricao: Ausencia de contraprestacao especifica
+      prova: [contracheques, CTPS]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 456, paragrafo unico"
+    - tipo: oj_tst
+      ref: "OJ 125 da SDI-1"
+      nota: >-
+        O desvio de funcao nao gera reenquadramento, mas assegura as DIFERENCAS
+        salariais correspondentes.
+    - tipo: sumula_tst
+      ref: "Sumula 159"
+      nota: >-
+        I - substituicao nao eventual assegura o salario do substituido, enquanto
+        durar a substituicao.
+  provas: [testemunhas, e-mails, organograma, descricao de cargo]
+  reflexos: [rsr, decimo_terceiro, ferias_um_terco, fgts_40, aviso_previo]
+  alertas:
+    - >-
+      O acumulo de funcao e construcao jurisprudencial e a posicao VARIA muito
+      entre TRTs. Consultar o entendimento do tribunal competente antes de
+      dimensionar a expectativa do cliente.
+  calculo: desvio_acumulo_funcao
+
+- id: reversao_justa_causa
+  nome: Reversao da justa causa
+  grupo: contrato
+  resumo: >-
+    Nulidade da dispensa por justa causa e conversao em dispensa imotivada, com as
+    verbas correspondentes.
+  quando:
+    - - campo: modalidade_saida
+        op: igual
+        valor: justa_causa
+  requisitos:
+    - descricao: Ausencia de conduta tipificada no art. 482 da CLT
+      prova: [documentos da empresa, testemunhas]
+    - descricao: Inobservancia da imediatidade entre a falta e a punicao
+      prova: [comunicado de dispensa datado, testemunhas]
+    - descricao: Desproporcionalidade da penalidade ou ausencia de gradacao
+      prova: [ficha funcional, ausencia de advertencias previas]
+    - descricao: Ausencia de dupla punicao pelo mesmo fato
+      prova: [advertencias, suspensoes anteriores]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 482"
+    - tipo: sumula_tst
+      ref: "Sumula 212"
+      nota: >-
+        O onus de provar o motivo da extincao e do EMPREGADOR. A justa causa e
+        fato impeditivo que ele precisa comprovar de forma robusta.
+  provas: [ficha funcional, comunicado de dispensa, testemunhas]
+  reflexos: []
+  alertas:
+    - >-
+      Onus integral da reclamada. A inicial deve NEGAR a conduta e atacar os
+      requisitos formais (imediatidade, proporcionalidade, non bis in idem,
+      gradacao das penas) - sao os pontos em que a defesa mais falha.
+    - >-
+      Revertida a justa causa, cumular obrigatoriamente: aviso previo, 13o e
+      ferias proporcionais, multa de 40% do FGTS, guias do seguro-desemprego e as
+      multas dos arts. 477 e 467.
+  calculo: null
+
+- id: rescisao_indireta
+  nome: Rescisao indireta do contrato
+  grupo: contrato
+  resumo: >-
+    Falta grave do empregador que autoriza a extincao por iniciativa do empregado
+    com direito as verbas da dispensa imotivada.
+  quando:
+    - - campo: modalidade_saida
+        op: igual
+        valor: rescisao_indireta
+  requisitos:
+    - descricao: Conduta patronal enquadrada em alguma alinea do art. 483 da CLT
+      prova: [documentos, mensagens, testemunhas, extratos]
+    - descricao: Gravidade suficiente para inviabilizar a continuidade do vinculo
+      prova: [testemunhas, historico de reclamacoes internas]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 483"
+      nota: >-
+        Hipoteses classicas do polo ativo: rigor excessivo (b), descumprimento de
+        obrigacoes contratuais (d) - inclui mora salarial e ausencia de deposito
+        de FGTS - e ato lesivo a honra (e).
+  provas: [extratos de FGTS, contracheques com atraso, mensagens, testemunhas]
+  reflexos: []
+  alertas:
+    - >-
+      Decisao estrategica de risco: se improcedente, a saida tende a ser tratada
+      como pedido de demissao. Avaliar com o cliente antes de ajuizar e
+      considerar o pedido sucessivo.
+    - >-
+      Ausencia de deposito de FGTS e mora salarial contumaz sao as hipoteses de
+      maior indice de acolhimento. Instruir com o extrato analitico.
+  calculo: null

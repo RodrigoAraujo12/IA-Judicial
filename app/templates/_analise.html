@@ -1,0 +1,110 @@
+{% set a = analise %}
+{% set c = calculo %}
+
+{% if a.prescricao %}
+  {% set pr = a.prescricao %}
+  <div class="bloco">
+    <p class="rotulo">Prescri&ccedil;&atilde;o</p>
+    {% if pr.bienal_vencida %}
+      <div class="item critica">
+        <span class="nome">Bienal vencida</span>
+        <span class="nota">Prazo esgotado em {{ pr.prazo_bienal_ate.strftime('%d/%m/%Y') }}.
+        Conferir causa interruptiva antes de ajuizar (art. 7&ordm;, XXIX, da CF).</span>
+      </div>
+    {% elif pr.dias_para_bienal is not none and pr.dias_para_bienal < 180 %}
+      <div class="item aviso">
+        <span class="nome">Bienal em {{ pr.dias_para_bienal }} dias</span>
+        <span class="nota">Ajuizar at&eacute; {{ pr.prazo_bienal_ate.strftime('%d/%m/%Y') }}.</span>
+      </div>
+    {% else %}
+      <div class="item">
+        <span class="nome">Bienal at&eacute; {{ pr.prazo_bienal_ate.strftime('%d/%m/%Y') }}</span>
+      </div>
+    {% endif %}
+
+    {% if pr.perde_periodo_anterior %}
+      <div class="item aviso">
+        <span class="nome">Corte quinquenal em {{ pr.corte_quinquenal.strftime('%d/%m/%Y') }}</span>
+        <span class="nota">Parcelas anteriores est&atilde;o prescritas e j&aacute; foram
+        exclu&iacute;das da apura&ccedil;&atilde;o.</span>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% if a.atravessa_reforma %}
+  <div class="bloco">
+    <div class="item critica">
+      <span class="nome">Contrato atravessa a Reforma</span>
+      <span class="nota">Vigente desde 11/11/2017. Pedidos com varia&ccedil;&atilde;o temporal precisam ser
+      cindidos por per&iacute;odo &mdash; regra e natureza jur&iacute;dica mudam.</span>
+    </div>
+  </div>
+{% endif %}
+
+<div class="bloco">
+  <p class="rotulo">Valores</p>
+  {% if c.disponivel %}
+    <div class="total">
+      <span class="cifra">R$ {{ c.total | moeda }}</span>
+      <span class="nota">principal R$ {{ c.total_principal | moeda }}
+      &middot; reflexos R$ {{ c.total_reflexos | moeda }}</span>
+      <span class="nota">apura&ccedil;&atilde;o de {{ c.periodo }}</span>
+    </div>
+    {% for v in c.verbas %}
+      <div class="linha-valor {% if v.alternativa %}alternativa{% endif %}">
+        <span class="nome">{{ v.nome }}{% if v.alternativa %} <em>(alternativo)</em>{% endif %}</span>
+        <span class="cifra-pequena">{{ v.total | moeda }}</span>
+      </div>
+    {% endfor %}
+    {% for v in c.pendentes %}
+      <div class="item possivel">
+        <span class="nome">{{ v.nome }}</span>
+        <span class="nota">Falta quantificar:
+          {% for campo in v.faltam %}{{ perguntas_por_id[campo].texto | safe }}{% if not loop.last %}; {% endif %}{% endfor %}
+        </span>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="vazio">{{ c.motivo }}</p>
+  {% endif %}
+</div>
+
+<div class="bloco">
+  <p class="rotulo">Pedidos cab&iacute;veis <span class="contador">{{ a.cabiveis | length }}</span></p>
+  {% for av in a.cabiveis %}
+    <div class="item cabivel">
+      <span class="nome">{{ av.pedido.nome }}</span>
+      {% if av.cindir %}
+        <span class="nota">Cindir por per&iacute;odo: regra pr&eacute; e p&oacute;s-Reforma s&atilde;o diferentes.</span>
+      {% endif %}
+    </div>
+  {% else %}
+    <p class="vazio">Nada confirmado ainda.</p>
+  {% endfor %}
+</div>
+
+<div class="bloco">
+  <p class="rotulo">A investigar <span class="contador">{{ a.possiveis | length }}</span></p>
+  {% for av in a.possiveis %}
+    <div class="item possivel">
+      <span class="nome">{{ av.pedido.nome }}</span>
+      <span class="nota">Falta perguntar:
+        {% for campo in av.faltam %}{{ perguntas_por_id[campo].texto | safe }}{% if not loop.last %}; {% endif %}{% endfor %}
+      </span>
+    </div>
+  {% else %}
+    <p class="vazio">Nenhuma pend&ecirc;ncia.</p>
+  {% endfor %}
+</div>
+
+<div class="bloco">
+  <p class="rotulo">Verificar antes de protocolar <span class="contador">{{ a.armadilhas | length }}</span></p>
+  {% for arm in a.armadilhas %}
+    <div class="item {% if arm.gravidade == 'critica' %}critica{% else %}aviso{% endif %}">
+      <span class="nome">{{ arm.titulo }}</span>
+    </div>
+  {% endfor %}
+</div>
+
+<script type="application/json" id="quant-visiveis">{{ a.visiveis_quant | tojson }}</script>

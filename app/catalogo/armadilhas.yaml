@@ -1,0 +1,132 @@
+# Verificacoes do polo ativo que nao sao pedidos, mas custam dinheiro se faltarem.
+# `quando` vazio significa: vale para todo caso.
+
+- id: valores_estimativos
+  titulo: Ressalvar que os valores dos pedidos sao meramente estimativos
+  descricao: >-
+    O art. 840, par. 1o, da CLT exige pedido certo, determinado e com indicacao de
+    valor. Ha divergencia sobre o valor indicado limitar a condenacao. A mitigacao
+    e a ressalva expressa, na inicial, de que os valores sao estimativos e sujeitos
+    a apuracao em liquidacao. Custa uma frase e evita perder a diferenca apurada.
+  fundamentos:
+    - tipo: clt
+      ref: "art. 840, par. 1o"
+    - tipo: lei
+      ref: "IN 41/2018 do TST"
+      controverso: true
+      nota: CONFERIR no indice a posicao atual do TST e do TRT competente.
+  gravidade: critica
+  quando: []
+
+- id: justica_gratuita
+  titulo: Requerer justica gratuita com declaracao de hipossuficiencia
+  descricao: >-
+    Sem o beneficio, o reclamante responde por custas e honorarios periciais. O
+    pedido deve vir acompanhado de declaracao de hipossuficiencia firmada pela
+    parte ou por procurador com poderes especificos.
+  fundamentos:
+    - tipo: clt
+      ref: "art. 790, par. 3o e par. 4o"
+  gravidade: critica
+  quando: []
+
+- id: honorarios_sucumbenciais
+  titulo: Atencao aos honorarios de sucumbencia reciproca
+  descricao: >-
+    Desde a Reforma, o reclamante responde por honorarios sobre os pedidos
+    julgados improcedentes. A ADI 5766 modulou a exigibilidade para o beneficiario
+    da justica gratuita. Consequencia pratica: pedido inflado ou sem lastro
+    probatorio deixou de ser gratuito. Revisar o rol antes de protocolar.
+  fundamentos:
+    - tipo: clt
+      ref: "art. 791-A"
+    - tipo: tema_stf
+      ref: "ADI 5766"
+      controverso: true
+      nota: CONFERIR no indice os limites atuais da modulacao.
+  gravidade: critica
+  quando: []
+
+- id: prescricao
+  titulo: Conferir prescricao bienal e quinquenal
+  descricao: >-
+    Dois anos contados da extincao do contrato para ajuizar, e cinco anos
+    retroativos da data do ajuizamento para as parcelas. Verba anterior ao corte
+    quinquenal nao deve ser pedida - gera sucumbencia sem beneficio algum.
+  fundamentos:
+    - tipo: cf
+      ref: "art. 7o, XXIX"
+    - tipo: clt
+      ref: "art. 11"
+  gravidade: critica
+  quando: []
+
+- id: presenca_audiencia
+  titulo: Orientar o cliente sobre a obrigatoriedade de comparecer a audiencia
+  descricao: >-
+    A ausencia injustificada do reclamante gera arquivamento E condenacao em
+    custas, exigiveis inclusive do beneficiario da justica gratuita como condicao
+    para nova acao. Orientar por escrito e guardar o comprovante da orientacao.
+  fundamentos:
+    - tipo: clt
+      ref: "art. 844, par. 2o e par. 3o"
+  gravidade: critica
+  quando: []
+
+- id: competencia_territorial
+  titulo: Conferir a competencia territorial pelo local da prestacao de servicos
+  descricao: >-
+    A regra e a Vara do local da prestacao dos servicos, ainda que a contratacao
+    tenha ocorrido em outro lugar. Ajuizar no foro errado custa meses ate a
+    remessa e pode inviabilizar testemunhas.
+  fundamentos:
+    - tipo: clt
+      ref: "art. 651"
+  gravidade: alta
+  quando: []
+
+- id: quesitos_pericia
+  titulo: Apresentar quesitos e indicar assistente tecnico junto com a inicial
+  descricao: >-
+    Havendo pedido de insalubridade, periculosidade ou dano decorrente de doenca
+    ocupacional, a pericia e obrigatoria. Apresentar quesitos ja na inicial evita
+    a perda do prazo e direciona o laudo. Perito sem quesitos do reclamante
+    costuma produzir laudo neutro ou favoravel a defesa.
+  fundamentos:
+    - tipo: clt
+      ref: "art. 195, par. 2o"
+  gravidade: alta
+  quando:
+    - - campo: exposicao_agente_nocivo
+        op: verdadeiro
+    - - campo: exposicao_perigo
+        op: verdadeiro
+    - - campo: doenca_ocupacional
+        op: verdadeiro
+
+- id: prova_digital
+  titulo: Preservar mensagens e prova digital antes que se percam
+  descricao: >-
+    WhatsApp, e-mail e aplicativos de escala sao hoje a prova decisiva em vinculo,
+    jornada e assedio. Orientar o cliente a exportar o historico e, se o caso
+    justificar, providenciar ata notarial. Aparelho trocado ou conversa apagada
+    nao se recupera.
+  gravidade: alta
+  quando: []
+
+- id: onus_controle_jornada
+  titulo: Requerer a juntada dos controles de jornada e do extrato do FGTS
+  descricao: >-
+    Requerer expressamente na inicial a exibicao dos cartoes de ponto de todo o
+    periodo imprescrito e a expedicao de oficio a Caixa. A nao apresentacao
+    injustificada dos controles atrai a Sumula 338 do TST, e o onus do recolhimento
+    do FGTS e do empregador pela Sumula 461. Sao dois onus invertidos de graca.
+  fundamentos:
+    - tipo: sumula_tst
+      ref: "Sumula 338"
+    - tipo: sumula_tst
+      ref: "Sumula 461"
+    - tipo: clt
+      ref: "art. 74, par. 2o"
+  gravidade: alta
+  quando: []

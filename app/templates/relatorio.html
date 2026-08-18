@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block titulo %}Relat&oacute;rio do caso{% endblock %}
+
+{% macro fundamentos(lista) %}
+  {% if lista %}
+    <p class="fund">
+      {% for f in lista %}
+        <b>{{ f.ref }}</b>{% if f.nota %} &mdash; {{ f.nota }}{% endif %}{% if f.controverso %}
+        <span class="marca">conferir no &iacute;ndice</span>{% endif %}{% if not loop.last %}<br>{% endif %}
+      {% endfor %}
+    </p>
+  {% endif %}
+{% endmacro %}
+
+{% block corpo %}
+{% set a = analise %}
+{% set c = calculo %}
+<article class="relatorio">
+
+  <h1>Relat&oacute;rio de triagem</h1>
+  <p class="meta">
+    {{ respostas.get('funcao', 'Fun&ccedil;&atilde;o n&atilde;o informada') }}
+    {%- if respostas.get('local_prestacao') %} &middot; {{ respostas.local_prestacao }}{% endif %}
+    {%- if respostas.get('data_admissao') and respostas.get('data_saida') %}
+      &middot; {{ respostas.data_admissao }} a {{ respostas.data_saida }}
+    {%- endif %}
+    &middot; {{ a.respondidas }} de {{ a.total_visiveis }} perguntas respondidas
+  </p>
+
+  {% if a.prescricao and a.prescricao.bienal_vencida %}
+    <div class="caixa">
+      <b>Prescri&ccedil;&atilde;o bienal vencida em {{ a.prescricao.prazo_bienal_ate.strftime('%d/%m/%Y') }}.</b>
+      Verificar causa interruptiva antes de qualquer provid&ecirc;ncia (art. 7&ordm;, XXIX, da CF; art. 11 da CLT).
+    </div>
+  {% endif %}
+
+  {% if a.atravessa_reforma %}
+    <div class="caixa neutra">
+      <b>Contrato atravessa a Reforma Trabalhista (11/11/2017).</b>
+      Os pedidos assinalados abaixo t&ecirc;m regra distinta antes e depois dessa data e devem ser
+      formulados de forma cindida por per&iacute;odo.
+    </div>
+  {% endif %}
+
+  {% if c.disponivel %}
+    <h2>Apura&ccedil;&atilde;o de valores</h2>
+    <p class="fund">
+      Per&iacute;odo apurado: <b>{{ c.periodo }}</b> &middot;
+      remunera&ccedil;&atilde;o base: <b>R$ {{ c.remuneracao | moeda }}</b>
+    </p>
+
+    <table class="valores">
+      <thead>
+        <tr><th>Verba</th><th>Principal</th><th>Reflexos</th><th>Total</th></tr>
+      </thead>
+      <tbody>
+        {% for v in c.verbas %}
+          <tr {% if v.alternativa %}class="alternativa"{% endif %}>
+            <td>{{ v.nome }}{% if v.alternativa %} <em>(alternativo &mdash; n&atilde;o somado)</em>{% endif %}</td>
+            <td>{{ v.principal | moeda }}</td>
+            <td>{{ v.total_reflexos | moeda }}</td>
+            <td>{{ v.total | moeda }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th>Total</th>
+          <th>{{ c.total_principal | moeda }}</th>
+          <th>{{ c.total_reflexos | moeda }}</th>
+          <th>{{ c.total | moeda }}</th>
+        </tr>
+      </tfoot>
+    </table>
+
+    {% for obs in c.observacoes %}<div class="caixa">{{ obs }}</div>{% endfor %}
+
+    {% if c.pendentes %}
+      <p class="fund"><b>Sem valor apurado &mdash; falta quantificar:</b></p>
+      <ul>
+        {% for v in c.pendentes %}
+          <li>{{ v.nome }}:
+            {% for campo in v.faltam %}{{ perguntas_por_id[campo].texto | safe }}{% if not loop.last %}; {% endif %}{% endfor %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <h2>Mem&oacute;ria de c&aacute;lculo</h2>
+    <p class="fund">Toda opera&ccedil;&atilde;o, na ordem em que foi feita. Confer&iacute;vel linha a linha.</p>
+    {% for v in c.verbas %}
+      <h3>{{ v.nome }}{% if v.alternativa %} <em>(alternativo)</em>{% endif %}</h3>
+      <table class="memoria">
+        {% for l in v.memoria %}
+          <tr><td>{{ l.descricao }}</td><td class="formula">{{ l.formula }}</td><td class="num">{{ l.valor | moeda }}</td></tr>
+        {% endfor %}
+        {% if v.reflexos %}
+          <tr class="sub"><td colspan="3">Reflexos</td></tr>
+          {% for l in v.reflexos %}
+            <tr><td>{{ l.descricao }}</td><td class="formula">{{ l.formula }}</td><td class="num">{{ l.valor | moeda }}</td></tr>
+          {% endfor %}
+        {% endif %}
+        <tr class="total-linha"><td colspan="2">Total da verba</td><td class="num">{{ v.total | moeda }}</td></tr>
+      </table>
+      {% for obs in v.observacoes %}<div class="caixa">{{ obs }}</div>{% endfor %}
+    {% endfor %}
+  {% else %}
+    <h2>Apura&ccedil;&atilde;o de valores</h2>
+    <p class="fund">{{ c.motivo }}</p>
+  {% endif %}
+
+  <h2>Pedidos cab&iacute;veis</h2>
+  {% for av in a.cabiveis %}
+    <h3>{{ av.pedido.nome }}</h3>
+    <p>{{ av.pedido.resumo }}</p>
+
+    {% if av.pedido.requisitos %}
+      <p class="fund"><b>Requisitos a demonstrar</b></p>
+      <ul>
+        {% for r in av.pedido.requisitos %}
+          <li>{{ r.descricao }}{% if r.prova %} <span class="fund">({{ r.prova | join(', ') }})</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {{ fundamentos(av.pedido.fundamentos) }}
+
+    {% if av.cindir %}
+      <div class="caixa">
+        <b>Cindir por per&iacute;odo.</b>
+        {% for v in av.pedido.variacao_temporal if v.regime in av.regimes %}
+          <br>{{ 'At&eacute; 10/11/2017' | safe if v.regime == 'pre_reforma' else 'A partir de 11/11/2017' }}:
+          {{ v.regra }}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if av.pedido.reflexos %}
+      <p class="fund"><b>Reflexos:</b> {{ av.pedido.reflexos | join(', ') | replace('_', ' ') }}</p>
+    {% endif %}
+
+    {% for alerta in av.pedido.alertas %}
+      <div class="caixa">{{ alerta }}</div>
+    {% endfor %}
+  {% else %}
+    <p class="fund">Nenhum pedido confirmado com as respostas atuais.</p>
+  {% endfor %}
+
+  <h2>A investigar com o cliente</h2>
+  {% for av in a.possiveis %}
+    <h3>{{ av.pedido.nome }}</h3>
+    <p>{{ av.pedido.resumo }}</p>
+    <p class="fund"><b>Falta apurar:</b></p>
+    <ul>
+      {% for campo in av.faltam %}<li>{{ perguntas_por_id[campo].texto | safe }}</li>{% endfor %}
+    </ul>
+  {% else %}
+    <p class="fund">Nenhuma pend&ecirc;ncia.</p>
+  {% endfor %}
+
+  <h2>Verificar antes de protocolar</h2>
+  {% for arm in a.armadilhas %}
+    <h3>{{ arm.titulo }}</h3>
+    <p>{{ arm.descricao }}</p>
+    {{ fundamentos(arm.fundamentos) }}
+  {% endfor %}
+
+  <h2>Documentos a solicitar</h2>
+  <ul>
+    {% set docs = [] %}
+    {% for av in a.cabiveis + a.possiveis %}
+      {% for d in av.pedido.provas %}
+        {% if d not in docs %}{% set _ = docs.append(d) %}{% endif %}
+      {% endfor %}
+    {% endfor %}
+    {% for d in docs %}<li>{{ d }}</li>{% endfor %}
+  </ul>
+
+  <div class="caixa">
+    Documento de <b>triagem interna</b>. N&atilde;o &eacute; pe&ccedil;a nem parecer. Os valores s&atilde;o
+    nominais, sem corre&ccedil;&atilde;o, juros ou tributos, e toda cita&ccedil;&atilde;o marcada com
+    &ldquo;conferir no &iacute;ndice&rdquo; precisa ser validada na fonte antes de ser usada.
+  </div>
+</article>
+
+<div class="acoes">
+  <button onclick="window.print()">Imprimir / PDF</button>
+  <button class="secundario" onclick="history.back()">Voltar &agrave; entrevista</button>
+</div>
+{% endblock %}
