@@ -60,9 +60,16 @@ CREATE TABLE IF NOT EXISTS dispositivos (
     ordem           INTEGER NOT NULL,
     vigencia_inicio TEXT NOT NULL,
     vigencia_fim    TEXT,
+    -- Texto que saiu da lei sem que a fonte diga quando. Nunca e servido como
+    -- vigente: e melhor nao achar a norma do que achar a revogada achando que
+    -- vale. A redacao continua no banco para consulta historica explicita.
+    revogado        INTEGER NOT NULL DEFAULT 0,
     alterado_por    TEXT,
     fonte_id        INTEGER NOT NULL REFERENCES fontes(id),
-    UNIQUE (urn, vigencia_inicio)
+    -- `ordem` entra na chave porque duas redacoes podem cair na mesma data de
+    -- inicio quando a fonte nao data a mais antiga. Sem ela, uma sobrescreve a
+    -- outra em silencio - e no corpus da CLT isso apagava 956 redacoes.
+    UNIQUE (urn, vigencia_inicio, ordem)
 );
 
 CREATE INDEX IF NOT EXISTS idx_disp_urn   ON dispositivos(urn);
@@ -121,6 +128,7 @@ class Dispositivo:
     vigencia_inicio: str
     pai: str | None = None
     vigencia_fim: str | None = None
+    revogado: bool = False
     alterado_por: str | None = None
     id: int | None = None
 
@@ -154,13 +162,13 @@ def gravar(con: sqlite3.Connection, dispositivos: list[Dispositivo], fonte_id: i
     con.executemany(
         """INSERT OR REPLACE INTO dispositivos
            (urn, obra, especie, rotulo, texto, texto_indexado, pai, ordem,
-            vigencia_inicio, vigencia_fim, alterado_por, fonte_id)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            vigencia_inicio, vigencia_fim, revogado, alterado_por, fonte_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         [
             (
                 d.urn, d.obra, d.especie, d.rotulo, d.texto, d.texto_indexado,
-                d.pai, d.ordem, d.vigencia_inicio, d.vigencia_fim, d.alterado_por,
-                fonte_id,
+                d.pai, d.ordem, d.vigencia_inicio, d.vigencia_fim, int(d.revogado),
+                d.alterado_por, fonte_id,
             )
             for d in dispositivos
         ],
@@ -180,9 +188,10 @@ def vigente_em(
     return con.execute(
         """SELECT * FROM dispositivos
            WHERE urn = ?
+             AND revogado = 0
              AND vigencia_inicio <= ?
              AND (vigencia_fim IS NULL OR vigencia_fim >= ?)
-           ORDER BY vigencia_inicio DESC LIMIT 1""",
+           ORDER BY vigencia_inicio DESC, ordem DESC LIMIT 1""",
         (urn, ref, ref),
     ).fetchone()
 
@@ -202,6 +211,7 @@ def estatisticas(con: sqlite3.Connection) -> dict[str, int]:
         "obras": um("SELECT COUNT(DISTINCT obra) FROM dispositivos"),
         "dispositivos": um("SELECT COUNT(DISTINCT urn) FROM dispositivos"),
         "redacoes": um("SELECT COUNT(*) FROM dispositivos"),
+        "revogados": um("SELECT COUNT(*) FROM dispositivos WHERE revogado = 1"),
         "com_vetor": um("SELECT COUNT(*) FROM vetores"),
         "fontes": um("SELECT COUNT(*) FROM fontes"),
     }

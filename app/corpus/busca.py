@@ -1,0 +1,206 @@
+"""Recuperacao no corpus.
+
+Duas vias funcionam hoje; a terceira entra com o BGE-M3.
+
+**Via 0 - lookup.** `clt/art-71/par-4` mais uma data devolve o dispositivo. Nao e
+busca, e join: precisao total, sem modelo no caminho. Cobre o uso mais frequente
+do escritorio, que e conferir a norma que o relatorio ja citou.
+
+**Via 1 - lexical (BM25 via FTS5).** Consulta juridica e cheia de token exato:
+"Sumula 437", "art. 384", "intrajornada". Vetor denso troca numero; BM25 nao.
+
+**Via 2 - densa (BGE-M3).** Para a pergunta em linguagem de cliente, onde nenhuma
+palavra da consulta aparece no texto da lei. Ainda nao implementada.
+
+Toda consulta leva uma DATA. Nao ha busca "no corpus" em abstrato: ha busca no
+corpus como ele estava quando o fato aconteceu. O default e hoje por conveniencia
+de teste, nunca por conveniencia de caso.
+"""
+
+from __future__ import annotations
+
+import re
+import sqlite3
+from dataclasses import dataclass
+from datetime import date
+
+from app.corpus import banco
+from app.corpus.refs import interpretar
+
+
+@dataclass
+class Achado:
+    urn: str
+    rotulo: str
+    texto: str
+    obra: str
+    via: str
+    score: float
+    vigencia_inicio: str
+    vigencia_fim: str | None
+    alterado_por: str | None
+
+
+def _achado(linha: sqlite3.Row, via: str, score: float) -> Achado:
+    return Achado(
+        urn=linha["urn"],
+        rotulo=linha["rotulo"],
+        texto=linha["texto"],
+        obra=linha["obra"],
+        via=via,
+        score=score,
+        vigencia_inicio=linha["vigencia_inicio"],
+        vigencia_fim=linha["vigencia_fim"],
+        alterado_por=linha["alterado_por"],
+    )
+
+
+def por_referencia(
+    con: sqlite3.Connection, tipo: str, ref: str, quando: date | None = None
+) -> list[Achado]:
+    """Via 0. Recebe a `ref` como o catalogo a escreve e devolve os dispositivos."""
+    r = interpretar(tipo, ref)
+    achados = []
+    for urn in r.urns:
+        linha = banco.vigente_em(con, urn, quando)
+        if linha is not None:
+            achados.append(_achado(linha, "referencia", 1.0))
+    return achados
+
+
+# FTS5 trata varios caracteres como sintaxe. Consulta digitada por advogado tem
+# ponto, virgula, parenteses e "§" o tempo todo - sem limpar, a busca explode em
+# erro de sintaxe no meio do atendimento.
+_RUIDO = re.compile(r'[^\w\sÀ-ÿ]', re.UNICODE)
+
+
+def _consulta_fts(texto: str) -> str:
+    termos = [t for t in _RUIDO.sub(" ", texto).split() if len(t) > 1]
+    return " OR ".join(f'"{t}"' for t in termos)
+
+
+def lexical(
+    con: sqlite3.Connection, consulta: str, quando: date | None = None, limite: int = 10
+) -> list[Achado]:
+    """Via 1. BM25 sobre `texto_indexado`, ja filtrado por vigencia."""
+    expressao = _consulta_fts(consulta)
+    if not expressao:
+        return []
+
+    ref = (quando or date.today()).isoformat()
+    linhas = con.execute(
+        """SELECT d.*, bm25(dispositivos_fts, 3.0, 1.0) AS score
+           FROM dispositivos_fts
+           JOIN dispositivos d ON d.id = dispositivos_fts.rowid
+           WHERE dispositivos_fts MATCH ?
+             AND d.revogado = 0
+             AND d.vigencia_inicio <= ?
+             AND (d.vigencia_fim IS NULL OR d.vigencia_fim >= ?)
+           ORDER BY score
+           LIMIT ?""",
+        (expressao, ref, ref, limite),
+    ).fetchall()
+    # bm25() do SQLite e tanto menor quanto melhor; inverte para o score subir.
+    return [_achado(l, "lexical", -l["score"]) for l in linhas]
+
+
+# Consulta que JA e uma referencia: "art. 384", "Sumula 437", "art. 71 par. 4o".
+# Sem esse desvio ela cai no BM25, onde o token "art" casa com o corpus inteiro e
+# o resultado e ruido - foi o que aconteceu no primeiro teste com "art. 384".
+_E_REFERENCIA = re.compile(
+    r"^\s*(?:arts?\.?\s*\d|s[uú]mula\s*(?:vinculante\s*)?\d|oj\s*\d|nr-?\s*\d)",
+    re.I,
+)
+
+
+def _tipo_provavel(consulta: str) -> str:
+    baixa = consulta.lower()
+    if baixa.lstrip().startswith("s") and "vinculante" in baixa:
+        return "sv_stf"
+    if "sumula" in baixa or "súmula" in baixa:
+        return "sumula_tst"
+    if baixa.lstrip().startswith("oj"):
+        return "oj_tst"
+    if baixa.lstrip().startswith("nr"):
+        return "nr"
+    return "clt"
+
+
+@dataclass
+class Resultado:
+    achados: list[Achado]
+    via: str
+    # Por que a resposta esta vazia, quando esta. "Nao achei" e "achei, mas foi
+    # revogado" sao respostas opostas para quem redige uma peca, e um buscador que
+    # devolve lista vazia nos dois casos empurra a diferenca para o advogado.
+    aviso: str | None = None
+
+
+def buscar(
+    con: sqlite3.Connection, consulta: str, quando: date | None = None, limite: int = 10
+) -> Resultado:
+    """Ponto de entrada. Escolhe a via pela forma da consulta.
+
+    Referencia vai para o lookup; pergunta em linguagem natural vai para as vias
+    de busca. Quando a densa entrar, esta funcao passa a fundir as duas por RRF -
+    a de referencia continua fora da fusao, porque ela nao e palpite ranqueado e
+    sim resposta exata.
+    """
+    if _E_REFERENCIA.match(consulta):
+        r = interpretar(_tipo_provavel(consulta), consulta)
+        achados = [
+            _achado(linha, "referencia", 1.0)
+            for urn in r.urns
+            if (linha := banco.vigente_em(con, urn, quando)) is not None
+        ]
+        if achados:
+            return Resultado(achados[:limite], "referencia")
+
+        # A referencia existe no corpus, mas nao naquela data. Cair no BM25 aqui
+        # seria o pior comportamento possivel: a consulta "art. 384" devolveria
+        # dez artigos que nada tem a ver, e o silencio sobre a revogacao passaria
+        # por resultado. Melhor dizer que a norma saiu, e quando.
+        for urn in r.urns:
+            historico = banco.redacoes(con, urn)
+            if historico:
+                ultima = historico[-1]
+                ate = ultima["vigencia_fim"] or "data que a fonte nao registra"
+                por = ultima["alterado_por"] or "norma nao identificada na fonte"
+                return Resultado(
+                    [],
+                    "referencia",
+                    f"{ultima['rotulo']} nao estava em vigor em "
+                    f"{(quando or date.today()).isoformat()}: vigorou ate {ate} ({por}).",
+                )
+
+        return Resultado([], "referencia", f"referencia nao encontrada no corpus: {consulta}")
+
+    return Resultado(lexical(con, consulta, quando, limite), "lexical")
+
+
+def rrf(listas: list[list[Achado]], k: int = 60, limite: int = 10) -> list[Achado]:
+    """Reciprocal Rank Fusion.
+
+    Funde rankings sem precisar que os scores sejam comparaveis entre si - e o
+    ponto, porque BM25 e similaridade de cosseno vivem em escalas diferentes e
+    normalizar uma na outra e chute. RRF so olha POSICAO.
+    """
+    pontos: dict[str, float] = {}
+    melhor: dict[str, Achado] = {}
+    for lista in listas:
+        for posicao, achado in enumerate(lista):
+            pontos[achado.urn] = pontos.get(achado.urn, 0.0) + 1.0 / (k + posicao + 1)
+            melhor.setdefault(achado.urn, achado)
+
+    ordenados = sorted(pontos.items(), key=lambda kv: kv[1], reverse=True)
+    saida = []
+    for urn, ponto in ordenados[:limite]:
+        a = melhor[urn]
+        saida.append(
+            Achado(
+                urn=a.urn, rotulo=a.rotulo, texto=a.texto, obra=a.obra,
+                via="fusao", score=ponto, vigencia_inicio=a.vigencia_inicio,
+                vigencia_fim=a.vigencia_fim, alterado_por=a.alterado_por,
+            )
+        )
+    return saida

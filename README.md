@@ -21,6 +21,13 @@ Abre em <http://127.0.0.1:8000>. Testes rápidos, sem servidor:
 python testar.py           # triagem
 python testar_refs.py      # referências do catálogo -> dispositivos
 python testar_corpus.py    # esquema do corpus: vigência e busca lexical
+python testar_busca.py     # recuperação na CLT (exige o corpus ingerido)
+```
+
+Para montar o corpus:
+
+```
+python -m app.corpus.indexar clt
 ```
 
 ## O que faz
@@ -59,6 +66,9 @@ app/
   corpus/
     refs.py              referência do catálogo -> dispositivo endereçável
     banco.py             índice normativo em SQLite: vigência, FTS5, vetores
+    planalto.py          ingestão do HTML do Planalto
+    indexar.py           CLI de ingestão, com conferência contra o catálogo
+    busca.py             as vias de recuperação e a fusão RRF
   templates/             Jinja2
   static/                CSS e JS (sem dependência externa, sem CDN)
 dados/casos.db           criado no primeiro salvamento
@@ -95,10 +105,22 @@ apoia nisso em vez de começar cego.
    listas (`par. 3o e par. 4o`) e cadeias (`art. 10, II, 'b'`).
 1. **Esparsa (BM25/FTS5).** Consulta jurídica é cheia de token exato — "Súmula
    437", "art. 384". Vetor denso troca número; BM25 não.
-2. **Densa (BGE-M3, 1024d).** Para a pergunta em linguagem de cliente.
+2. **Densa (BGE-M3, 1024d).** Para a pergunta em linguagem de cliente. **Ainda
+   não implementada.**
 
 Fusão por RRF. Reranking só se a precisão não bastar — o próprio BGE-M3 devolve
 vetores ColBERT, o que evita carregar um segundo modelo.
+
+Consulta que *é* uma referência ("art. 384") não vai para o BM25: ali o token
+"art" casa com o corpus inteiro e o resultado é ruído. Ela é roteada para a Via 0.
+
+E quando a norma existe mas não vale na data pedida, a busca **diz isso** em vez
+de devolver lista vazia ou, pior, dez artigos que nada têm a ver:
+
+```
+CLT, art. 384 nao estava em vigor em 2026-08-18: vigorou ate 2017-11-10
+(Lei 13.467/2017).
+```
 
 **Vigência é por dispositivo, não por obra.** O art. 71 §4º tem uma redação até
 10/11/2017 e outra depois — a Reforma mudou a regra *e* a natureza jurídica. Um
@@ -117,7 +139,8 @@ Triagem completa. Em andamento e a fazer:
 
 | | | |
 |---|---|---|
-| **Corpus** | em andamento | CLT, CF, súmulas e OJs do TST, NRs. Parser de referências e esquema prontos; falta a ingestão. |
+| **Corpus** | CLT pronta | 3.624 dispositivos, 5.670 redações, com eixo de vigência. Faltam CF, súmulas e OJs do TST, NRs. |
+| **Via densa** | a fazer | BGE-M3 sobre o corpus ingerido, e a fusão RRF passa a ter o que fundir. |
 | **Peças** | a fazer | Modelos de peça por preenchimento de slots, com citação obrigatória, validador de citações e exportação em DOCX. |
 | **Processo parado** | a fazer | Consultor de próxima medida para processo que anda devagar há anos. |
 | **Jurisprudência** | a decidir | Acórdãos, em fase própria: muda a escala e exige rastrear superação de tese, não vigência. |
@@ -133,6 +156,15 @@ Triagem completa. Em andamento e a fazer:
   `testar_refs.py` as aponta: `IN 41/2018 do TST` está como `tipo: lei` (é
   instrução normativa) e `ADI 5766` como `tipo: tema_stf` (é ação direta). Nenhuma
   quebra nada hoje; ambas quebrariam o validador de citações.
+- **O catálogo cita um artigo revogado.** `Verbas rescisórias` aponta para
+  `arts. 129 a 147`, e o art. 141 foi revogado pela Lei 13.874/2019. A ingestão
+  acusa isso a cada execução. É correção de YAML, não de código.
+- **As datas de vigência são aproximadas, exceto a da Reforma.** O marcador do
+  Planalto traz a data de *publicação* da norma alteradora, que só coincide com a
+  vigência quando não há vacatio legis. Para 11/11/2017 a data é exata, porque o
+  sistema já a conhece de outra fonte.
+- 1.735 redações ficaram marcadas como revogadas sem data legível na fonte. Elas
+  nunca são servidas como vigentes — na dúvida o índice cala, em vez de afirmar.
 - `mostrar_se_pedido` e o segundo passe do motor continuam de pé, mas **hoje sem
   nenhum usuário** — eram o mecanismo das perguntas de quantificação. Ficaram
   porque a redação da peça precisa do mesmo padrão: detalhe que só faz sentido
