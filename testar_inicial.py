@@ -136,12 +136,16 @@ conferir("preservada em bloco de quebra de linha", 'class="narrativa"' in rel, T
 # a peca sair sem endereco de citacao, e o processo para na citacao frustrada.
 conferir("aponta o que ainda falta", "ainda n&atilde;o tem o que precisa" in rel, True)
 conferir("PIS em branco e cobrado", "PIS/PASEP" in rel, True)
+# Em branco que E resposta nao pode virar cobranca eterna: nao ha outra empresa
+# no polo passivo, e o relatorio nao deve insistir para sempre nisso.
+conferir("polo passivo adicional vazio nao e cobrado",
+         "Outras pessoas a incluir" in rel, False)
 conferir("CPF preenchido nao e cobrado como falta",
          rel.count("reclamante_cpf"), 0)
 
 completo = {**envio}
 for p in catalogo.entrevista.perguntas:
-    if p.secao in ("qualificacao", "fatos") and p.id not in completo:
+    if p.secao in ("qualificacao", "fatos") and p.id not in completo and not p.vazio_e_resposta:
         completo[p.id] = "preenchido"
 rel2 = cliente.post("/relatorio", data=completo).text
 conferir("com tudo preenchido, o aviso some", "ainda n&atilde;o tem o que precisa" in rel2, False)

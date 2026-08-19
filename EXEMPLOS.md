@@ -41,6 +41,13 @@ certo.** Abaixo vai o relato de cada cliente e o que conferir.
   repetição, a partir de todos os pedidos em jogo. É o que quem usa o sistema
   descreveu como o objetivo da triagem: ver se tem tudo que precisa antes de
   seguir com o pedido da pessoa.
+- **É o único dos três pronto para redigir.** No fim do relatório, o bloco
+  *Material para a inicial* traz a qualificação das partes e a história dos
+  fatos, e **não** exibe o aviso de pendência — porque não há nenhuma. Compare
+  com a Regina, logo abaixo.
+- **A jornada real aparece narrada, não só marcada.** O campo só foi pedido
+  depois que a triagem confirmou horas extras: detalhe de fato se pergunta
+  quando o pedido já existe, não antes.
 
 ---
 
@@ -51,7 +58,7 @@ certo.** Abaixo vai o relato de cada cliente e o que conferir.
 > usava e-mail da empresa. Trabalhava muito além do horário. Em fevereiro
 > simplesmente pararam de me chamar, não pagaram nada, não teve rescisão."*
 
-Metade das perguntas ficou em branco de propósito: **15 de 40 respondidas**.
+Metade das perguntas ficou em branco de propósito: **15 de 56 respondidas**.
 
 **Confira:**
 
@@ -61,6 +68,10 @@ Metade das perguntas ficou em branco de propósito: **15 de 40 respondidas**.
 - Vá respondendo e veja os pedidos migrarem para "cabíveis". São 5 hoje.
 - O vínculo em si (arts. 2º e 3º da CLT) já está confirmado pelas respostas de
   subordinação — o que falta é o entorno.
+- **O bloco *Material para a inicial* abre com o aviso de pendência** e lista
+  14 campos: qualificação inteira e nenhuma linha de narrativa. Com pedidos e
+  sem história, a peça sairia genérica — que é o que o próprio catálogo aponta
+  como principal causa de improcedência no dano moral.
 
 ---
 
@@ -106,6 +117,11 @@ O sistema **não apura valores**. A indicação exigida pelo art. 840 §1º vem 
 contador ou do calculista. A triagem responde *se* o pedido cabe e *o que falta
 provar*; quanto vale é outra conta, e de outra pessoa.
 
-As referências marcadas "conferir no índice" são as que eu deliberadamente não
-afirmei. Elas ficam assim até o corpus normativo entrar e poder respondê-las
-contra a fonte.
+As referências marcadas "conferir no índice" são **teses em disputa**, não
+citações duvidosas: o relatório destaca em vez de afirmar. Desde que o corpus
+entrou, dá para checar o texto em `/corpus`, com a data do contrato — mas só da
+CLT, que é o que está ingerido. Súmulas, OJs, NRs e Constituição ainda não.
+
+E o sistema **ainda não escreve a peça**. Ele já coleta os quatro blocos que ela
+exige — qualificação, fatos, fundamentação, pedido — e mostra o que falta em
+cada um. Juntá-los num texto é o próximo passo.

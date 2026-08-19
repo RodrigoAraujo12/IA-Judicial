@@ -120,6 +120,10 @@ class Pergunta(BaseModel):
     # Altura do campo `texto_longo`. Um endereco em cinco linhas convida a
     # escrever cinco linhas de endereco; a narrativa em duas convida a resumir.
     linhas: int = 5
+    # Em branco aqui e RESPOSTA, nao lacuna: nao ha outra empresa no polo
+    # passivo, o cliente nao tem e-mail. Sem isso o relatorio cobraria para
+    # sempre um campo que ja esta certo, e o aviso viraria ruido.
+    vazio_e_resposta: bool = False
 
 
 class Secao(BaseModel):

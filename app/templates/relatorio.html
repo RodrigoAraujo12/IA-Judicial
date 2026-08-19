@@ -120,7 +120,7 @@
   {% set fatos = catalogo.entrevista.perguntas | selectattr('secao', 'equalto', 'fatos') | list %}
   {% set qualif = catalogo.entrevista.perguntas | selectattr('secao', 'equalto', 'qualificacao') | list %}
   {% set faltando = [] %}
-  {% for p in qualif + fatos if p.id in visiveis and not respostas.get(p.id) %}
+  {% for p in qualif + fatos if p.id in visiveis and not respostas.get(p.id) and not p.vazio_e_resposta %}
     {% set _ = faltando.append(p) %}
   {% endfor %}
 

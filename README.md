@@ -46,6 +46,10 @@ corrente — e sempre com a data em que a norma deve estar vigente.
 ## O que faz
 
 - **Entrevista** com perguntas que aparecem conforme as respostas anteriores.
+- **Qualificação das partes e história dos fatos** — os dois blocos que a peça
+  exige e que sim/não nenhum entrega. O detalhe de fato (episódios de assédio,
+  jornada real, nome do paradigma) só é perguntado **depois** que o pedido
+  correspondente se confirma na triagem.
 - **Painel vivo** classificando cada pedido em três estados:
   - *cabível* — os requisitos estão confirmados;
   - *a investigar* — falta uma resposta para decidir, **e o sistema diz qual**;
@@ -73,7 +77,7 @@ app/
   main.py                FastAPI
   catalogo/
     loader.py            carga + validação cruzada dos YAML
-    entrevista.yaml      roteiro de perguntas (41)
+    entrevista.yaml      roteiro de perguntas (63, em 9 secoes)
     armadilhas.yaml      verificações que não são pedidos (9)
     pedidos/*.yaml       o catálogo — 21 pedidos
   corpus/
@@ -179,10 +183,9 @@ Triagem completa. Em andamento e a fazer:
   sistema já a conhece de outra fonte.
 - 1.735 redações ficaram marcadas como revogadas sem data legível na fonte. Elas
   nunca são servidas como vigentes — na dúvida o índice cala, em vez de afirmar.
-- `mostrar_se_pedido` e o segundo passe do motor continuam de pé, mas **hoje sem
-  nenhum usuário** — eram o mecanismo das perguntas de quantificação. Ficaram
-  porque a redação da peça precisa do mesmo padrão: detalhe que só faz sentido
-  perguntar depois que o pedido se confirma.
+- A qualificação é a única parte do sistema que **não influencia nada**. É de
+  propósito, e há teste que tranca isso: se um CPF digitado passar a mudar quais
+  pedidos cabem, `testar_inicial.py` quebra.
 
 ## O que saiu, e por quê
 

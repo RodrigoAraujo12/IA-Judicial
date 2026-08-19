@@ -573,6 +573,7 @@ perguntas:
     secao: qualificacao
     texto: Endereco eletronico
     tipo: texto
+    vazio_e_resposta: true
     ajuda: >-
       Exigido pelo art. 319, II, do CPC. Se nao houver, a peca declara que nao
       possui - em branco aqui significa exatamente isso.
@@ -609,6 +610,7 @@ perguntas:
     secao: qualificacao
     texto: Outras pessoas a incluir no polo passivo
     tipo: texto_longo
+    vazio_e_resposta: true
     linhas: 3
     ajuda: >-
       Grupo economico, sucessao, socios, tomador de servicos. Incluir na inicial

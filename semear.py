@@ -49,6 +49,38 @@ MARCIO = {
     "doenca_ocupacional": False,
     "gestante_na_dispensa": False,
     "hipossuficiente": True,
+    # Qualificacao e narrativa completas: e o unico dos tres que chega pronto
+    # para redigir. Regina fica sem, de proposito, para o relatorio dizer o que
+    # falta - que e a outra metade do que este bloco existe para fazer.
+    "reclamante_nome": "Marcio Pereira da Silva",
+    "reclamante_nacionalidade": "brasileiro",
+    "reclamante_estado_civil": "casado",
+    "reclamante_cpf": "123.456.789-00",
+    "reclamante_rg": "MG-12.345.678 SSP/MG",
+    "reclamante_ctps": "1234567 serie 001-MG",
+    "reclamante_pis": "123.45678.90-1",
+    "reclamante_endereco": "Rua das Acacias, 240, Bairro Industrial, Contagem/MG, CEP 32000-000",
+    "reclamante_email": "marcio.exemplo@teste.invalido",
+    "reclamante_telefone": "(31) 90000-0000",
+    "reclamada_razao_social": "Metalurgica Exemplo Ltda.",
+    "reclamada_cnpj": "12.345.678/0001-90",
+    "reclamada_endereco": "Av. Industrial, 1500, Distrito Industrial, Contagem/MG",
+    "narrativa_fatos": (
+        "Admitido em 15/03/2019 como auxiliar de producao, com registro em CTPS, "
+        "para trabalhar no setor de acabamento da unidade de Contagem.\n"
+        "Durante todo o contrato manuseou solvente inflamavel em area de ruido "
+        "elevado. A empresa entregava protetor auricular, mas nunca fiscalizou o "
+        "uso nem fez a reposicao.\n"
+        "Dispensado sem justa causa em 30/04/2026. Recebeu parte das verbas em "
+        "22/05/2026, fora do prazo de dez dias, sem a multa de 40% do FGTS e sem "
+        "as guias do seguro-desemprego."
+    ),
+    "fatos_jornada": (
+        "Segunda a sexta, entrada as 07h e saida entre 19h e 20h, com cerca de "
+        "30 minutos de intervalo.\n"
+        "Turno noturno duas vezes por semana, das 22h as 06h.\n"
+        "O cartao de ponto registrava sempre 07h as 17h, invariavel."
+    ),
 }
 
 # --- 2. Regina: pejotizacao, com lacunas de proposito -----------------------
