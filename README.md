@@ -153,9 +153,10 @@ Triagem completa. Em andamento e a fazer:
 |---|---|---|
 | **Corpus** | CLT pronta | 3.663 dispositivos, 5.752 redações, com eixo de vigência. Faltam CF, súmulas e OJs do TST, NRs, súmulas do TRT-13. |
 | **Via densa** | pronta | BGE-M3 em ONNX na CPU. Fusão RRF acerta 15/15 no conjunto de avaliação. |
-| **Peças** | a fazer | Modelos de peça por preenchimento de slots, com citação obrigatória, validador de citações e exportação em DOCX. |
+| **Inicial** | em andamento | Quatro blocos, nas palavras de quem usa: qualificação das partes, história dos fatos, fundamentação, pedido. Os dois últimos já saem da triagem e do corpus; os dois primeiros **a entrevista ainda não coleta**. |
+| **Recurso, embargos, contrarrazões** | a fazer | Partem de um **documento** (sentença, acórdão, recurso da outra parte), não da entrevista. Exigem uma camada de leitura que não existe. |
 | **Processo parado** | a fazer | Consultor de próxima medida para processo que anda devagar há anos. |
-| **Jurisprudência** | a decidir | Acórdãos, em fase própria: muda a escala e exige rastrear superação de tese, não vigência. |
+| **Jurisprudência** | a decidir | Uso principal é **citar na peça**, o que torna o validador de citações obrigatório. Uso secundário é aferir viabilidade. Muda a escala e exige rastrear superação de tese, não vigência. |
 
 ## Limites conhecidos
 
