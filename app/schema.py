@@ -98,19 +98,28 @@ class Pergunta(BaseModel):
     id: str
     secao: str
     texto: str
-    tipo: Literal["bool", "escolha", "multipla", "texto", "numero", "data", "moeda"]
+    tipo: Literal[
+        "bool", "escolha", "multipla", "texto", "texto_longo", "numero", "data", "moeda"
+    ]
     opcoes: list[Opcao] = Field(default_factory=list)
     ajuda: str | None = None
     mostrar_se: list[list[Condicao]] = Field(default_factory=list)
     # Pergunta de aprofundamento: so aparece se algum destes pedidos estiver em
     # jogo. Avaliada num segundo passe, depois que os pedidos ja foram triados -
     # por isso nunca pode ser referenciada no `quando` de um pedido.
-    # Hoje sem uso: as perguntas de quantificacao sairam junto com a calculadora.
-    # O mecanismo fica porque a redacao da peca (fase 4) precisa do mesmo padrao -
-    # detalhe que so faz sentido perguntar depois que o pedido se confirma.
+    # Usado pelas perguntas de FATO da secao `fatos`: nao se pede a narrativa do
+    # assedio antes de o dano moral se confirmar na triagem. Detalhe so faz
+    # sentido perguntar depois que o pedido existe.
     mostrar_se_pedido: list[str] = Field(default_factory=list)
     obrigatoria: bool = False
     sufixo: str | None = None
+    # Placeholder. Diferente de `ajuda`: nao explica por que a pergunta existe,
+    # mostra o FORMATO da resposta. Num campo de narrativa isso e o que separa
+    # "fui humilhado" de um fato datado que sustenta pedido.
+    exemplo: str | None = None
+    # Altura do campo `texto_longo`. Um endereco em cinco linhas convida a
+    # escrever cinco linhas de endereco; a narrativa em duas convida a resumir.
+    linhas: int = 5
 
 
 class Secao(BaseModel):

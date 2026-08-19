@@ -12,11 +12,26 @@
   {% endif %}
 {% endmacro %}
 
+{% macro resposta(p, respostas) %}
+  {%- set v = respostas.get(p.id) -%}
+  {%- if p.tipo == 'escolha' -%}
+    {{ (p.opcoes | selectattr('valor', 'equalto', v) | map(attribute='rotulo') | first) or v }}
+  {%- else -%}
+    {{ v }}
+  {%- endif -%}
+{% endmacro %}
+
 {% block corpo %}
 {% set a = analise %}
 <article class="relatorio">
 
   <h1>Relat&oacute;rio de triagem</h1>
+  {% if respostas.get('reclamante_nome') or respostas.get('reclamada_razao_social') %}
+    <p class="meta partes">
+      <b>{{ respostas.get('reclamante_nome', 'Reclamante n&atilde;o qualificado') | safe }}</b>
+      {%- if respostas.get('reclamada_razao_social') %} &times; <b>{{ respostas.reclamada_razao_social }}</b>{% endif %}
+    </p>
+  {% endif %}
   <p class="meta">
     {{ respostas.get('funcao', 'Fun&ccedil;&atilde;o n&atilde;o informada') }}
     {%- if respostas.get('local_prestacao') %} &middot; {{ respostas.local_prestacao }}{% endif %}
@@ -95,6 +110,50 @@
     <h3>{{ arm.titulo }}</h3>
     <p>{{ arm.descricao }}</p>
     {{ fundamentos(arm.fundamentos) }}
+  {% endfor %}
+
+  {# Aqui o relatorio deixa de descrever o caso e passa a servir de insumo da
+     peca. O que interessa nao e so o que ja foi dito: e o que ainda falta para
+     a inicial poder ser escrita. #}
+  <h2>Material para a inicial</h2>
+
+  {% set fatos = catalogo.entrevista.perguntas | selectattr('secao', 'equalto', 'fatos') | list %}
+  {% set qualif = catalogo.entrevista.perguntas | selectattr('secao', 'equalto', 'qualificacao') | list %}
+  {% set faltando = [] %}
+  {% for p in qualif + fatos if p.id in visiveis and not respostas.get(p.id) %}
+    {% set _ = faltando.append(p) %}
+  {% endfor %}
+
+  {% if faltando %}
+    <div class="caixa">
+      <b>A inicial ainda n&atilde;o tem o que precisa.</b> Falta preencher:
+      <ul>
+        {% for p in faltando %}
+          <li>{{ p.texto | safe }}{% if p.obrigatoria %} &mdash; <b>obrigat&oacute;rio</b>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <h3>Qualifica&ccedil;&atilde;o das partes</h3>
+  <ul>
+    {% for p in qualif if respostas.get(p.id) %}
+      <li>{{ p.texto | safe }}: <b>{{ resposta(p, respostas) }}</b></li>
+    {% else %}
+      <li class="fund">Nada preenchido ainda.</li>
+    {% endfor %}
+  </ul>
+
+  <h3>Hist&oacute;ria dos fatos</h3>
+  {% for p in fatos if respostas.get(p.id) %}
+    <p class="fund"><b>{{ p.texto | safe }}</b></p>
+    <p class="narrativa">{{ respostas[p.id] }}</p>
+  {% else %}
+    <p class="fund">
+      Nenhum fato narrado. Com pedidos e sem hist&oacute;ria, a inicial sai gen&eacute;rica &mdash;
+      que &eacute; o que o pr&oacute;prio cat&aacute;logo aponta como principal causa de improced&ecirc;ncia
+      no dano moral.
+    </p>
   {% endfor %}
 
   <h2>Documentos a solicitar</h2>

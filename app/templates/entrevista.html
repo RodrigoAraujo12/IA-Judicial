@@ -62,6 +62,10 @@
             {% elif p.tipo == 'data' %}
               <input type="date" name="{{ p.id }}" id="c-{{ p.id }}" value="{{ v or '' }}">
 
+            {% elif p.tipo == 'texto_longo' %}
+              <textarea name="{{ p.id }}" id="c-{{ p.id }}" rows="{{ p.linhas }}"
+                        placeholder="{{ p.exemplo or '' }}">{{ v or '' }}</textarea>
+
             {% elif p.tipo in ('moeda', 'numero') %}
               <span class="comsufixo">
                 <input type="text" inputmode="decimal" class="curto" name="{{ p.id }}" id="c-{{ p.id }}"
@@ -70,7 +74,8 @@
               </span>
 
             {% else %}
-              <input type="text" name="{{ p.id }}" id="c-{{ p.id }}" value="{{ v or '' }}">
+              <input type="text" name="{{ p.id }}" id="c-{{ p.id }}" value="{{ v or '' }}"
+                     placeholder="{{ p.exemplo or '' }}">
             {% endif %}
 
             {% if p.ajuda %}<p class="ajuda">{{ p.ajuda }}</p>{% endif %}

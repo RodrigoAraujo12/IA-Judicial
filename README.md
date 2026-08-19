@@ -30,6 +30,7 @@ python testar.py           # triagem
 python testar_refs.py      # referências do catálogo -> dispositivos
 python testar_corpus.py    # esquema do corpus: vigência e busca lexical
 python testar_busca.py     # recuperação na CLT (exige o corpus ingerido)
+python testar_inicial.py   # qualificação e história dos fatos, ponta a ponta
 ```
 
 Para montar o corpus, uma vez só (leva menos de um minuto):
@@ -153,7 +154,7 @@ Triagem completa. Em andamento e a fazer:
 |---|---|---|
 | **Corpus** | CLT pronta | 3.663 dispositivos, 5.752 redações, com eixo de vigência. Faltam CF, súmulas e OJs do TST, NRs, súmulas do TRT-13. |
 | **Via densa** | pronta | BGE-M3 em ONNX na CPU. Fusão RRF acerta 15/15 no conjunto de avaliação. |
-| **Inicial** | em andamento | Quatro blocos, nas palavras de quem usa: qualificação das partes, história dos fatos, fundamentação, pedido. Os dois últimos já saem da triagem e do corpus; os dois primeiros **a entrevista ainda não coleta**. |
+| **Inicial** | em andamento | Quatro blocos, nas palavras de quem usa: qualificação das partes, história dos fatos, fundamentação, pedido. Os quatro já são coletados; falta o **redator** que os junta num texto. |
 | **Recurso, embargos, contrarrazões** | a fazer | Partem de um **documento** (sentença, acórdão, recurso da outra parte), não da entrevista. Exigem uma camada de leitura que não existe. |
 | **Processo parado** | a fazer | Consultor de próxima medida para processo que anda devagar há anos. |
 | **Jurisprudência** | a decidir | Uso principal é **citar na peça**, o que torna o validador de citações obrigatório. Uso secundário é aferir viabilidade. Muda a escala e exige rastrear superação de tese, não vigência. |

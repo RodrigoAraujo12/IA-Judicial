@@ -20,9 +20,15 @@ secoes:
   - id: danos
     titulo: Saude e danos
     ordem: 6
+  - id: fatos
+    titulo: Historia dos fatos
+    ordem: 7
+  - id: qualificacao
+    titulo: Qualificacao das partes
+    ordem: 8
   - id: processual
     titulo: Dados processuais
-    ordem: 7
+    ordem: 9
 
 perguntas:
   # --- contrato -------------------------------------------------------------
@@ -381,3 +387,229 @@ perguntas:
     texto: O cliente declara insuficiencia de recursos para arcar com as custas?
     tipo: bool
     obrigatoria: true
+
+  # --- fatos ----------------------------------------------------------------
+  # A triagem descobre QUAIS pedidos cabem. A inicial precisa saber POR QUE, com
+  # data, lugar e nome - e isso nenhuma pergunta de sim/nao entrega.
+  #
+  # Quase tudo aqui e pos-triagem (`mostrar_se_pedido`): so se pergunta o detalhe
+  # do assedio depois que o dano moral se confirmou. Perguntar antes seria pedir
+  # narrativa para um pedido que talvez nem exista, e afogar o comeco da
+  # entrevista em campos de texto.
+  #
+  # LGPD: e aqui e na qualificacao que entra dado pessoal - inclusive dado de
+  # saude, no bloco do acidente (art. 11 da Lei 13.709/2018). Tudo isso e gravado
+  # em dados/casos.db, que nao vai para o git, nem para nuvem, nem para outra
+  # maquina.
+
+  - id: narrativa_fatos
+    secao: fatos
+    texto: Conte o caso em ordem cronologica
+    tipo: texto_longo
+    ajuda: >-
+      Vira o corpo da historia dos fatos. Quem contratou, para fazer o que, como
+      o trabalho corria, o que deu errado e como terminou. Data aproximada
+      ("por volta de marco de 2022") vale mais do que adjetivo.
+    exemplo: >-
+      Admitido em 03/2021 como auxiliar de producao na unidade de Bayeux, sem
+      registro em CTPS ate 09/2021. Cumpria de segunda a sabado...
+
+  - id: fatos_jornada
+    secao: fatos
+    texto: Descreva a jornada realmente cumprida
+    tipo: texto_longo
+    mostrar_se_pedido:
+      - horas_extras
+      - intervalo_intrajornada
+      - intervalo_interjornada
+      - adicional_noturno
+    ajuda: >-
+      A inicial declara a jornada com entrada, saida, intervalo e dias da semana.
+      Sem isso o pedido nao e certo nem determinado (art. 840, par. 1o), e a
+      inversao do onus da prova nao supre o que a peca deixou de afirmar.
+    exemplo: >-
+      Segunda a sexta, 07h as 19h, com 20 minutos de intervalo. Dois sabados por
+      mes, 07h as 13h. Sem folga compensatoria.
+
+  - id: fatos_assedio
+    secao: fatos
+    texto: Descreva os episodios de assedio, humilhacao ou exposicao
+    tipo: texto_longo
+    mostrar_se_pedido:
+      - dano_moral
+    ajuda: >-
+      Um episodio por linha: data (ou mes), local, quem praticou, quem
+      presenciou. Alegacao generica e a principal causa de improcedencia deste
+      pedido - esta pergunta existe para nao deixar isso acontecer.
+    exemplo: >-
+      15/03/2022, no refeitorio: o supervisor gritou que o reclamante "nao serve
+      para nada" diante de cerca de dez colegas. Presenciaram Maria e Pedro.
+
+  - id: fatos_acidente
+    secao: fatos
+    texto: Como ocorreu o acidente ou a doenca?
+    tipo: texto_longo
+    mostrar_se_pedido:
+      - indenizacao_acidente
+      - estabilidade_acidentaria
+    ajuda: >-
+      Data, atividade que executava, lesao, socorro, afastamento pelo INSS e
+      sequela atual. Se houve CAT, dizer por quem e quando foi emitida - a
+      omissao da empresa em emitir ja e fato a narrar.
+
+  - id: fatos_justa_causa
+    secao: fatos
+    texto: Qual motivo a empresa alegou, e o que de fato ocorreu?
+    tipo: texto_longo
+    mostrar_se_pedido:
+      - reversao_justa_causa
+    ajuda: >-
+      Registrar a versao da empresa delimita o que a inicial nega. O onus de
+      provar a falta grave e dela, mas a peca precisa dizer qual falta se nega.
+
+  - id: fatos_rescisao_indireta
+    secao: fatos
+    texto: Qual falta patronal justifica a rescisao indireta, e desde quando?
+    tipo: texto_longo
+    mostrar_se_pedido:
+      - rescisao_indireta
+    ajuda: >-
+      Descrever a conduta e sua permanencia no tempo. Se houve reclamacao a
+      empresa, ao sindicato, ao MPT ou a fiscalizacao, dizer quando e a quem.
+
+  - id: fatos_paradigma
+    secao: fatos
+    texto: Quem e o paradigma?
+    tipo: texto_longo
+    mostrar_se_pedido:
+      - equiparacao_salarial
+    ajuda: >-
+      O paradigma precisa ser NOMEADO na inicial, com funcao, diferenca salarial
+      aproximada e periodo em que trabalharam juntos no mesmo estabelecimento.
+    exemplo: >-
+      Carlos Souza, operador II, mesmo setor, de 01/2021 a 08/2023, recebia
+      cerca de R$ 800 a mais.
+
+  - id: fatos_desvio
+    secao: fatos
+    texto: Quais atribuicoes exercia alem das contratadas, e desde quando?
+    tipo: texto_longo
+    linhas: 3
+    mostrar_se_pedido:
+      - desvio_acumulo_funcao
+
+  # --- qualificacao ---------------------------------------------------------
+  # Ultima secao de proposito. Nada aqui muda a triagem: sao os dados que a peca
+  # exige (art. 840, par. 1o, da CLT; art. 319 do CPC) e que so fazem falta
+  # depois que o caso se confirmou. Pedir CPF e endereco antes de saber se ha
+  # acao e por burocracia na frente do trabalho.
+  #
+  # A profissao da qualificacao nao se repete aqui: sai de `funcao`, na primeira
+  # secao. Dois campos para a mesma coisa divergem no primeiro caso em que
+  # alguem corrigir so um deles.
+
+  - id: reclamante_nome
+    secao: qualificacao
+    texto: Nome completo do reclamante
+    tipo: texto
+    obrigatoria: true
+
+  - id: reclamante_nacionalidade
+    secao: qualificacao
+    texto: Nacionalidade
+    tipo: texto
+    exemplo: brasileiro
+
+  - id: reclamante_estado_civil
+    secao: qualificacao
+    texto: Estado civil
+    tipo: escolha
+    opcoes:
+      - { valor: "solteiro", rotulo: "Solteiro(a)" }
+      - { valor: "casado", rotulo: "Casado(a)" }
+      - { valor: "uniao_estavel", rotulo: "Em uniao estavel" }
+      - { valor: "divorciado", rotulo: "Divorciado(a)" }
+      - { valor: "separado", rotulo: "Separado(a) judicialmente" }
+      - { valor: "viuvo", rotulo: "Viuvo(a)" }
+    ajuda: >-
+      O art. 319, II, do CPC pede tambem a existencia de uniao estavel, por isso
+      ela aparece como estado proprio e nao dentro de "solteiro".
+
+  - id: reclamante_cpf
+    secao: qualificacao
+    texto: CPF
+    tipo: texto
+    obrigatoria: true
+    exemplo: 000.000.000-00
+
+  - id: reclamante_rg
+    secao: qualificacao
+    texto: RG e orgao emissor
+    tipo: texto
+    exemplo: 0.000.000 SSP/PB
+
+  - id: reclamante_ctps
+    secao: qualificacao
+    texto: CTPS (numero e serie) ou numero da carteira digital
+    tipo: texto
+    exemplo: 0000000 serie 000-PB
+
+  - id: reclamante_pis
+    secao: qualificacao
+    texto: PIS/PASEP
+    tipo: texto
+    ajuda: Necessario para o oficio a Caixa quando ha FGTS em aberto.
+
+  - id: reclamante_endereco
+    secao: qualificacao
+    texto: Endereco completo do reclamante
+    tipo: texto_longo
+    linhas: 2
+    obrigatoria: true
+    exemplo: >-
+      Rua Exemplo, 123, apto 4, bairro Centro, Joao Pessoa/PB, CEP 58000-000
+
+  - id: reclamante_email
+    secao: qualificacao
+    texto: Endereco eletronico
+    tipo: texto
+    ajuda: >-
+      Exigido pelo art. 319, II, do CPC. Se nao houver, a peca declara que nao
+      possui - em branco aqui significa exatamente isso.
+
+  - id: reclamante_telefone
+    secao: qualificacao
+    texto: Telefone
+    tipo: texto
+
+  - id: reclamada_razao_social
+    secao: qualificacao
+    texto: Razao social da reclamada
+    tipo: texto
+    obrigatoria: true
+    ajuda: A razao social do CNPJ, nao o nome de fachada.
+
+  - id: reclamada_cnpj
+    secao: qualificacao
+    texto: CNPJ
+    tipo: texto
+    exemplo: 00.000.000/0001-00
+
+  - id: reclamada_endereco
+    secao: qualificacao
+    texto: Endereco da reclamada para citacao
+    tipo: texto_longo
+    linhas: 2
+    obrigatoria: true
+    ajuda: >-
+      Endereco onde a citacao efetivamente chega. Se a empresa esta baixada, vale
+      o endereco dos socios - o processo para na citacao frustrada.
+
+  - id: reclamada_outras
+    secao: qualificacao
+    texto: Outras pessoas a incluir no polo passivo
+    tipo: texto_longo
+    linhas: 3
+    ajuda: >-
+      Grupo economico, sucessao, socios, tomador de servicos. Incluir na inicial
+      e barato; incluir na execucao custa anos.
