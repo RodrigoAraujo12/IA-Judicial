@@ -243,12 +243,35 @@ def buscar(
     return Resultado(rrf([lex, den], limite=limite), "hibrida")
 
 
-def rrf(listas: list[list[Achado]], k: int = 60, limite: int = 10) -> list[Achado]:
+def rrf(listas: list[list[Achado]], k: int = 5, limite: int = 10) -> list[Achado]:
     """Reciprocal Rank Fusion.
 
     Funde rankings sem precisar que os scores sejam comparaveis entre si - e o
     ponto, porque BM25 e similaridade de cosseno vivem em escalas diferentes e
     normalizar uma na outra e chute. RRF so olha POSICAO.
+
+    **Sobre o k.** Ele decide o quanto a primeira posicao vale mais que a decima.
+    k grande achata a curva: com k=60, 1/(60+1) e 1/(60+10) quase empatam, e a
+    fusao vira media de opiniao em vez de ordenacao. k pequeno mantem o topo
+    ingreme, e quem acertou em primeiro leva a consulta.
+
+    O 60 herdado da literatura foi medido e reprovado aqui. Ele vem de avaliacao
+    TREC, onde se fundem dezenas de sistemas de qualidade parecida; aqui sao duas
+    listas so, de forcas bem diferentes, sobre um corpus de 5.752 redacoes. Com
+    k=60 a fusao chegava a ficar ABAIXO da via lexical sozinha no primeiro
+    resultado - a densa arrastava para baixo respostas que o BM25 ja tinha posto
+    em #1. Caso concreto: "abandono de emprego apos trinta dias de falta" tem a
+    alinea 'i' do art. 482 em #1 no lexical, e a fusao a empurrava para #5,
+    porque "trinta dias" puxava os incisos de ferias do art. 130.
+
+    Medido em `analisar_rerank.py` sobre as 72 consultas de `avaliacao.py`:
+
+        k=60 (antes)  acerto@1 47/72   acerto@5 63/72   MRR 0,760
+        k=5  (agora)  acerto@1 53/72   acerto@5 65/72   MRR 0,808
+
+    O intervalo k=1..20 e um plato: os numeros mal se mexem la dentro. A escolha
+    do 5 nao e ajuste fino em cima do gabarito, e o meio de uma regiao estavel -
+    o que importa e nao estar em 60.
     """
     pontos: dict[str, float] = {}
     melhor: dict[str, Achado] = {}

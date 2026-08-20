@@ -122,9 +122,13 @@ abrir o navegador não acontece.
 
 ## Estado do projeto nesta data
 
-26 pedidos, 12 verificações, 79 perguntas em 10 seções. Corpus com 3.663
-dispositivos e 5.752 redações da CLT, todas vetorizadas. Nove arquivos de teste,
+26 pedidos, 12 verificações, 79 perguntas em 10 seções. Corpus com 3.660
+dispositivos e 5.748 redações da CLT, todas vetorizadas. Nove arquivos de teste,
 todos passando.
+
+**O `corpus.db` mudou** depois do conserto do art. 60 (abaixo). Quem já recebeu o
+pacote está com a versão anterior: para atualizar, basta trocar esse arquivo — não
+é preciso reenviar o modelo, que é a parte pesada.
 
 O que foi feito por último, e que vale saber porque muda o comportamento:
 
@@ -141,6 +145,16 @@ O que foi feito por último, e que vale saber porque muda o comportamento:
   entrevista escrito à mão: responsabilidade patrimonial (grupo econômico,
   sucessão, tomador), requisitos da justa causa, parcelas pagas à margem do
   contracheque e férias em dobro.
+- **Art. 60 voltou ao índice.** A página do Planalto transcreve, no meio do título
+  da Justiça do Trabalho, um "Art. 60" do Decreto-Lei 9.797/1946 sobre Tribunais
+  Regionais. O parser o lia como redação nova do art. 60 da CLT — que trata de
+  prorrogação de jornada em atividade insalubre — e marcava o artigo verdadeiro
+  como revogado desde 1946. Consulta a ele não devolvia nada. O conserto é um
+  guarda contra regressão da numeração, em `planalto.py`.
+- **Conjunto de avaliação foi de 15 para 72 consultas**, e a decisão sobre
+  reranking passou a ter base. Resumo: não faz falta. O que fazia falta era o `k`
+  da fusão RRF, que estava em 60 e foi para 5. Detalhe em `README.md`, seção
+  "Sobre reranking".
 
 ## O que ficou pendente
 

@@ -32,7 +32,7 @@ O que copiar junto:
 | `.venv/` | não; o `instalar.bat` cria o dela |
 
 Sem o modelo o sistema funciona: a consulta por referência e a busca por palavra
-ficam inteiras, e a fusão cai de 15/15 para 14/15 no conjunto de avaliação. Sem o
+ficam inteiras, e o acerto@5 cai de 65/72 para 63/72 no conjunto de avaliação. Sem o
 `corpus.db` a entrevista e a minuta ainda funcionam — as citações saem pelo
 rótulo, sem transcrição.
 
@@ -61,8 +61,11 @@ python testar_refs.py      # referências do catálogo -> dispositivos
 python testar_corpus.py    # esquema do corpus: vigência e busca lexical
 python testar_busca.py     # recuperação na CLT (exige o corpus ingerido)
 python testar_caducidade.py # MP que caducou, e o texto anterior que volta
+python testar_norma_estranha.py # norma de terceiro transcrita no meio da pagina
 python testar_inicial.py   # qualificação e história dos fatos, ponta a ponta
 python testar_peca.py      # a minuta: cisão, terceiro estado, ausência de valor
+python testar_vias.py      # placar das vias sobre as 72 consultas de avaliacao.py
+python analisar_rerank.py  # a folga que um reranqueador teria (exige vetores)
 ```
 
 Para montar o corpus, uma vez só (leva menos de um minuto):
@@ -109,9 +112,9 @@ app/
   main.py                FastAPI
   catalogo/
     loader.py            carga + validação cruzada dos YAML
-    entrevista.yaml      roteiro de perguntas (63, em 9 secoes)
-    armadilhas.yaml      verificações que não são pedidos (9)
-    pedidos/*.yaml       o catálogo — 21 pedidos
+    entrevista.yaml      roteiro de perguntas (79, em 10 secoes)
+    armadilhas.yaml      verificações que não são pedidos (12)
+    pedidos/*.yaml       o catálogo — 26 pedidos
   corpus/
     refs.py              referência do catálogo -> dispositivo endereçável
     banco.py             índice normativo em SQLite: vigência, FTS5, vetores
@@ -143,7 +146,7 @@ Campos de `Pedido` que merecem atenção:
 
 ## O corpus normativo
 
-Os 73 `fundamentos` do catálogo já formam um grafo de citações: 68 referências
+Os 92 `fundamentos` do catálogo já formam um grafo de citações: 82 referências
 distintas, tipadas, ligando cada pedido às normas que o sustentam. O índice se
 apoia nisso em vez de começar cego.
 
@@ -151,16 +154,16 @@ apoia nisso em vez de começar cego.
 
 0. **Lookup determinístico.** `fundamento.ref` → dispositivo. Não é busca, é
    *join*, e cobre o uso mais frequente: conferir a norma que o relatório citou.
-   [`app/corpus/refs.py`](app/corpus/refs.py) resolve as 68 referências do
-   catálogo em 105 dispositivos, incluindo faixas (`arts. 223-A a 223-G`),
+   [`app/corpus/refs.py`](app/corpus/refs.py) resolve as 82 referências do
+   catálogo em 117 dispositivos, incluindo faixas (`arts. 223-A a 223-G`),
    listas (`par. 3o e par. 4o`) e cadeias (`art. 10, II, 'b'`).
 1. **Esparsa (BM25/FTS5).** Consulta jurídica é cheia de token exato — "Súmula
    437", "art. 384". Vetor denso troca número; BM25 não.
 2. **Densa (BGE-M3, 1024d).** Para quando o vocabulário da consulta não é o da
    lei — "dispensa imotivada" onde o art. 487 escreve "sem justo motivo".
 
-Fusão por RRF. Reranking só se a precisão não bastar — o próprio BGE-M3 devolve
-vetores ColBERT, o que evita carregar um segundo modelo.
+Fusão por RRF, sem reranqueador — e isso foi **medido**, não presumido. Ver
+[Sobre reranking](#sobre-reranking).
 
 Consulta que *é* uma referência ("art. 384") não vai para o BM25: ali o token
 "art" casa com o corpus inteiro e o resultado é ruído. Ela é roteada para a Via 0.
@@ -204,6 +207,85 @@ encerrada)" de uma MP fora dessa tabela, a ingestão avisa em vez de adivinhar.
 **Nada é citável sem procedência.** Cada dispositivo aponta para uma fonte com
 URL, data de captura e sha256. Citação que não se rastreia até lá não entra na
 peça.
+
+## Sobre reranking
+
+A pergunta reaparece sempre: falta um reranqueador? Aqui a resposta é **não** — e
+foi medida, não deduzida do que costuma valer em outros sistemas.
+
+**Reranqueador não busca; ele reordena o que a busca já trouxe.** Isso confina o
+ganho possível a um intervalo que dá para calcular antes de baixar modelo nenhum:
+
+```
+teto  = recall@50    o alvo está em algum lugar do lote de candidatos
+piso  = acerto@5     o alvo já aparece nos cinco que a tela mostra
+folga = teto - piso  o máximo que um reranqueador PERFEITO consertaria
+```
+
+[`analisar_rerank.py`](analisar_rerank.py) imprime essa conta sobre as 72
+consultas de [`avaliacao.py`](avaliacao.py), divididas em dois grupos: **A**, em
+que a advogada digita o termo que está no texto da lei, e **B**, em que digita o
+termo forense que a lei não usa — "rescisão indireta" para o art. 483,
+"hipersuficiente" para o art. 444, "pejotização" para o art. 442-B.
+
+| via | acerto@1 | acerto@5 | MRR | recall@50 |
+|---|---|---|---|---|
+| lexical | 50/72 | 63/72 | 0,768 | 70/72 |
+| densa | 49/72 | 55/72 | 0,714 | 69/72 |
+| **fusão RRF** | **53/72** | **65/72** | **0,808** | **72/72** |
+
+**Recall@50 é 72/72.** Quando a resposta está na CLT, a busca a encontra sempre; o
+que falha é a ordem. Sobra uma folga de 7 consultas — e é só isso que um
+reranqueador poderia disputar.
+
+### O que aconteceu com reranqueadores reais
+
+Dois foram postos no caminho e medidos sobre o mesmo gabarito, reordenando os 15
+melhores candidatos da fusão:
+
+| | tamanho | acerto@1 | acerto@5 | grupo B | latência |
+|---|---|---|---|---|---|
+| fusão RRF (hoje) | — | 53/72 | 65/72 | 16/20 | 63 ms |
+| mmarco-mMiniLMv2 int8 | 119 MB | 50/72 | 64/72 | 13/20 | 141 ms |
+| bge-reranker-base | 1,1 GB | 51/72 | 68/72 | 17/20 | 565 ms |
+
+O modelo pequeno **piora**: nenhuma configuração testada superou a fusão em
+acerto@5, e todas derrubaram o grupo B, que era justamente o alvo. A explicação é
+de domínio — mMARCO é ranqueamento de passagem web, e dispositivo de CLT tem 176
+caracteres na mediana, 15% deles abaixo de 80. "i) abandono de emprego;" não é
+uma passagem.
+
+O modelo grande ganha 3 consultas em acerto@5 e perde 2 em acerto@1. Com n=72, um
+erro-padrão vale ~2,5 consultas: **o ganho está dentro do ruído**, e custa 1,1 GB
+num pacote que já pesa 1,4 GB, mais 9× de latência por consulta.
+
+### O que valeu mais que o reranqueador
+
+Ajustar **uma constante**. O `k` do RRF estava em 60, valor herdado de avaliação
+TREC, onde se fundem dezenas de sistemas parecidos. Aqui são duas listas, de
+forças bem diferentes: com k=60 a curva achata, 1/(60+1) e 1/(60+10) quase
+empatam, e a fusão vira média de opinião. Chegava a ficar **abaixo da via lexical
+sozinha** no primeiro resultado.
+
+| | acerto@1 | acerto@5 | MRR |
+|---|---|---|---|
+| k=60 (antes) | 47/72 | 63/72 | 0,760 |
+| k=5 (agora) | 53/72 | 65/72 | 0,808 |
+
+Seis consultas em acerto@1, de graça, sem modelo novo — mais do que qualquer
+reranqueador testado entregou. O intervalo k=1..20 é um platô; o que importava era
+não estar em 60.
+
+**Quando reabrir a discussão.** Hoje o corpus é só a CLT. Quando entrarem CF,
+súmulas do TST, OJs e NRs, o lote de candidatos passa a misturar obras e a chance
+de o topo vir sujo cresce — aí a folga aumenta e a conta muda. O caminho a medir
+primeiro é `bge-reranker-v2-m3`, da mesma família do modelo de embeddings já
+usado; o obstáculo é tamanho: 2,3 GB, sem ONNX oficial publicado.
+
+Uma ressalva sobre o gabarito: as 72 consultas têm resposta **na CLT** por
+construção. Recall@50 de 100% quer dizer "quando a resposta está no corpus, a
+busca acha" — não "o sistema responde tudo". Pergunta sobre FGTS, terceirização ou
+súmula não tem onde cair, porque essas obras ainda não foram ingeridas.
 
 ## A minuta da inicial
 
@@ -250,7 +332,7 @@ Triagem completa. Em andamento e a fazer:
 | | | |
 |---|---|---|
 | **Corpus** | CLT pronta | 3.663 dispositivos, 5.752 redações, com eixo de vigência. Faltam CF, súmulas e OJs do TST, NRs, súmulas do TRT-13. |
-| **Via densa** | pronta | BGE-M3 em ONNX na CPU. Fusão RRF acerta 15/15 no conjunto de avaliação. |
+| **Via densa** | pronta | BGE-M3 em ONNX na CPU. Fusão RRF acerta 65 de 72 no conjunto de avaliação, com recall@50 de 72/72. Reranking foi medido e reprovado - ver [Sobre reranking](#sobre-reranking). |
 | **Inicial** | minuta pronta | Os quatro blocos — qualificação, fatos, fundamentação, pedidos — saem como peça em `/peca`, montada por template. Sem modelo de linguagem: o texto é função determinista das respostas. |
 | **Recurso, embargos, contrarrazões** | a fazer | Partem de um **documento** (sentença, acórdão, recurso da outra parte), não da entrevista. Exigem uma camada de leitura que não existe. |
 | **Processo parado** | a fazer | Consultor de próxima medida para processo que anda devagar há anos. |

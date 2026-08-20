@@ -126,6 +126,10 @@ _PARAGRAFO = re.compile(r"^§\s*(\d+)")
 _INCISO = re.compile(r"^([IVXLC]{1,7})\s*[-–.)]")
 _ALINEA = re.compile(r"^([a-z])\s*\)")
 
+# Quantos artigos a numeracao pode regredir antes de se concluir que o texto
+# pertence a outra norma. Ver o comentario em `dispositivos()`.
+_REGRESSAO_TOLERADA = 20
+
 
 @dataclass
 class Bloco:
@@ -354,6 +358,8 @@ def dispositivos(bruto: bytes, obra: str, inicio: str | None = None) -> list[Tre
     ordem = 0
     comecou = inicio is None
     padrao_inicio = re.compile(inicio, re.I) if inicio else None
+    pico = 0        # maior numero de artigo ja visto
+    intruso = False  # dentro de norma estranha transcrita no meio da pagina
 
     for bloco in blocos(bruto):
         texto = _sem_marcador(bloco.texto)
@@ -364,11 +370,36 @@ def dispositivos(bruto: bytes, obra: str, inicio: str | None = None) -> list[Tre
             comecou = bool(padrao_inicio.search(texto))
             continue
 
+        m_art = _ARTIGO.match(texto)
+
+        # A pagina do Planalto transcreve, dentro do titulo da Justica do
+        # Trabalho, o texto do Decreto-lei 9.797/1946 - que tem numeracao
+        # PROPRIA. Seu "Art. 60" (sobre composicao dos Tribunais Regionais)
+        # aparece entre os arts. 669 e 670 da CLT e era lido como redacao nova do
+        # art. 60 da CLT, que trata de prorrogacao de jornada em atividade
+        # insalubre. O artigo verdadeiro ficava marcado como revogado desde 1946
+        # e sumia do indice: consulta a ele nao devolvia nada.
+        #
+        # A numeracao da CLT nesta fonte e estritamente crescente - 1.853
+        # marcadores, zero regressoes fora esta. Entao regredir centenas de
+        # artigos nao e desordem, e outra norma. A folga de 20 existe para nao
+        # descartar conteudo por um desalinhamento pequeno, que seria falha de
+        # parsing e nao norma estranha.
+        if m_art:
+            n = int(m_art.group(1))
+            if n < pico - _REGRESSAO_TOLERADA:
+                intruso = True
+            elif n >= pico:
+                intruso = False
+                pico = n
+        if intruso:
+            continue
+
         especie = rotulo = None
         urn = pai = None
         corte = 0  # onde termina o identificador ("Art. 71 -", "§ 4o", "I -")
 
-        if m := _ARTIGO.match(texto):
+        if m := m_art:
             corte = m.end()
             numero = m.group(1) + (f"-{m.group(2)}" if m.group(2) else "")
             artigo, sub = numero, None
