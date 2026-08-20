@@ -170,7 +170,15 @@ def densa(
 
     from app.corpus import vetores
 
-    pares = vetores.buscar(con, matriz, consulta, quando, limite)
+    try:
+        pares = vetores.buscar(con, matriz, consulta, quando, limite)
+    except vetores.ModeloAusente:
+        # A matriz veio do corpus.db, mas embutir a CONSULTA exige o modelo. Sao
+        # duas faltas diferentes, e so a primeira estava tratada: quem recebe o
+        # corpus.db pronto tem os vetores e nao tem os 2,2 GB, e cairia em erro
+        # 500 a cada busca em linguagem corrente. Aqui a busca vira lexical, que
+        # e o que a maquina dela consegue fazer.
+        return []
     if not pares:
         return []
 

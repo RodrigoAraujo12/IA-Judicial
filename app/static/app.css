@@ -473,3 +473,45 @@ input.curto { min-width: 8rem; }
   border-left: 2px solid var(--rule);
 }
 .meta.partes { margin-top: -0.2rem; }
+
+/* --- minuta da inicial ---------------------------------------------------- */
+
+/* A peca herda .relatorio: mesma tipografia de documento. Aqui so o que a peca
+   tem e o relatorio nao - enderecamento, texto corrido justificado e a
+   transcricao do dispositivo. */
+
+.peca .enderecamento {
+  text-transform: uppercase;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 2.5rem;
+}
+
+.peca .corrido { text-align: justify; text-indent: 2.5rem; margin: 0 0 0.8rem; }
+.peca .corrido.nota-cisao { text-indent: 0; font-family: var(--ui); font-size: 0.88rem; }
+
+.peca .citacao { margin: 0.7rem 0 1.1rem; }
+.peca .citacao .ref { font-family: var(--ui); font-size: 0.84rem; margin: 0 0 0.3rem; }
+
+/* Transcricao literal da lei. Recuo e corpo menor, como a peca escreve - e
+   distinta do texto do advogado a olho nu, que e o que importa: ninguem deve
+   confundir o que a lei diz com o que a peca alega. */
+.peca blockquote {
+  margin: 0 0 0.4rem 2.5rem;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--rule);
+  font-size: 0.94rem;
+  color: var(--ink);
+}
+
+.peca ol.pedidos { margin: 0.6rem 0 1.2rem; padding-left: 2.5rem; }
+.peca ol.pedidos li { margin-bottom: 0.45rem; }
+
+/* Avisos de trabalho: existem para quem monta a peca, nunca para o juizo. Somem
+   na impressao junto com a navegacao. */
+.peca .aviso-tela { font-family: var(--ui); }
+.peca .aviso-tela h2 { margin-top: 0.6rem; border: 0; }
+
+@media print {
+  .peca .aviso-tela, .no-print { display: none; }
+}

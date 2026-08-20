@@ -21,6 +21,7 @@ from app import persistencia
 from app.catalogo.loader import carregar
 from app.corpus import banco as corpus_banco
 from app.corpus import busca as corpus_busca
+from app.peca import redator
 from app.motor import analisar
 from app.schema import Catalogo
 
@@ -127,6 +128,26 @@ async def analise(request: Request):
 async def relatorio(request: Request):
     respostas = parse_respostas(await request.form())
     return templates.TemplateResponse(request, "relatorio.html", _contexto(respostas))
+
+
+@app.post("/peca", response_class=HTMLResponse)
+async def peca(request: Request):
+    """Minuta da inicial. Mesmas respostas do relatorio, outra forma.
+
+    O corpus e opcional aqui: sem ele a minuta sai com as referencias do
+    catalogo, so que sem transcricao. Peca que cita sem transcrever e util; peca
+    que transcreve de memoria, nao.
+    """
+    respostas = parse_respostas(await request.form())
+    contexto = _contexto(respostas)
+    con = corpus_banco.conectar() if corpus_banco.BANCO.exists() else None
+    try:
+        contexto["m"] = redator.montar(CATALOGO, respostas, contexto["analise"], con)
+    finally:
+        if con is not None:
+            con.close()
+    contexto["rotulo_regime"] = redator.REGIME_ROTULO
+    return templates.TemplateResponse(request, "peca.html", contexto)
 
 
 # --- casos ------------------------------------------------------------------

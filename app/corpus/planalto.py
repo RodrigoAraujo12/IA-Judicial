@@ -54,12 +54,63 @@ _ESPACO = re.compile(r"\s+")
 # Marcadores de alteracao, na forma em que o Planalto os escreve. Captura tambem
 # o TIPO da norma - "Decreto-Lei no 229" nao e "Lei 229", e chamar assim produz
 # uma citacao que nao existe.
-_NORMA = r"\bpel[ao]s?\s+([A-Za-zç\-\s]{3,40}?)\s*n?[ºo°.\s]*([\d.]+)([^)]*?)\)"
+#
+# A especie precisa aceitar letra acentuada. Com apenas [A-Za-zç] o "o" de "Medida
+# Provisoria" nao casa, e os 560 marcadores de MP da CLT ficam sem norma
+# reconhecida - o que joga a redacao no piso de 1943 e faz texto de MP aparecer
+# como redacao original da Consolidacao.
+_ESPECIE = r"[A-Za-zÀ-ÖØ-öø-ÿ\-\s]"
+_NORMA = r"\bpel[ao]s?\s+(" + _ESPECIE + r"{3,40}?)\s*n?[ºo°.\s]*([\d.]+)([^)]*?)\)"
 _MARCADOR = re.compile(
     r"\(\s*(?:Reda[cç][aã]o dada|Inclu[ií]d[oa]|Renumerad[oa])[^)]*?" + _NORMA, re.I
 )
 _REVOGACAO = re.compile(r"\(\s*Revogad[oa]\b[^)]*?" + _NORMA, re.I)
 _DATA_LEI = re.compile(r"de\s*(?:(\d{1,2})[./](\d{1,2})[./])?(\d{4})", re.I)
+
+# Medida provisoria que caducou nao e o mesmo que norma revogada, e a diferenca
+# muda a resposta. Revogacao poe um texto novo no lugar do antigo. Caducidade
+# apenas encerra a eficacia da MP - e o texto ANTERIOR volta a valer, sem que
+# nenhuma norma nova seja publicada. Um indice que trata as duas do mesmo jeito
+# serve texto de MP caduca como se fosse a lei de hoje.
+#
+# O Planalto marca esses blocos com "(Vigencia encerrada)" e um link para o Ato
+# Declaratorio do Congresso. As datas abaixo foram lidas desses atos e das
+# proprias MPs, nao inferidas:
+#
+#   MP 808/2017  DOU 14/11/2017  encerrada 23/04/2018  (ADC 22/2018)
+#   MP 873/2019  DOU 01/03/2019  encerrada 28/06/2019  (ADC 43/2019)
+#   MP 905/2019  DOU 12/11/2019  encerrada 18/08/2020  (ADC 127/2020)
+#   MP 955/2020  DOU 20/04/2020  encerrada 17/08/2020  (ADC 113/2020)
+#
+# As demais MPs citadas pela CLT nao entram aqui porque nao caducaram: 1.107,
+# 1.108 e 1.116 viraram lei, e 2.164, 2.180 e 2.226 seguem em vigor por forca do
+# art. 2o da EC 32/2001. Se aparecer "(Vigencia encerrada)" de uma MP fora desta
+# tabela, a ingestao avisa em vez de adivinhar.
+CADUCIDADE = {
+    "808": (date(2017, 11, 14), date(2018, 4, 23)),
+    "873": (date(2019, 3, 1), date(2019, 6, 28)),
+    "905": (date(2019, 11, 12), date(2020, 8, 18)),
+    "955": (date(2020, 4, 20), date(2020, 8, 17)),
+}
+_VIG_ENCERRADA = re.compile(r"Vig[eê]ncia\s+encerrada", re.I)
+_E_MP = re.compile(r"^Medida\s+Provis", re.I)
+
+# Tachado vem de duas formas neste documento: a tag <strike> e o CSS
+# "text-decoration:line-through". So a tag nao basta - 80 blocos usam apenas o
+# CSS. Mas a presenca do sinal tambem nao basta, por dois motivos:
+#
+#   O HTML e malformado e um <strike> de titulo vaza para dentro do <p> seguinte.
+#   O art. 12 carrega "Armazenamento em meio eletronico" tachado e esta vigente.
+#
+#   O Planalto risca palavras isoladas declaradas inconstitucionais dentro de
+#   artigo em vigor - art. 790-B e o art. 791-A par. 4o, pela ADI 5766.
+#
+# O criterio que separa os casos e posicional, nao quantitativo: o Planalto risca
+# o dispositivo A PARTIR DO ROTULO. Se o trecho tachado comeca igual ao bloco, o
+# dispositivo foi superado; se o risco comeca no meio, e outra coisa.
+_STRIKE_TAG = re.compile(r"<(strike|s)\b[^>]*>(.*?)</\1>", re.I | re.S)
+_STRIKE_CSS = re.compile(r"<span[^>]*line-through[^>]*>(.*?)</span>", re.I | re.S)
+_PREFIXO = 15
 
 # "Art[. .]189": tolera pontuacao repetida ANTES do numero porque a fonte tem erro
 # de digitacao - o art. 189 vigente, que define insalubridade, esta escrito
@@ -89,6 +140,9 @@ class Bloco:
     # Ler so a data e perder a metade que importa.
     vigencia: date | None
     revogado_em: date | None
+    # Dia em que a MP perdeu eficacia. Distinto de `revogado_em`: aqui nao ha
+    # norma nova, e a redacao anterior volta no dia seguinte.
+    caducou_em: date | None = None
 
 
 # --- captura ----------------------------------------------------------------
@@ -166,6 +220,12 @@ def _marcador(fragmento: str) -> tuple[str | None, date | None, bool]:
     if numero.replace(".", "") == "13467":
         return "Lei 13.467/2017", REFORMA, revogacao
 
+    # MP que caducou tem data de publicacao conhecida. O marcador so escreve o ano
+    # ("de 2017"), e cair no default de 1o de janeiro colocaria em vigor, desde
+    # janeiro, texto que so passou a existir em novembro.
+    if _E_MP.match(especie) and numero in CADUCIDADE:
+        return f"{norma}/{CADUCIDADE[numero][0].year}", CADUCIDADE[numero][0], revogacao
+
     d = _DATA_LEI.search(resto)
     if not d:
         return norma, None, revogacao
@@ -174,6 +234,20 @@ def _marcador(fragmento: str) -> tuple[str | None, date | None, bool]:
         return f"{norma}/{ano}", date(int(ano), int(mes or 1), int(dia or 1)), revogacao
     except ValueError:
         return f"{norma}/{ano}", None, revogacao
+
+
+def _superado(fragmento: str, texto: str) -> bool:
+    """O tachado cobre o dispositivo, ou so um pedaco solto?
+
+    Ver o comentario de _STRIKE_TAG: a resposta esta em ONDE o risco comeca, nao
+    em quanto ele cobre.
+    """
+    n = min(_PREFIXO, len(texto))
+    if n < 6:
+        return False
+    riscados = [_texto_limpo(m.group(2)) for m in _STRIKE_TAG.finditer(fragmento)]
+    riscados += [_texto_limpo(m.group(1)) for m in _STRIKE_CSS.finditer(fragmento)]
+    return any(r[:n] == texto[:n] for r in riscados)
 
 
 def blocos(bruto: bytes) -> list[Bloco]:
@@ -186,17 +260,47 @@ def blocos(bruto: bytes) -> list[Bloco]:
         if not texto:
             continue
         lei, data, revogacao = _marcador(fragmento)
+        # "(Vigencia encerrada)" so vale como caducidade quando o bloco de fato
+        # traz a redacao da MP. O mesmo aviso aparece solto em blocos vizinhos.
+        caducou = None
+        if _VIG_ENCERRADA.search(fragmento) and lei:
+            numero = lei.split("/")[0].rsplit(" ", 1)[-1]
+            if _E_MP.match(lei) and numero in CADUCIDADE:
+                caducou = CADUCIDADE[numero][1]
         saida.append(
             Bloco(
                 ancoras=_ANCORA.findall(fragmento),
                 texto=texto,
-                superado="<strike" in fragmento.lower() or "<s>" in fragmento.lower(),
+                superado=_superado(fragmento, texto),
                 alterado_por=lei,
                 vigencia=None if revogacao else data,
                 revogado_em=data if revogacao else None,
+                caducou_em=caducou,
             )
         )
     return saida
+
+
+def mps_sem_tabela(bruto: bytes) -> set[str]:
+    """MPs com "(Vigencia encerrada)" que a tabela CADUCIDADE nao conhece.
+
+    Silenciar isso seria repetir o erro que este modulo acabou de corrigir: a MP
+    entraria como alteracao comum, sem fim de vigencia, e seu texto ficaria
+    valendo para sempre. A ingestao prefere avisar.
+    """
+    # A chave e o numero, nao o rotulo: o mesmo bloco pode sair como "Medida
+    # Provisoria 905" ou "Medida Provisoria 905/2019", conforme o marcador traga
+    # ou nao o ano, e avisar duas vezes da mesma MP so atrapalha quem le.
+    fora = set()
+    for bloco in blocos(bruto):
+        if not _VIG_ENCERRADA.search(bloco.texto) or not bloco.alterado_por:
+            continue
+        if not _E_MP.match(bloco.alterado_por):
+            continue
+        numero = bloco.alterado_por.split("/")[0].rsplit(" ", 1)[-1]
+        if numero not in CADUCIDADE:
+            fora.add(numero)
+    return {f"Medida Provisória {n}" for n in fora}
 
 
 # --- classificacao ----------------------------------------------------------
@@ -216,6 +320,7 @@ class Trecho:
     alterado_por: str | None
     vigencia: date | None
     revogado_em: date | None
+    caducou_em: date | None = None
 
 
 def _sem_marcador(texto: str) -> str:
@@ -331,6 +436,7 @@ def dispositivos(bruto: bytes, obra: str, inicio: str | None = None) -> list[Tre
                 alterado_por=bloco.alterado_por,
                 vigencia=bloco.vigencia,
                 revogado_em=bloco.revogado_em,
+                caducou_em=bloco.caducou_em,
             )
         )
 
@@ -350,6 +456,12 @@ def com_vigencia(
     texto esta tachado e nao ha sucessora nem data legivel: sabe-se que saiu da
     lei, nao se sabe quando. Servir esse texto como vigente seria o pior erro que
     o indice pode cometer, entao ele fica marcado e a consulta o exclui.
+
+    A caducidade de medida provisoria quebra a sucessao simples. O art. 223-C tem
+    tres blocos: o texto da Reforma, o da MP 808 e de novo o da Reforma. O
+    terceiro nao e redacao nova - e a mesma de antes, que VOLTA quando a MP perde
+    eficacia. Por isso a data que o marcador dele carrega (11/11/2017, quando a
+    Reforma entrou) nao serve de inicio: o inicio e o dia seguinte ao fim da MP.
     """
     por_urn: dict[str, list[Trecho]] = {}
     for t in trechos:
@@ -359,19 +471,29 @@ def com_vigencia(
     for redacoes in por_urn.values():
         for i, t in enumerate(redacoes):
             inicio = t.vigencia or piso
+            # Texto que volta depois da caducidade recomeca no dia seguinte, e nao
+            # na data em que valeu pela primeira vez.
+            if i and redacoes[i - 1].caducou_em:
+                inicio = date.fromordinal(redacoes[i - 1].caducou_em.toordinal() + 1)
+
             fim: date | None = None
             revogado = False
 
-            if t.revogado_em:
+            if t.caducou_em:
+                # A MP vale ate o dia declarado pelo ato do Congresso, inclusive.
+                fim = t.caducou_em
+            elif t.revogado_em:
                 # "(Revogado pela Lei X, de DATA)": a data encerra a vigencia.
                 fim = date.fromordinal(t.revogado_em.toordinal() - 1)
             elif i + 1 < len(redacoes):
-                proxima = redacoes[i + 1].vigencia
-                if proxima:
-                    fim = date.fromordinal(proxima.toordinal() - 1)
+                proxima = redacoes[i + 1]
+                if proxima.vigencia and proxima.vigencia > inicio:
+                    fim = date.fromordinal(proxima.vigencia.toordinal() - 1)
                 elif t.superado:
-                    # Superada por uma redacao sem data legivel. A sucessora e que
-                    # responde pelo presente; esta nao pode responder por nada.
+                    # Superada por uma redacao sem data legivel, ou por uma cuja
+                    # data e anterior a esta - o que acontece quando a sucessora e
+                    # um texto que retorna. A sucessora responde pelo presente;
+                    # esta nao pode responder por nada.
                     revogado = True
             elif t.superado:
                 revogado = True

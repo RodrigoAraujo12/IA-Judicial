@@ -63,6 +63,14 @@ def indexar(chave: str, rebaixar: bool = False) -> None:
 
     trechos = planalto.dispositivos(bruto, chave, inicio=obra["inicio"])
     resolvidos = planalto.com_vigencia(trechos, obra["piso"])
+
+    # MP que caducou sem estar na tabela entraria como alteracao definitiva, e seu
+    # texto ficaria valendo para sempre. E o erro que a tabela existe para evitar,
+    # entao ele e dito em voz alta.
+    if desconhecidas := planalto.mps_sem_tabela(bruto):
+        print("  MP COM VIGENCIA ENCERRADA FORA DA TABELA CADUCIDADE:")
+        for mp in sorted(desconhecidas):
+            print(f"    {mp} - datas nao conhecidas; o texto dela pode ficar vigente")
     print(f"  reconhecidos: {len(trechos)} dispositivos em {len({t.urn for t in trechos})} URNs")
 
     # Caput de cada artigo, para dar contexto aos subordinados no indice.

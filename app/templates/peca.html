@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block titulo %}Minuta da inicial{% endblock %}
+
+{% block corpo %}
+{# O template so formata. Toda escolha juridica ja foi feita em motor.py e em
+   peca/redator.py - se algo aqui parecer decisao, esta no lugar errado. #}
+{# Herda o estilo de documento do relatorio; `peca` acrescenta so o que e proprio
+   de uma peca (enderecamento, transcricao, lista de pedidos). #}
+<article class="relatorio peca">
+
+  {% if m.lacunas %}
+    <div class="caixa aviso-tela">
+      <b>Minuta incompleta.</b> Falta preencher, antes do protocolo:
+      <ul>{% for l in m.lacunas %}<li>{{ l }}</li>{% endfor %}</ul>
+    </div>
+  {% endif %}
+
+  <p class="enderecamento">
+    EXCELENT&Iacute;SSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) DO TRABALHO DE
+    {{ m.juizo }}
+  </p>
+
+  <p class="claro">&nbsp;</p>
+
+  <p class="corrido">
+    {% if m.reclamante %}{{ m.reclamante }}{% else %}<i>[reclamante n&atilde;o qualificado]</i>{% endif %},
+    vem, por seu advogado que esta subscreve, propor a presente
+    <b>RECLAMA&Ccedil;&Atilde;O TRABALHISTA</b> em face de
+    {% if m.reclamada %}{{ m.reclamada }}{% else %}<i>[reclamada n&atilde;o qualificada]</i>{% endif %},
+    pelos fatos e fundamentos a seguir expostos.
+  </p>
+
+  <h2>I &mdash; DOS FATOS</h2>
+  {% for titulo, texto in m.fatos %}
+    <h3>{{ titulo }}</h3>
+    {# A narrativa entra literal. Reescrever fato dito pelo cliente vira alegacao
+       que ele nao fez - por isso so se quebra em paragrafos. #}
+    {% for paragrafo in texto.split('\n') if paragrafo.strip() %}
+      <p class="corrido">{{ paragrafo.strip() }}</p>
+    {% endfor %}
+  {% else %}
+    <p class="vazio">Nenhum bloco de fato preenchido na entrevista.</p>
+  {% endfor %}
+
+  <h2>II &mdash; DO DIREITO</h2>
+  {% for b in m.fundamentacao %}
+    <h3>{{ loop.index }}. {{ b.pedido.nome }}</h3>
+    {% if b.pedido.resumo %}<p class="corrido">{{ b.pedido.resumo }}</p>{% endif %}
+
+    {% if b.cindir and b.regimes | length > 1 %}
+      <p class="corrido nota-cisao">
+        O pedido atravessa a Reforma Trabalhista e por isso &eacute; formulado em
+        separado por per&iacute;odo:
+      </p>
+      <ul>
+        {% for v in b.variacoes %}<li><b>{{ rotulo_regime[v.regime] }}</b> &mdash; {{ v.regra }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+
+    {% for c in b.citacoes %}
+      <div class="citacao">
+        <p class="ref">
+          {{ c.rotulo or c.ref }}
+          {%- if c.vigencia %} <span class="fund">({{ c.vigencia }})</span>{% endif %}
+          {%- if c.controverso %} <span class="marca">tese em disputa &mdash; conferir antes de afirmar</span>{% endif %}
+        </p>
+        {# Transcricao so quando veio do corpus. Sem isso a peca citaria de
+           memoria, que e exatamente o que o eixo de procedencia impede. #}
+        {% if c.texto %}<blockquote>{{ c.texto }}</blockquote>{% endif %}
+        {% if c.nota %}<p class="fund">{{ c.nota }}</p>{% endif %}
+      </div>
+    {% endfor %}
+
+    {% if b.pedido.reflexos %}
+      <p class="corrido"><b>Reflexos:</b> {{ b.pedido.reflexos | join('; ') }}.</p>
+    {% endif %}
+  {% else %}
+    <p class="vazio">Nenhum pedido confirmado pela triagem.</p>
+  {% endfor %}
+
+  <h2>III &mdash; DOS PEDIDOS</h2>
+  <p class="corrido">Ante o exposto, requer:</p>
+  <ol class="pedidos">
+    {% for p in m.pedidos %}<li>{{ p }}</li>{% endfor %}
+  </ol>
+
+  <h2>IV &mdash; DOS REQUERIMENTOS</h2>
+  <ul>
+    {% for r in m.requerimentos %}
+      <li><b>{{ r.titulo }}</b> &mdash; {{ r.descricao }}</li>
+    {% endfor %}
+  </ul>
+
+  {# Nao e parte da peca: e o que NAO entrou nela, e por que. Fica depois do
+     fecho de proposito, para nao se confundir com o texto a protocolar. #}
+  {% if m.nao_incluidos %}
+    <div class="caixa aviso-tela">
+      <h2>N&atilde;o inclu&iacute;dos nesta minuta</h2>
+      <p>
+        A triagem n&atilde;o confirmou estes pedidos. Eles n&atilde;o foram
+        descartados &mdash; falta uma resposta para decidir, e ela est&aacute;
+        nomeada abaixo.
+      </p>
+      {% for d in m.nao_incluidos %}
+        <h3>{{ d.pedido.nome }}</h3>
+        <ul>{% for f in d.faltam %}<li>{{ f }}</li>{% endfor %}</ul>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="caixa aviso-tela">
+    <b>O valor da causa e o valor de cada pedido n&atilde;o saem daqui.</b>
+    O art. 840 &sect;1&ordm; os exige, e eles v&ecirc;m do contador ou do
+    PJe-Calc &mdash; este sistema n&atilde;o apura valor, por decis&atilde;o de
+    projeto.
+  </div>
+
+  {# /relatorio e POST, alimentado pelo formulario da entrevista: linkar por GET
+     daria 405. O caminho de volta e a entrevista, que guarda as respostas. #}
+  <p class="acoes no-print">
+    <a href="/">Voltar &agrave; entrevista</a>
+  </p>
+</article>
+{% endblock %}

@@ -7,7 +7,36 @@ pedidos cabíveis, verificações de risco e conferência de prescrição.
 deliberado: esta é a camada que não pode alucinar e que ninguém copia. A IA entra
 na camada de cima — o índice do corpus normativo e, depois, a redação da peça.
 
-## Rodar
+## Instalar na máquina de quem vai usar
+
+Dois cliques, sem terminal e **sem VS Code** — ele é editor de código, não é
+preciso para rodar. Basta o Python instalado (3.10 ou superior, de
+[python.org](https://www.python.org/downloads/), marcando *"Add Python to PATH"*).
+
+1. `instalar.bat` — uma vez só. Cria o ambiente, instala as dependências
+   (~170 MB) e pergunta se quer baixar o modelo de busca por sentido (2,2 GB).
+2. `abrir.bat` — no uso diário. Sobe o servidor e abre o navegador.
+
+**Ponha a pasta num caminho curto** (`C:\triagem`, ou a Área de Trabalho). O
+Windows corta caminhos acima de 260 caracteres e a instalação falha no meio, com
+erro que não diz isso.
+
+O que copiar junto:
+
+| | |
+|---|---|
+| código | 321 KB |
+| `dados/corpus.db` | 33 MB — não está no git, vai por fora |
+| `modelos/` | 2,2 GB — opcional; o `instalar.bat` baixa se preferir |
+| `dados/casos.db` | **nunca** — é dado de cliente |
+| `.venv/` | não; o `instalar.bat` cria o dela |
+
+Sem o modelo o sistema funciona: a consulta por referência e a busca por palavra
+ficam inteiras, e a fusão cai de 15/15 para 14/15 no conjunto de avaliação. Sem o
+`corpus.db` a entrevista e a minuta ainda funcionam — as citações saem pelo
+rótulo, sem transcrição.
+
+## Rodar (desenvolvimento)
 
 ```
 python -m venv .venv
@@ -20,8 +49,9 @@ python -m venv .venv
 problema no seu terminal, tire-o: ele só recarrega o servidor quando o código
 muda, e não é necessário para usar o sistema.
 
-Abre em <http://127.0.0.1:8000>. Duas telas: a **entrevista** (`/`) e a
-**consulta à lei** (`/corpus`), que precisa do corpus montado.
+Abre em <http://127.0.0.1:8000>. Três telas: a **entrevista** (`/`), a
+**consulta à lei** (`/corpus`), que precisa do corpus montado, e a **minuta da
+inicial** (`/peca`), gerada a partir das respostas da entrevista.
 
 Testes rápidos, sem servidor:
 
@@ -30,7 +60,9 @@ python testar.py           # triagem
 python testar_refs.py      # referências do catálogo -> dispositivos
 python testar_corpus.py    # esquema do corpus: vigência e busca lexical
 python testar_busca.py     # recuperação na CLT (exige o corpus ingerido)
+python testar_caducidade.py # MP que caducou, e o texto anterior que volta
 python testar_inicial.py   # qualificação e história dos fatos, ponta a ponta
+python testar_peca.py      # a minuta: cisão, terceiro estado, ausência de valor
 ```
 
 Para montar o corpus, uma vez só (leva menos de um minuto):
@@ -86,7 +118,9 @@ app/
     planalto.py          ingestão do HTML do Planalto
     indexar.py           CLI de ingestão, com conferência contra o catálogo
     busca.py             as vias de recuperação e a fusão RRF
-  templates/             Jinja2 — entrevista, relatório, casos e consulta ao corpus
+  peca/
+    redator.py           minuta da inicial — só dá forma, não decide
+  templates/             Jinja2 — entrevista, relatório, casos, corpus e minuta
   static/                CSS e JS (sem dependência externa, sem CDN)
 dados/casos.db           criado no primeiro salvamento
 dados/corpus.db          índice do corpus — reconstruível e descartável
@@ -146,9 +180,68 @@ CLT, art. 384 nao estava em vigor em 2026-08-18: vigorou ate 2017-11-10
 [`app/corpus/banco.py`](app/corpus/banco.py) é `(urn, vigencia_inicio)` e toda
 consulta passa por uma data do caso.
 
+**Medida provisória que caduca não é norma revogada.** Revogação põe texto novo
+no lugar do antigo. Caducidade apenas encerra a eficácia da MP — e o texto
+anterior **volta**, sem que nenhuma norma nova seja publicada. O art. 223-C tem
+três redações em cinco meses por causa disso:
+
+```
+11/11/2017 a 13/11/2017   texto da Reforma
+14/11/2017 a 23/04/2018   texto da MP 808/2017
+24/04/2018 até hoje       texto da Reforma, que retornou
+```
+
+A terceira não é redação nova, e é aí que a sucessão por ordem de documento
+quebra: o bloco que retorna carrega o marcador da lei que o criou (11/11/2017), e
+ler essa data como início poria a Reforma valendo durante a vigência da MP.
+
+Quatro MPs caducaram sobre a CLT — 808/2017, 873/2019, 905/2019 e 955/2020. As
+datas de publicação e de encerramento estão em `CADUCIDADE`, em
+[`app/corpus/planalto.py`](app/corpus/planalto.py), e foram lidas dos Atos
+Declaratórios do Congresso, não inferidas. Se a fonte trouxer "(Vigência
+encerrada)" de uma MP fora dessa tabela, a ingestão avisa em vez de adivinhar.
+
 **Nada é citável sem procedência.** Cada dispositivo aponta para uma fonte com
 URL, data de captura e sha256. Citação que não se rastreia até lá não entra na
 peça.
+
+## A minuta da inicial
+
+`/peca` monta a peça a partir das mesmas respostas que alimentam o relatório.
+**Não há modelo de linguagem no caminho** — o texto é função determinista das
+respostas, então o mesmo caso produz sempre a mesma minuta, e qualquer
+divergência se explica lendo o template em vez de reexecutar um modelo.
+
+O redator ([`app/peca/redator.py`](app/peca/redator.py)) **não decide nada**.
+Quais pedidos cabem, quais se cindem por período e qual redação da lei valia na
+data do caso já foram resolvidos pelo motor e pelo corpus. Aqui só se dá forma —
+e é isso que mantém a auditoria onde ela já estava.
+
+O efeito aparece no pedido que atravessa a Reforma. Ele vira dois no texto, e a
+*mesma* referência do catálogo resolve em duas redações distintas:
+
+```
+Intervalo intrajornada suprimido (até 10/11/2017)
+   CLT, art. 71, § 4º   1994-07-27 a 2017-11-10
+   "...ficará obrigado a remunerar o período correspondente..."
+Intervalo intrajornada suprimido (a partir de 11/11/2017)
+   CLT, art. 71, § 4º   2017-11-11 a hoje
+   "...de natureza indenizatória, apenas do período suprimido..."
+```
+
+Três decisões que valem mais que o código:
+
+- **A minuta não apura valor.** Nem número, nem lacuna `[VALOR]` — lacuna que
+  ninguém preenche vira peça protocolada com o marcador dentro. O art. 840 §1º
+  continua exigindo o valor; ele vem do contador ou do PJe-Calc.
+- **Pedido "a investigar" não entra no corpo**, e também não some: sai numa lista
+  própria, ao fim, com a pergunta que o destrancaria. Achatar o terceiro estado
+  dentro da peça desfaria o que a triagem construiu.
+- **A narrativa dos fatos entra literal.** Reescrever fato dito pelo cliente vira
+  alegação que ele não fez.
+
+Obra que ainda não está no corpus — súmulas do TST, CF — é citada pelo rótulo,
+sem transcrição. Citar sem transcrever é útil; transcrever de memória, não.
 
 ## Estado
 
@@ -158,7 +251,7 @@ Triagem completa. Em andamento e a fazer:
 |---|---|---|
 | **Corpus** | CLT pronta | 3.663 dispositivos, 5.752 redações, com eixo de vigência. Faltam CF, súmulas e OJs do TST, NRs, súmulas do TRT-13. |
 | **Via densa** | pronta | BGE-M3 em ONNX na CPU. Fusão RRF acerta 15/15 no conjunto de avaliação. |
-| **Inicial** | em andamento | Quatro blocos, nas palavras de quem usa: qualificação das partes, história dos fatos, fundamentação, pedido. Os quatro já são coletados; falta o **redator** que os junta num texto. |
+| **Inicial** | minuta pronta | Os quatro blocos — qualificação, fatos, fundamentação, pedidos — saem como peça em `/peca`, montada por template. Sem modelo de linguagem: o texto é função determinista das respostas. |
 | **Recurso, embargos, contrarrazões** | a fazer | Partem de um **documento** (sentença, acórdão, recurso da outra parte), não da entrevista. Exigem uma camada de leitura que não existe. |
 | **Processo parado** | a fazer | Consultor de próxima medida para processo que anda devagar há anos. |
 | **Jurisprudência** | a decidir | Uso principal é **citar na peça**, o que torna o validador de citações obrigatório. Uso secundário é aferir viabilidade. Muda a escala e exige rastrear superação de tese, não vigência. |
@@ -177,11 +270,21 @@ Triagem completa. Em andamento e a fazer:
 - **O catálogo cita um artigo revogado.** `Verbas rescisórias` aponta para
   `arts. 129 a 147`, e o art. 141 foi revogado pela Lei 13.874/2019. A ingestão
   acusa isso a cada execução. É correção de YAML, não de código.
-- **As datas de vigência são aproximadas, exceto a da Reforma.** O marcador do
-  Planalto traz a data de *publicação* da norma alteradora, que só coincide com a
-  vigência quando não há vacatio legis. Para 11/11/2017 a data é exata, porque o
-  sistema já a conhece de outra fonte.
-- 1.735 redações ficaram marcadas como revogadas sem data legível na fonte. Elas
+- **As datas de vigência são aproximadas, exceto a da Reforma e as das quatro MPs
+  que caducaram.** O marcador do Planalto traz a data de *publicação* da norma
+  alteradora, que só coincide com a vigência quando não há vacatio legis. Para
+  11/11/2017 e para as MPs da tabela `CADUCIDADE` as datas são exatas, porque vêm
+  de fonte própria.
+- **A vigência escalonada da MP 905/2019 não está modelada.** Ela entrou em vigor
+  em 90 dias para os arts. 161, 634 e 634-A, e na publicação para o resto; o
+  índice usa a publicação para todos. O catálogo não cita nenhum dos três, então
+  isso só afeta busca livre nesses artigos.
+- **194 dispositivos têm janelas de vigência que se sobrepõem**, 38 deles em datas
+  a partir de 2010. A causa é outra: quando o Planalto repete um texto sem
+  marcador legível, a redação cai no piso de 1943 e passa a cobrir período que não
+  lhe pertence. Nenhum deles é citado pelo catálogo — a Via 0 está limpa —, mas a
+  busca livre pode devolver duas redações para a mesma data.
+- 1.258 redações ficaram marcadas como revogadas sem data legível na fonte. Elas
   nunca são servidas como vigentes — na dúvida o índice cala, em vez de afirmar.
 - A qualificação é a única parte do sistema que **não influencia nada**. É de
   propósito, e há teste que tranca isso: se um CPF digitado passar a mudar quais
