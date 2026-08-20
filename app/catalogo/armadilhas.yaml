@@ -15,6 +15,7 @@
       ref: "IN 41/2018 do TST"
       controverso: true
       nota: CONFERIR no indice a posicao atual do TST e do TRT competente.
+  requerimento: true
   gravidade: critica
   quando: []
 
@@ -27,6 +28,7 @@
   fundamentos:
     - tipo: clt
       ref: "art. 790, par. 3o e par. 4o"
+  requerimento: true
   gravidade: critica
   quando: []
 
@@ -95,6 +97,7 @@
   fundamentos:
     - tipo: clt
       ref: "art. 195, par. 2o"
+  requerimento: true
   gravidade: alta
   quando:
     - - campo: exposicao_agente_nocivo
@@ -128,5 +131,73 @@
       ref: "Sumula 461"
     - tipo: clt
       ref: "art. 74, par. 2o"
+  requerimento: true
   gravidade: alta
   quando: []
+
+- id: execucao_frustrada
+  titulo: Levantar socios e patrimonio antes de ajuizar
+  descricao: >-
+    Empresa baixada, esvaziada ou desfazendo-se de bens anuncia execucao
+    frustrada. A desconsideracao da personalidade juridica se pede em incidente
+    proprio (art. 855-A), normalmente na execucao - mas o que a decide e a prova
+    reunida agora: quadro societario, data de saida de cada socio, bens que
+    sairam da empresa e para onde foram. Depois da sentenca, o cliente que ganhou
+    e o mais dificil de convencer a investigar.
+  fundamentos:
+    - tipo: clt
+      ref: "art. 855-A"
+      nota: >-
+        Aplica o incidente do CPC ao processo do trabalho. Cabe ja na fase de
+        conhecimento, se houver elementos.
+    - tipo: clt
+      ref: "art. 10-A"
+      nota: >-
+        Socio retirante responde pelas obrigacoes do periodo em que foi socio, em
+        acoes ajuizadas ate dois anos depois da averbacao da saida. O prazo corre,
+        e conferir a data da alteracao contratual e urgente.
+  gravidade: critica
+  quando:
+    - - campo: empresa_ativa
+        op: falso
+    - - campo: patrimonio_esvaziado
+        op: verdadeiro
+
+- id: justa_causa_sem_gradacao
+  titulo: Alegar ausencia de gradacao - nao ha punicao anterior no contrato
+  descricao: >-
+    A justa causa e a pena maxima e pressupoe gradacao quando a falta imputada e
+    daquelas que a admitem, sobretudo a desidia, que e por definicao conduta
+    reiterada. Contrato longo sem uma unica advertencia, terminando direto em
+    justa causa, ataca-se pela desproporcao antes mesmo de discutir o fato - e
+    o onus de provar tudo isso e do empregador.
+  fundamentos:
+    - tipo: clt
+      ref: "art. 482"
+    - tipo: sumula_tst
+      ref: "Sumula 212"
+      nota: >-
+        Presuncao de continuidade do vinculo: a modalidade de extincao e fato
+        impeditivo, e cabe a reclamada prova-la.
+  gravidade: critica
+  quando:
+    - - campo: modalidade_saida
+        op: igual
+        valor: justa_causa
+      - campo: justa_causa_advertencias
+        op: igual
+        valor: nenhuma
+
+- id: justa_causa_bis_in_idem
+  titulo: Alegar non bis in idem - o fato ja havia sido punido
+  descricao: >-
+    Punido o fato uma vez, ele se exaure: a segunda punicao pelo mesmo fato e
+    nula, e com ela cai a justa causa, independentemente de o fato ter ocorrido.
+    E a tese mais economica do bloco, porque dispensa discutir a conduta.
+  fundamentos:
+    - tipo: clt
+      ref: "art. 482"
+  gravidade: critica
+  quando:
+    - - campo: justa_causa_mesmo_fato_punido
+        op: verdadeiro

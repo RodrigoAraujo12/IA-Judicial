@@ -172,3 +172,59 @@
     - >-
       Pedido de baixo custo e frequentemente esquecido. Sempre verificar quando a
       dispensa e sem justa causa ou quando se pede reversao de justa causa.
+
+- id: ferias_em_dobro
+  nome: Ferias em dobro
+  grupo: rescisao
+  resumo: >-
+    Periodo aquisitivo nao gozado no prazo, ferias pagas fora do prazo legal ou
+    periodo em que houve trabalho: em qualquer dos casos a remuneracao e dobrada.
+  quando:
+    - - campo: ferias_gozadas
+        op: igual
+        valor: nenhuma
+    - - campo: ferias_pagas_no_prazo
+        op: falso
+    - - campo: trabalhou_durante_ferias
+        op: verdadeiro
+  requisitos:
+    - descricao: Identificacao de cada periodo aquisitivo e do respectivo gozo
+      prova: [avisos de ferias, recibos, registros de ponto, extratos]
+    - descricao: Data efetiva do pagamento, confrontada com o inicio das ferias
+      prova: [extratos bancarios, recibos com data]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 129"
+      nota: Direito a ferias anuais remuneradas, sem prejuizo da remuneracao.
+    - tipo: clt
+      ref: "art. 137"
+      nota: >-
+        Nao concedidas no prazo do art. 134, as ferias sao pagas em DOBRO. E a
+        hipotese mais solida do pedido.
+    - tipo: clt
+      ref: "art. 145"
+      nota: >-
+        Pagamento ate 2 dias antes do inicio do periodo. E o dispositivo que
+        sustenta a dobra por pagamento intempestivo.
+    - tipo: sumula_tst
+      ref: "Sumula 450"
+      controverso: true
+      nota: >-
+        Dobra por pagamento fora do prazo do art. 145. CONFERIR no indice: a
+        validade da sumula foi questionada por ofensa a legalidade, e ha decisao
+        em sentido contrario. A hipotese do art. 137 nao depende dela.
+  provas:
+    - Avisos de ferias de todos os periodos aquisitivos
+    - Recibos de ferias, confrontados com extratos bancarios
+    - Registros de ponto do periodo em que formalmente estava de ferias
+    - Testemunhas que o viram trabalhando durante as ferias
+  reflexos:
+    - Um terco constitucional sobre a dobra
+  alertas:
+    - >-
+      Levantar periodo aquisitivo por periodo aquisitivo, com data de gozo e data
+      de pagamento. Pedido generico de "ferias em dobro" nao atende o art. 840,
+      par. 1o, e convida a improcedencia por indeterminacao.
+    - >-
+      A dobra do art. 137 independe de como o contrato terminou: nasce durante a
+      relacao e sobrevive a rescisao correta.

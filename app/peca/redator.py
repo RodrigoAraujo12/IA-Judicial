@@ -112,7 +112,12 @@ class Minuta:
     fatos: list[tuple[str, str]] = field(default_factory=list)
     fundamentacao: list[Bloco] = field(default_factory=list)
     pedidos: list[str] = field(default_factory=list)
+    # Separadas porque cumprem papeis opostos. `requerimentos` sao texto da peca,
+    # que o juizo le. `verificacoes` sao recado para quem monta o processo -
+    # conferir prescricao, orientar o cliente, levantar socios - e imprimir isso
+    # como se fosse pedido ao juizo seria erro grosseiro.
     requerimentos: list[Armadilha] = field(default_factory=list)
+    verificacoes: list[Armadilha] = field(default_factory=list)
     nao_incluidos: list[Pendencia] = field(default_factory=list)
     # Campos de qualificacao e de fato ainda em branco. A minuta sai mesmo assim
     # - peca incompleta que se ve e melhor que peca que espera perfeicao para
@@ -296,7 +301,8 @@ def montar(
         fatos=fatos,
         fundamentacao=fundamentacao,
         pedidos=pedidos,
-        requerimentos=analise.armadilhas,
+        requerimentos=[a for a in analise.armadilhas if a.requerimento],
+        verificacoes=[a for a in analise.armadilhas if not a.requerimento],
         nao_incluidos=nao_incluidos,
         lacunas=lacunas(catalogo, respostas, analise),
         prescricao=analise.prescricao,

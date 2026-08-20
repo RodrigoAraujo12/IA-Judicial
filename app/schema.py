@@ -87,6 +87,11 @@ class Armadilha(BaseModel):
     # Quando vazio, a armadilha vale para todo caso.
     quando: list[list[Condicao]] = Field(default_factory=list)
     gravidade: Literal["critica", "alta", "media"] = "alta"
+    # True quando a verificacao vira texto DA peca - um requerimento que o juizo
+    # le. As demais sao recado para quem monta o processo ("conferir prescricao",
+    # "orientar o cliente a comparecer") e nao podem ser impressas como se fossem
+    # pedido ao juizo. O default e False porque a maioria e recado.
+    requerimento: bool = False
 
 
 class Opcao(BaseModel):

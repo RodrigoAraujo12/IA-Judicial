@@ -211,3 +211,72 @@
     - >-
       Ausencia de deposito de FGTS e mora salarial contumaz sao as hipoteses de
       maior indice de acolhimento. Instruir com o extrato analitico.
+
+- id: integracao_parcelas
+  nome: Integracao ao salario das parcelas pagas a margem
+  grupo: contrato
+  resumo: >-
+    Valores pagos por fora do contracheque, ou parcelas habituais nao lancadas em
+    folha, integram a remuneracao e repercutem em todas as verbas do contrato.
+  quando:
+    - - campo: salario_por_fora
+        op: verdadeiro
+    - - campo: parcelas_variaveis
+        op: preenchido
+      - campo: parcelas_no_contracheque
+        op: falso
+  requisitos:
+    - descricao: Habitualidade do pagamento, e nao liberalidade isolada
+      prova: [extratos bancarios de todo o periodo, comprovantes PIX, testemunhas]
+    - descricao: Natureza salarial da parcela, conforme a regra vigente na epoca
+      prova: [contracheques, politica de premiacao, mensagens sobre valores]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 457"
+      nota: >-
+        Compoe a remuneracao o salario e as demais parcelas que a lei manda
+        integrar. E a base a partir da qual todo o resto se calcula.
+    - tipo: clt
+      ref: "art. 457, par. 1o e par. 2o"
+      nota: >-
+        ATENCAO a data: o par. 2o mudou na Reforma e teve ainda uma redacao
+        propria durante a MP 808/2017. Conferir no indice a redacao do periodo do
+        contrato antes de afirmar a natureza da parcela.
+    - tipo: clt
+      ref: "art. 458"
+      nota: Salario-utilidade - moradia, alimentacao e outras prestacoes in natura.
+    - tipo: clt
+      ref: "art. 464"
+      nota: >-
+        Pagamento se prova por recibo. A ausencia de recibo do que foi pago por
+        fora joga a favor do trabalhador, desde que a habitualidade se demonstre.
+  provas:
+    - Extratos bancarios de todo o periodo imprescrito
+    - Comprovantes de PIX ou transferencia, inclusive de terceiros
+    - Testemunhas que recebiam da mesma forma
+    - Mensagens em que o valor real e combinado ou cobrado
+  reflexos:
+    - 13o salario
+    - Ferias acrescidas de um terco
+    - FGTS e multa de 40%
+    - Aviso previo
+    - Horas extras e adicional noturno
+  variacao_temporal:
+    - regime: pre_reforma
+      regra: >-
+        Ajudas de custo e diarias que excedessem 50% do salario integravam a
+        remuneracao; premio e gratificacao habituais tinham natureza salarial.
+    - regime: pos_reforma
+      regra: >-
+        O art. 457, par. 2o passou a excluir da remuneracao ajuda de custo,
+        auxilio-alimentacao, diarias e premios, ainda que habituais. O ataque
+        muda de alvo: passa a ser a NATUREZA REAL da parcela - salario disfarcado
+        de premio continua sendo salario (art. 9o).
+  alertas:
+    - >-
+      Este pedido muda a BASE dos demais. Se ele proceder, todos os outros
+      calculos sao refeitos sobre a remuneracao integrada - o que precisa estar
+      pedido expressamente.
+    - >-
+      Extrato bancario de todo o periodo e a prova central, e o cliente costuma
+      nao ter. Pedir na primeira reuniao, porque banco demora.

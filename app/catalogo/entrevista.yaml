@@ -20,15 +20,18 @@ secoes:
   - id: danos
     titulo: Saude e danos
     ordem: 6
+  - id: responsabilidade
+    titulo: Quem responde
+    ordem: 7
   - id: fatos
     titulo: Historia dos fatos
-    ordem: 7
+    ordem: 8
   - id: qualificacao
     titulo: Qualificacao das partes
-    ordem: 8
+    ordem: 9
   - id: processual
     titulo: Dados processuais
-    ordem: 9
+    ordem: 10
 
 perguntas:
   # --- contrato -------------------------------------------------------------
@@ -252,6 +255,47 @@ perguntas:
       - { valor: "acumulo", rotulo: "Exercia duas ou mais funcoes ao mesmo tempo (acumulo)" }
       - { valor: "substituicao", rotulo: "Substituia outro empregado de forma nao eventual" }
 
+  # Parcela paga a margem do contracheque muda a BASE de todos os outros
+  # pedidos - FGTS, 13o, ferias, aviso, hora extra. Errar aqui contamina o
+  # calculo inteiro, e o cliente costuma nao mencionar por achar que "era so um
+  # extra".
+  - id: salario_por_fora
+    secao: funcao
+    texto: Parte do pagamento era feita por fora do contracheque?
+    tipo: bool
+    ajuda: >-
+      PIX, dinheiro em envelope, deposito de conta de terceiro ou de outra
+      empresa. Perguntar pelo valor que ele efetivamente recebia por mes e
+      comparar com o contracheque.
+
+  - id: parcelas_variaveis
+    secao: funcao
+    texto: Recebia alguma destas parcelas, alem do salario?
+    tipo: multipla
+    opcoes:
+      - { valor: "comissao", rotulo: "Comissao" }
+      - { valor: "premio", rotulo: "Premio ou bonus" }
+      - { valor: "gratificacao", rotulo: "Gratificacao de funcao" }
+      - { valor: "diaria", rotulo: "Diaria de viagem" }
+      - { valor: "ajuda_custo", rotulo: "Ajuda de custo" }
+      - { valor: "utilidade", rotulo: "Moradia, alimentacao ou veiculo de uso pessoal" }
+    vazio_e_resposta: true
+    ajuda: >-
+      A Reforma retirou premio, ajuda de custo e diaria da remuneracao (art. 457,
+      par. 2o). Antes de 11/11/2017 a regra era outra - por isso a data importa
+      tanto quanto a parcela.
+
+  - id: parcelas_no_contracheque
+    secao: funcao
+    texto: Essas parcelas apareciam no contracheque?
+    tipo: bool
+    mostrar_se:
+      - - campo: parcelas_variaveis
+          op: preenchido
+    ajuda: >-
+      Parcela habitual fora do contracheque nao integra base nenhuma - nem FGTS,
+      nem 13o, nem ferias. E o prejuizo se acumula por todo o contrato.
+
   - id: paradigma_existe
     secao: funcao
     texto: Havia colega que fazia o mesmo servico e ganhava mais?
@@ -282,6 +326,71 @@ perguntas:
       - { valor: "acordo_484a", rotulo: "Acordo (art. 484-A)" }
       - { valor: "termino_contrato", rotulo: "Termino de contrato por prazo determinado" }
       - { valor: "sem_formalizacao", rotulo: "Simplesmente parou de ser chamado" }
+
+  # Os requisitos formais da justa causa. O pedido de reversao ja cabia so pela
+  # modalidade de saida - sempre se contesta a justa causa -, mas o catalogo
+  # listava imediatidade, gradacao e non bis in idem como lembretes que ninguem
+  # perguntava. Sao os pontos em que a justa causa cai sem precisar discutir o
+  # fato: o onus e todo do empregador (Sumula 212), e falha formal ele nao supre.
+  - id: justa_causa_carta
+    secao: rescisao
+    texto: A empresa entregou carta de justa causa dizendo o motivo?
+    tipo: escolha
+    mostrar_se:
+      - - campo: modalidade_saida
+          op: igual
+          valor: justa_causa
+    opcoes:
+      - { valor: "escrita_especifica", rotulo: "Sim, descrevendo o fato" }
+      - { valor: "escrita_generica", rotulo: "Sim, mas so citando artigo ou 'desidia'" }
+      - { valor: "verbal", rotulo: "So comunicaram verbalmente" }
+      - { valor: "nenhuma", rotulo: "Nao houve comunicacao nenhuma" }
+    ajuda: >-
+      Imputacao generica dificulta a defesa e costuma ser atacavel por si. Pedir
+      copia do que ele assinou - e conferir se recebeu a via dele.
+
+  - id: justa_causa_advertencias
+    secao: rescisao
+    texto: Houve advertencia ou suspensao antes, em todo o contrato?
+    tipo: escolha
+    mostrar_se:
+      - - campo: modalidade_saida
+          op: igual
+          valor: justa_causa
+    opcoes:
+      - { valor: "nenhuma", rotulo: "Nenhuma, em todo o contrato" }
+      - { valor: "verbais", rotulo: "So chamadas de atencao verbais" }
+      - { valor: "escritas", rotulo: "Sim, advertencias ou suspensoes escritas" }
+    ajuda: >-
+      Contrato longo e ficha limpa, terminando em justa causa, e o cenario
+      classico de ausencia de gradacao. Se houve punicao escrita, pedir todas
+      com data - elas tambem abrem o non bis in idem.
+
+  - id: justa_causa_mesmo_fato_punido
+    secao: rescisao
+    texto: O fato alegado ja tinha sido punido antes?
+    tipo: bool
+    mostrar_se:
+      - - campo: modalidade_saida
+          op: igual
+          valor: justa_causa
+    ajuda: >-
+      Punir duas vezes o mesmo fato invalida a segunda punicao (non bis in idem).
+      Advertencia por um fato e, depois, justa causa pelo mesmo fato.
+
+  - id: justa_causa_demora
+    secao: rescisao
+    texto: Quantos dias se passaram entre o fato alegado e a dispensa?
+    tipo: numero
+    sufixo: dias
+    mostrar_se:
+      - - campo: modalidade_saida
+          op: igual
+          valor: justa_causa
+    ajuda: >-
+      A punicao tem de ser imediata. Demora sem justificativa vira perdao tacito.
+      Se a empresa nao aponta data do fato, registrar isso: sem data nao ha como
+      aferir imediatidade, e o onus e dela.
 
   - id: verbas_pagas
     secao: rescisao
@@ -322,6 +431,45 @@ perguntas:
       - - campo: modalidade_saida
           op: em
           valor: [sem_justa_causa, rescisao_indireta, sem_formalizacao]
+
+  # Ferias nao sao so verba rescisoria. A dobra do art. 137 nasce durante o
+  # contrato, e o cliente nunca traz o assunto sozinho - ele lembra que "tirou
+  # ferias", nao que recebeu depois de ja ter viajado.
+  - id: ferias_gozadas
+    secao: rescisao
+    texto: Gozou as ferias de todos os periodos aquisitivos?
+    tipo: escolha
+    opcoes:
+      - { valor: "todas", rotulo: "Sim, todas" }
+      - { valor: "algumas", rotulo: "Algumas sim, outras nao" }
+      - { valor: "nenhuma", rotulo: "Nunca tirou ferias" }
+    ajuda: >-
+      Periodo aquisitivo nao gozado nos 12 meses seguintes gera pagamento em
+      DOBRO (art. 137), e isso independe de a rescisao ter sido correta.
+
+  - id: ferias_pagas_no_prazo
+    secao: rescisao
+    texto: O pagamento das ferias saia ate 2 dias antes do inicio?
+    tipo: bool
+    mostrar_se:
+      - - campo: ferias_gozadas
+          op: em
+          valor: [todas, algumas]
+    ajuda: >-
+      O art. 145 exige pagamento ate 2 dias antes. Receber depois de ja estar de
+      ferias esvazia a finalidade do descanso.
+
+  - id: trabalhou_durante_ferias
+    secao: rescisao
+    texto: Chegou a trabalhar, atender cliente ou ser chamado durante as ferias?
+    tipo: bool
+    mostrar_se:
+      - - campo: ferias_gozadas
+          op: em
+          valor: [todas, algumas]
+    ajuda: >-
+      Ferias trabalhadas nao sao ferias: o periodo nao se considera gozado, e o
+      empregador as paga de novo.
 
   - id: guias_seguro_desemprego
     secao: rescisao
@@ -387,6 +535,74 @@ perguntas:
     texto: O cliente declara insuficiencia de recursos para arcar com as custas?
     tipo: bool
     obrigatoria: true
+
+  # --- responsabilidade -----------------------------------------------------
+  # Esta secao nao apura o que se deve: apura QUEM paga. Sentenca contra empresa
+  # sem patrimonio nao vira dinheiro, e o polo passivo so se corrige ate a defesa
+  # - depois disso, incluir devedor exige incidente e tempo.
+
+  - id: outras_empresas_grupo
+    secao: responsabilidade
+    texto: Havia outras empresas dos mesmos donos, ou ligadas a esta?
+    tipo: bool
+    ajuda: >-
+      Filial nao conta - e a mesma pessoa juridica. Aqui se procura outro CNPJ:
+      empresa da familia, do mesmo ramo, no mesmo galpao, com os mesmos
+      empregados.
+
+  - id: grupo_atuacao_conjunta
+    secao: responsabilidade
+    texto: Essas empresas atuavam de forma integrada?
+    tipo: bool
+    mostrar_se:
+      - - campo: outras_empresas_grupo
+          op: verdadeiro
+    ajuda: >-
+      Mesma direcao, empregados que passavam de uma para outra, clientes e caixa
+      em comum. Depois da Reforma isto e o que decide: o art. 2o, par. 3o diz
+      expressamente que a mera identidade de socios NAO caracteriza grupo.
+
+  - id: empresa_sucessora
+    secao: responsabilidade
+    texto: Outra empresa assumiu a atividade, a estrutura ou os clientes?
+    tipo: bool
+    ajuda: >-
+      O caso classico: a antiga fecha ou esvazia e outra abre, com frequencia em
+      nome de conjuge ou filho, tocando o mesmo negocio.
+
+  - id: sucessora_indicios
+    secao: responsabilidade
+    texto: O que a nova empresa aproveitou da anterior?
+    tipo: multipla
+    mostrar_se:
+      - - campo: empresa_sucessora
+          op: verdadeiro
+    opcoes:
+      - { valor: "endereco", rotulo: "O mesmo endereco" }
+      - { valor: "maquinas", rotulo: "As mesmas maquinas ou equipamentos" }
+      - { valor: "empregados", rotulo: "Os mesmos empregados" }
+      - { valor: "clientes", rotulo: "A mesma carteira de clientes" }
+      - { valor: "marca", rotulo: "O mesmo telefone, nome fantasia ou marca" }
+      - { valor: "comando", rotulo: "O antigo dono continua mandando la" }
+    ajuda: >-
+      Cada item marcado e um fato a provar, com testemunha ou documento proprio.
+      Nao basta o cliente achar que a empresa e a mesma.
+
+  - id: patrimonio_esvaziado
+    secao: responsabilidade
+    texto: A empresa vinha se desfazendo de bens, maquinas ou veiculos?
+    tipo: bool
+    ajuda: >-
+      Bem que sai da empresa as vesperas da acao antecipa execucao frustrada, e e
+      o que sustenta o pedido de desconsideracao la na frente.
+
+  - id: prestava_para_tomador
+    secao: responsabilidade
+    texto: O trabalho era prestado dentro de outra empresa, como terceirizado?
+    tipo: bool
+    ajuda: >-
+      Tomador de servicos responde de forma subsidiaria. Se ele nao entra no polo
+      passivo desde a inicial, o titulo nao o alcanca na execucao.
 
   # --- fatos ----------------------------------------------------------------
   # A triagem descobre QUAIS pedidos cabem. A inicial precisa saber POR QUE, com

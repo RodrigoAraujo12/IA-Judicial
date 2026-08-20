@@ -1,0 +1,134 @@
+# Pedidos que nao discutem QUANTO se deve, e sim QUEM paga.
+#
+# Sao os unicos do catalogo cujo esquecimento nao aparece na sentenca: a peca sai
+# perfeita, o pedido e julgado procedente, e a execucao morre num CNPJ sem bens.
+# E o polo passivo praticamente se fecha com a defesa - depois disso, incluir
+# devedor exige incidente proprio, com prazo e prova que a inicial ja teria.
+
+- id: grupo_economico
+  nome: Responsabilidade solidaria por grupo economico
+  grupo: responsabilidade
+  resumo: >-
+    Empresas sob direcao ou controle comum, ou que atuem de forma integrada,
+    respondem solidariamente pelo credito trabalhista.
+  quando:
+    - - campo: outras_empresas_grupo
+        op: verdadeiro
+      - campo: grupo_atuacao_conjunta
+        op: verdadeiro
+  requisitos:
+    - descricao: Existencia de outra pessoa juridica ligada a reclamada
+      prova: [contrato social, cartao CNPJ, consulta na Receita, JUCEP]
+    - descricao: Interesse integrado e atuacao conjunta, nao apenas socios comuns
+      prova: [empregados que atuavam nas duas, clientes comuns, mesma sede]
+  fundamentos:
+    - tipo: clt
+      ref: "art. 2o, par. 2o e par. 3o"
+      nota: >-
+        O par. 3o foi ACRESCENTADO pela Reforma e e onde a tese se ganha ou se
+        perde hoje: ele afasta expressamente a mera identidade de socios.
+  provas:
+    - Contrato social das duas empresas e alteracoes
+    - Testemunhas que trabalharam para ambas, ou que viam o mesmo dono mandando
+    - Notas, e-mails ou mensagens em que uma empresa responde pela outra
+  reflexos: []
+  variacao_temporal:
+    - regime: pre_reforma
+      regra: >-
+        Bastava a direcao, controle ou administracao de uma empresa sobre a
+        outra - relacao hierarquica entre elas.
+    - regime: pos_reforma
+      regra: >-
+        Admite tambem a coordenacao entre empresas autonomas, MAS exige
+        demonstrar interesse integrado, comunhao de interesses e atuacao
+        conjunta. Identidade de socios, sozinha, nao configura grupo.
+  alertas:
+    - >-
+      Todas as empresas do grupo precisam constar do polo passivo e da citacao. A
+      solidariedade nao alcanca quem nao foi parte.
+    - >-
+      Levantar o quadro societario ANTES de ajuizar. Contrato social e publico e
+      custa uma consulta; descobrir o grupo na execucao custa anos.
+
+- id: sucessao_empresarial
+  nome: Responsabilidade da empresa sucessora
+  grupo: responsabilidade
+  resumo: >-
+    Mudanca na propriedade ou na estrutura juridica nao afeta o contrato de
+    trabalho: quem continua a atividade responde pelos creditos.
+  quando:
+    - - campo: empresa_sucessora
+        op: verdadeiro
+  requisitos:
+    - descricao: Continuidade da atividade economica pela nova empresa
+      prova: [mesmo endereco, mesmas maquinas, mesmos clientes, mesma marca]
+    - descricao: Transferencia da unidade produtiva, ainda que sem contrato formal
+      prova: [fotos, notas fiscais, testemunhas, consulta cadastral]
+  fundamentos:
+    - tipo: clt
+      ref: "arts. 10 e 448"
+      nota: >-
+        A dupla classica da sucessao: a mudanca na estrutura juridica e na
+        propriedade nao atinge os direitos ja adquiridos pelo empregado.
+    - tipo: clt
+      ref: "art. 448-A"
+      nota: >-
+        Acrescentado pela Reforma. A sucessora responde pelas obrigacoes; a
+        sucedida so responde SOLIDARIAMENTE quando comprovada fraude na
+        transferencia - e a fraude e que precisa ser alegada e provada.
+    - tipo: clt
+      ref: "art. 9o"
+      nota: >-
+        Nulidade dos atos praticados para desvirtuar a aplicacao da CLT. E o
+        fundamento a somar quando a sucessao serviu para deixar o passivo para
+        tras.
+  provas:
+    - Cartao CNPJ da nova empresa, com data de abertura e quadro societario
+    - Fotografias do estabelecimento antes e depois
+    - Testemunhas que trabalharam nas duas
+    - Clientes que passaram a ser atendidos pela nova empresa
+  reflexos: []
+  alertas:
+    - >-
+      Incluir a sucessora no polo passivo desde a inicial. Reconhecer sucessao na
+      execucao e possivel, mas custa incidente e tempo.
+    - >-
+      Para responsabilizar TAMBEM a sucedida e preciso alegar e provar fraude
+      (art. 448-A, par. unico). Nao basta afirmar que a empresa mudou de nome.
+
+- id: responsabilidade_tomador
+  nome: Responsabilidade subsidiaria do tomador de servicos
+  grupo: responsabilidade
+  resumo: >-
+    A empresa que se beneficiou da mao de obra terceirizada responde de forma
+    subsidiaria pelos creditos que a prestadora nao pagar.
+  quando:
+    - - campo: prestava_para_tomador
+        op: verdadeiro
+  requisitos:
+    - descricao: Prestacao de servicos em favor do tomador
+      prova: [cracha, e-mails, ordens de servico, testemunhas]
+    - descricao: Conduta culposa do tomador na fiscalizacao do contrato
+      prova: [ausencia de fiscalizacao, inadimplemento continuado]
+  fundamentos:
+    - tipo: sumula_tst
+      ref: "Sumula 331"
+      nota: >-
+        Item IV: a responsabilidade subsidiaria depende de o tomador ter
+        participado da relacao processual e constar do titulo executivo.
+    - tipo: lei
+      ref: "Lei 6.019/1974, art. 5o-A"
+      controverso: true
+      nota: >-
+        CONFERIR no indice. A extensao da responsabilidade da contratante depois
+        da Lei 13.429/2017 e do Tema 725 do STF ainda comporta divergencia entre
+        TRTs.
+  provas:
+    - Cracha, uniforme ou e-mail do tomador
+    - Contrato de prestacao de servicos, requisitado a reclamada
+    - Testemunhas que atestem onde o servico era prestado
+  reflexos: []
+  alertas:
+    - >-
+      Sem o tomador no polo passivo, a subsidiariedade nao existe: a Sumula 331,
+      IV, exige que ele conste do titulo executivo.

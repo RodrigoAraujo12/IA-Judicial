@@ -84,12 +84,31 @@
     {% for p in m.pedidos %}<li>{{ p }}</li>{% endfor %}
   </ol>
 
+  {# So o que o juizo le. As demais verificacoes vao para o quadro de trabalho, no
+     fim - "conferir prescricao" nao e pedido, e recado para quem monta a peca. #}
   <h2>IV &mdash; DOS REQUERIMENTOS</h2>
   <ul>
     {% for r in m.requerimentos %}
       <li><b>{{ r.titulo }}</b> &mdash; {{ r.descricao }}</li>
+    {% else %}
+      <li class="vazio">Nenhum requerimento acionado por este caso.</li>
     {% endfor %}
   </ul>
+
+  {% if m.verificacoes %}
+    <div class="caixa aviso-tela">
+      <h2>Antes do protocolo</h2>
+      <p>
+        Isto n&atilde;o entra na pe&ccedil;a: &eacute; a lista do que conferir,
+        alegar ou orientar antes de protocolar.
+      </p>
+      <ul>
+        {% for v in m.verificacoes %}
+          <li><b>{{ v.titulo }}</b> &mdash; {{ v.descricao }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
 
   {# Nao e parte da peca: e o que NAO entrou nela, e por que. Fica depois do
      fecho de proposito, para nao se confundir com o texto a protocolar. #}
