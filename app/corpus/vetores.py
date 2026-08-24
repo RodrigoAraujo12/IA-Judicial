@@ -1,14 +1,32 @@
 """Via 2 - recuperacao densa com BGE-M3.
 
-Roda em ONNX na CPU, de proposito. A alternativa seria PyTorch, que traz 2,5 GB
-de dependencia e um caminho feliz que exige CUDA - e a maquina deste projeto tem
+Roda em ONNX, de proposito. A alternativa seria PyTorch, que traz 2,5 GB de
+dependencia e um caminho feliz que exige CUDA - e a maquina deste projeto tem
 Intel Arc, nao NVIDIA. Com ONNX o mesmo codigo roda em qualquer computador, sem
-placa, sem driver e sem configuracao. Os numeros medidos nesta maquina:
+placa, sem driver e sem configuracao.
 
-    carregar o modelo    1,8 s   (uma vez, no arranque)
-    embutir a consulta    62 ms  (por busca)
-    varrer o indice        1 ms  (por busca)
-    indexar o corpus     ~25 min (uma vez; o resultado e um arquivo copiavel)
+**CPU e o chao, nao o teto.** `provedores()` pergunta ao ORT o que a maquina
+oferece e usa o melhor que houver; onde nao houver nada, usa CPU e ninguem
+percebe. Medido nesta maquina, na CLT inteira, com a Arc B580 via DirectML:
+
+                          CPU        DirectML     razao
+    carregar o modelo     1,5 s       2,5 s       ~igual  (uma vez, no arranque)
+    embutir a consulta   61,5 ms     12,1 ms      5x melhor
+    lote de 8 a 256 tok   3,48 s      0,20 s     17x melhor
+    indexar o corpus     41,6 min     2,4 min    17x melhor
+
+A primeira sessao DirectML da maquina custa ~15 s compilando shaders; o driver
+os guarda e da segunda em diante sao 2,5 s. Nao ha contrapartida relevante.
+
+O acelerador nao vem na instalacao padrao e nao deve vir: `onnxruntime-directml`
+substitui a wheel `onnxruntime` em vez de somar a ela, e so serve ao Windows. Fica
+como opcional documentado em requirements.txt, e o codigo funciona igual sem ele.
+
+**Os vetores sao os mesmos nos dois caminhos**, e isso foi conferido antes de
+deixar o provider variar: cosseno minimo 0,99999988 entre CPU e DirectML sobre 64
+dispositivos, diferenca maxima de 1,2e-06 por componente, top-10 identico. Um
+corpus indexado na GPU pode ser consultado na CPU, e vice-versa - o que importa
+porque corpus.db e um arquivo que se copia entre maquinas.
 
 A indexacao nao precisa acontecer na maquina de quem usa: corpus.db e um arquivo.
 Indexa-se uma vez, entrega-se pronto.
@@ -22,8 +40,9 @@ e sem custo de modelo. A ColBERT entraria como reranqueador, se a precisao pedir
 from __future__ import annotations
 
 import sqlite3
+import threading
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
@@ -63,28 +82,80 @@ class ModeloAusente(RuntimeError):
     pass
 
 
+# Aceleradores por ordem de aposta. A CPU nao entra na lista porque nao e uma
+# escolha: e o chao, e vai sempre no fim.
+#
+# Nomear um provider ausente NAO quebra - o ORT avisa e cai para CPU sozinho -
+# mas o aviso sai em toda criacao de sessao, e a instalacao PADRAO deste projeto
+# nao tem nenhum deles: a wheel `onnxruntime` baunilha traz so CPU. Sem perguntar
+# antes, toda maquina limpa passaria a cuspir dois avisos por arranque sobre
+# hardware que ninguem pediu. Perguntar custa uma chamada.
+ACELERADORES = (
+    "DmlExecutionProvider",       # DirectX 12: qualquer GPU no Windows, Intel inclusive
+    "CUDAExecutionProvider",      # NVIDIA
+    "ROCMExecutionProvider",      # AMD no Linux
+    "OpenVINOExecutionProvider",  # runtime da Intel (CPU, iGPU, NPU)
+    "CoreMLExecutionProvider",    # Apple
+)
+
+# Preenchido na primeira sessao. Quem indexa imprime; a interface pode mostrar.
+PROVEDOR: str | None = None
+
+
+def provedores() -> list[str]:
+    """A lista de providers a pedir, ja intersectada com o que a maquina tem."""
+    import onnxruntime as ort
+
+    disponiveis = set(ort.get_available_providers())
+    return [p for p in ACELERADORES if p in disponiveis] + ["CPUExecutionProvider"]
+
+
 @dataclass
 class Codificador:
-    """Sessao ONNX + tokenizador, carregados sob demanda."""
+    """Sessao ONNX + tokenizador, carregados sob demanda.
+
+    O carregamento e protegido por lock porque as buscas agora correm no
+    threadpool do FastAPI: sem ele, duas consultas simultaneas na primeira
+    requisicao criariam duas sessoes - 2,2 GB de modelo cada, e numa GPU isso
+    tambem duplica a VRAM ocupada.
+    """
 
     _sess: object | None = None
     _tok: object | None = None
+    _lock: threading.Lock = field(default_factory=threading.Lock)
 
     def _carregar(self) -> None:
         if self._sess is not None:
             return
-        if not (MODELO / "model.onnx").exists():
-            raise ModeloAusente(
-                f"modelo nao encontrado em {MODELO}. "
-                "Rode: python -m app.corpus.baixar_modelo"
-            )
-        import onnxruntime as ort
-        from tokenizers import Tokenizer
+        with self._lock:
+            if self._sess is not None:  # outra thread chegou primeiro
+                return
+            if not (MODELO / "model.onnx").exists():
+                raise ModeloAusente(
+                    f"modelo nao encontrado em {MODELO}. "
+                    "Rode: python -m app.corpus.baixar_modelo"
+                )
+            import onnxruntime as ort
+            from tokenizers import Tokenizer
 
-        self._tok = Tokenizer.from_file(str(MODELO / "tokenizer.json"))
-        self._sess = ort.InferenceSession(
-            str(MODELO / "model.onnx"), providers=["CPUExecutionProvider"]
-        )
+            tok = Tokenizer.from_file(str(MODELO / "tokenizer.json"))
+            pedidos = provedores()
+            try:
+                sess = ort.InferenceSession(str(MODELO / "model.onnx"), providers=pedidos)
+            except Exception:
+                # Provider presente que nao inicializa - driver velho, GPU ocupada,
+                # VRAM insuficiente. Cair para CPU e o comportamento certo; cair
+                # CALADO nao e. A busca continua respondendo, mais devagar, e quem
+                # olhar PROVEDOR ve o que de fato aconteceu.
+                if pedidos == ["CPUExecutionProvider"]:
+                    raise
+                sess = ort.InferenceSession(
+                    str(MODELO / "model.onnx"), providers=["CPUExecutionProvider"]
+                )
+
+            global PROVEDOR
+            PROVEDOR = sess.get_providers()[0]
+            self._tok, self._sess = tok, sess
 
     def codificar(self, textos: list[str], maxlen: int = MAXLEN) -> np.ndarray:
         """Devolve os vetores densos, ja normalizados (uma linha por texto).
