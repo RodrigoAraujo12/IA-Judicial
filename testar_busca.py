@@ -78,10 +78,17 @@ r141 = busca.buscar(con, "art. 141", date.today())
 conferir("art. 141 nao responde hoje", r141.achados, [])
 conferir("e diz ate quando valeu", "2018-12-31" in (r141.aviso or ""), True)
 
-antes = busca.lexical(con, "intervalo de quinze minutos mulher prorrogacao", date(2016, 3, 1), 1)
-depois = busca.lexical(con, "intervalo de quinze minutos mulher prorrogacao", date(2026, 3, 1), 1)
-conferir("busca livre em 2016 alcanca o art. 384", urns(antes), ["clt/art-384"])
-conferir("a mesma busca em 2026 nao alcanca", "clt/art-384" in urns(depois), False)
+# O que este par defende e o eixo de VIGENCIA: a mesma consulta alcanca o art. 384
+# num caso de 2016 e nao o alcanca em 2026. Pedia `limite=1` e exigia a URN exata,
+# o que amarrava junto uma afirmacao de RANQUEAMENTO - e essa quebrou quando as
+# sumulas entraram no corpus, por motivo nenhum a ver com vigencia: a OJ 178 da
+# SBDI-I fala do intervalo de 15 minutos do bancario e passou para #1, com o art.
+# 384 em #2. Alcancar e o que importa aqui; a posicao se mede em avaliacao.py.
+consulta = "intervalo de quinze minutos mulher prorrogacao"
+antes = urns(busca.lexical(con, consulta, date(2016, 3, 1), 10))
+depois = urns(busca.lexical(con, consulta, date(2026, 3, 1), 10))
+conferir("busca livre em 2016 alcanca o art. 384", "clt/art-384" in antes, True)
+conferir("a mesma busca em 2026 nao alcanca", "clt/art-384" in depois, False)
 
 print(f"\nestatisticas: {banco.estatisticas(con)}")
 con.close()

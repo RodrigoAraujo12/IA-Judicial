@@ -162,10 +162,34 @@ if Path("dados/corpus.db").exists():
         True,
     )
 
-    # Sumula do TST ainda nao esta no corpus. Citar sem transcrever e o certo;
-    # transcrever de memoria seria inventar.
-    sem_corpus = [c for c in bloco.citacoes if c.texto is None]
+    # Sumula do TST ENTRA transcrita desde a ingestao do Livro. Este bloco cita a
+    # Sumula 437, cancelada pela Reforma: para o contrato que atravessa o corte
+    # ela e citavel no periodo em que valia, com a janela impressa ao lado.
+    sumulas = [c for c in bloco.citacoes if c.rotulo and "Sumula" in c.rotulo]
+    conferir("sumula do TST vem transcrita", bool(sumulas) and all(c.texto for c in sumulas), True)
+    if sumulas:
+        conferir("e com a janela de vigencia dela",
+                 any((c.vigencia or "").endswith("2017-11-10") for c in sumulas), True)
+
+    # A afirmacao original deste teste continua valendo, so mudou de endereco.
+    # Com CLT e TST ingeridas, o caso ATRAVESSA passou a ter TODAS as citacoes
+    # transcritas - e a assercao ficou sem sujeito. O que segue fora do corpus e
+    # CF, lei esparsa e NR, e quem as cita e o pedido de insalubridade (NR-15,
+    # Sumula Vinculante 4 do STF). Citar sem transcrever e o certo; transcrever
+    # de memoria seria inventar.
+    com_insalubridade = montar({
+        **ATRAVESSA,
+        "exposicao_agente_nocivo": True,
+        "agente_nocivo": ["ruido"],
+        "adicional_insalubridade_pago": False,
+    }, con)
+    sem_corpus = [
+        c for b in com_insalubridade.fundamentacao for c in b.citacoes if c.texto is None
+    ]
     conferir("obra fora do corpus cita sem transcrever", bool(sem_corpus), True)
+    conferir("e sao mesmo obras nao ingeridas (NR, CF, STF)",
+             all(not r.startswith("art.") or "7o" in r or "7º" in r
+                 for r in (c.ref for c in sem_corpus)), True)
     con.close()
 else:
     print("\n(corpus nao ingerido - rode: python -m app.corpus.indexar clt)")

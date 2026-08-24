@@ -37,3 +37,7 @@ env/
 Thumbs.db
 desktop.ini
 modelos/
+
+# --- saida gerada ------------------------------------------------------------
+# revisao_gabarito.py reconstroi este HTML a partir de divergencias.json.
+revisao_gabarito.html

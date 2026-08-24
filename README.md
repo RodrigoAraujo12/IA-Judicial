@@ -235,6 +235,37 @@ datas de publicação e de encerramento estão em `CADUCIDADE`, em
 Declaratórios do Congresso, não inferidas. Se a fonte trouxer "(Vigência
 encerrada)" de uma MP fora dessa tabela, a ingestão avisa em vez de adivinhar.
 
+**Súmula do TST tem vigência, e por isso entra no mesmo eixo da lei.** A Súmula
+437 foi cancelada por perda de eficácia em 11.11.2017; a Súmula 450, pela decisão
+da ADPF 501, em 14.08.2022. Um índice que guarde só "está cancelada" responde
+errado a um caso de 2016 — a súmula valia, e a peça daquele período tem de
+citá-la. Por isso o cancelamento vira **janela**, não sinalizador:
+`vigencia_fim = 10.11.2017`. Só cai em `revogado` o cancelamento sem data legível
+na fonte, e no Livro atual não há nenhum.
+
+A fonte é o **Livro de Súmulas, OJs e PNs**, a publicação consolidada do próprio
+Tribunal ([`app/corpus/tst.py`](app/corpus/tst.py)). A página `/sumulas` do site
+não serve: é um SPA em React que entrega 1 KB de HTML e um `<div>` vazio. O Livro
+sai em PDF e em RTF, e o RTF ganhou — PDF exigiria biblioteca de extração e
+devolveria texto por coordenada, e coordenada não distingue título de corpo. O RTF
+traz a quebra de parágrafo explícita, que é o que separa uma súmula da seguinte, e
+lê-se com o `re` da biblioteca padrão. **Nenhuma dependência nova.**
+
+Entram 1.056 verbetes: 463 súmulas (1 a 463, **sem uma lacuna na faixa**), 359 OJs
+da SBDI-I, 156 da SBDI-II e 78 da SBDI-I Transitória. Ficam de fora SDC e
+Precedentes Normativos, que só servem a dissídio coletivo.
+
+Duas armadilhas do formato, ambas encontradas quebrando:
+
+- **A mesma data significa o oposto conforme o status.** Em `(nova redação) - Res.
+  185/2012` ela abre a vigência; em `(cancelada) - Res. 121/2003` ela a encerra.
+  Ler as duas como início punha a súmula nascendo no dia em que morreu, com
+  vigência aberta dali em diante.
+- **O índice remissivo repete cada verbete sem texto.** Cortá-lo cedo demais
+  ingere 4.700 fantasmas; tarde demais, zero verbetes — e este segundo aconteceu,
+  porque a linha do sumário (`Índice Remissivo   H - 1 – 193`) casava o mesmo
+  padrão do cabeçalho real.
+
 **Nada é citável sem procedência.** Cada dispositivo aponta para uma fonte com
 URL, data de captura e sha256. Citação que não se rastreia até lá não entra na
 peça.
@@ -259,15 +290,41 @@ que a advogada digita o termo que está no texto da lei, e **B**, em que digita 
 termo forense que a lei não usa — "rescisão indireta" para o art. 483,
 "hipersuficiente" para o art. 444, "pejotização" para o art. 442-B.
 
-| via | acerto@1 | acerto@5 | MRR | recall@50 |
-|---|---|---|---|---|
-| lexical | 50/72 | 63/72 | 0,768 | 70/72 |
-| densa | 50/72 | 57/72 | 0,738 | 71/72 |
-| **fusão RRF** | **54/72** | **67/72** | **0,822** | **72/72** |
+| via | só CLT | | | com TST | | |
+|---|---|---|---|---|---|---|
+| | acerto@1 | acerto@5 | MRR | acerto@1 | acerto@5 | MRR |
+| lexical | 50/72 | 63/72 | 0,768 | 42/72 | 59/72 | 0,671 |
+| densa | 50/72 | 57/72 | 0,738 | 42/72 | 54/72 | 0,660 |
+| **fusão RRF** | **54/72** | **67/72** | **0,822** | **47/72** | **62/72** | **0,739** |
 
-**Recall@50 é 72/72.** Quando a resposta está na CLT, a busca a encontra sempre; o
-que falha é a ordem. Sobra uma folga de 5 consultas — e é só isso que um
-reranqueador poderia disputar.
+**Os números caíram quando as súmulas entraram, e a queda precisa de leitura.** O
+gabarito tem resposta **na CLT** por construção — foi escrito quando o corpus era
+só a CLT. Com 1.056 verbetes do TST no índice, uma consulta pode agora ser
+respondida por quem o gabarito não previa.
+
+Das 25 consultas em que o alvo não é mais o primeiro, **16 têm um verbete do TST
+no topo**. Olhando uma a uma, elas se dividem em dois grupos que não podem ser
+somados:
+
+- **O gabarito ficou estreito.** "abandono de emprego após trinta dias de falta"
+  devolve a Súmula 32 — *"presume-se o abandono se o trabalhador não retornar no
+  prazo de 30 dias"* — em vez da alínea `i` do art. 482, que só diz "abandono de
+  emprego". A súmula é a resposta melhor. Idem "perda da gratificação após dez
+  anos" → Súmula 372, e "sobreaviso" → Súmula 428.
+- **Degradação real.** "rescisão indireta do contrato de trabalho" traz a Súmula
+  69 em #1 — que fala de rescisão e revelia, nada a ver — e empurra o art. 483
+  para #47. "grupo econômico responsabilidade solidária" traz a OJ 411, que diz o
+  **oposto** do perguntado.
+
+As duas vias caíram na mesma proporção (lexical −8, densa −8), o que **descarta** a
+hipótese mais óbvia: não é o título em caixa alta da súmula inflando o BM25, senão
+a via densa teria ficado de pé. É competição por densidade de corpus.
+
+Corrigir isso pelo gabarito seria ajustar a régua ao resultado. O gabarito precisa
+ser reescrito — decidindo, verbete a verbete, qual autoridade responde cada
+consulta —, e isso é juízo jurídico, não ajuste de código.
+
+**Recall@50 é 71/72**, contra 72/72 antes. Uma consulta saiu do lote.
 
 ### O que aconteceu com reranqueadores reais
 
@@ -276,12 +333,14 @@ melhores candidatos da fusão:
 
 | | tamanho | acerto@1 | acerto@5 | grupo B | latência |
 |---|---|---|---|---|---|
-| fusão RRF (hoje) | — | 54/72 | 67/72 | 17/20 | 63 ms |
+| fusão RRF (só CLT) | — | 54/72 | 67/72 | 17/20 | 63 ms |
 | mmarco-mMiniLMv2 int8 | 119 MB | 50/72 | 64/72 | 13/20 | 141 ms |
 | bge-reranker-base | 1,1 GB | 51/72 | 68/72 | 17/20 | 565 ms |
 
-As duas linhas de reranqueador são de um experimento anterior, medido sobre os
-vetores truncados em 128 tokens; não foram refeitas. A comparação portanto
+As três linhas são do corpus **só com a CLT** — as de reranqueador, ainda por
+cima, sobre os vetores truncados em 128 tokens. Nenhuma foi refeita depois da
+ingestão do TST, e refazê-las só faz sentido depois que o gabarito for reescrito
+para o corpus atual. A comparação portanto
 **subestima** a fusão de hoje, e o modelo grande, que já empatava dentro do ruído,
 agora empata com 1,1 GB de desvantagem.
 
@@ -369,8 +428,9 @@ Três decisões que valem mais que o código:
 - **A narrativa dos fatos entra literal.** Reescrever fato dito pelo cliente vira
   alegação que ele não fez.
 
-Obra que ainda não está no corpus — súmulas do TST, CF — é citada pelo rótulo,
-sem transcrição. Citar sem transcrever é útil; transcrever de memória, não.
+Obra que ainda não está no corpus — CF, leis esparsas, NRs — é citada pelo rótulo,
+sem transcrição. Citar sem transcrever é útil; transcrever de memória, não. CLT,
+súmulas e OJs do TST já entram transcritas.
 
 ## Estado
 
@@ -378,11 +438,12 @@ Triagem completa. Em andamento e a fazer:
 
 | | | |
 |---|---|---|
-| **Corpus** | CLT pronta | 3.663 dispositivos, 5.752 redações, com eixo de vigência. Faltam CF, súmulas e OJs do TST, NRs, súmulas do TRT-13. |
-| **Via densa** | pronta | BGE-M3 em ONNX na CPU. Fusão RRF acerta 65 de 72 no conjunto de avaliação, com recall@50 de 72/72. Reranking foi medido e reprovado - ver [Sobre reranking](#sobre-reranking). |
+| **Corpus** | CLT e TST prontas | 4.716 dispositivos, 6.804 redações, com eixo de vigência. CLT do Planalto; súmulas e OJs (SBDI-I, SBDI-I Transitória, SBDI-II) do Livro consolidado do TST. Faltam CF, leis esparsas, NRs, súmulas do TRT-13. |
+| **Via densa** | pronta | BGE-M3 em ONNX, CPU por padrão e GPU quando houver (5x na consulta, 17x na indexação). Fusão RRF acerta 62 de 72 no conjunto de avaliação, com recall@50 de 71/72. Reranking foi medido e reprovado - ver [Sobre reranking](#sobre-reranking). |
 | **Inicial** | minuta pronta | Os quatro blocos — qualificação, fatos, fundamentação, pedidos — saem como peça em `/peca`, montada por template. Sem modelo de linguagem: o texto é função determinista das respostas. |
 | **Recurso, embargos, contrarrazões** | a fazer | Partem de um **documento** (sentença, acórdão, recurso da outra parte), não da entrevista. Exigem uma camada de leitura que não existe. |
 | **Processo parado** | a fazer | Consultor de próxima medida para processo que anda devagar há anos. |
+| **Gabarito de avaliação** | a refazer | As 72 consultas têm resposta na CLT por construção, e o corpus agora tem súmulas. Metade das quedas de acerto@1 é o gabarito ficando estreito, metade é degradação real - e só juízo jurídico separa as duas. |
 | **Jurisprudência** | a decidir | Uso principal é **citar na peça**, o que torna o validador de citações obrigatório. Uso secundário é aferir viabilidade. Muda a escala e exige rastrear superação de tese, não vigência. |
 
 ## Limites conhecidos

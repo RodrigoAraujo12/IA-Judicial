@@ -77,9 +77,10 @@ class Citacao:
     ref: str
     nota: str | None = None
     controverso: bool = False
-    # Preenchidos so quando o corpus tem a obra. Sumula do TST e CF ainda nao
-    # foram ingeridas: a citacao sai pelo rotulo, sem o texto, que e honesto -
-    # melhor citar sem transcrever do que transcrever de memoria.
+    # Preenchidos so quando o corpus tem a obra. CLT, sumulas e OJs do TST ja
+    # entram transcritas; CF, leis esparsas e NRs ainda nao foram ingeridas, e
+    # nessas a citacao sai pelo rotulo, sem o texto - que e honesto: melhor citar
+    # sem transcrever do que transcrever de memoria.
     rotulo: str | None = None
     texto: str | None = None
     vigencia: str | None = None
@@ -238,7 +239,8 @@ def _citacoes(
                     )
                 )
         if not achou:
-            # Obra fora do corpus (sumula, CF) ou dispositivo nao vigente na data.
+            # Obra fora do corpus (CF, lei esparsa, NR) ou dispositivo nao vigente
+            # em nenhuma das datas do caso.
             saida.append(Citacao(ref=f.ref, nota=f.nota, controverso=f.controverso))
     return saida
 

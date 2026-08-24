@@ -1,0 +1,1177 @@
+[
+ {
+  "consulta": "dispensa imotivada aviso previo",
+  "grupo": "A",
+  "gabarito": {
+   "urn": "clt/art-487",
+   "rotulo": "CLT, art. 487",
+   "texto": "Art. 487 - Não havendo prazo estipulado, a parte que, sem justo motivo, quiser rescindir o contrato deverá avisar a outra da sua resolução com a antecedência mínima de:",
+   "posicao": 16
+  },
+  "topo": [
+   {
+    "urn": "sumula-tst/276",
+    "rotulo": "Sumula 276 do TST",
+    "texto": "O direito ao aviso prévio é irrenunciável pelo empregado. O pedido de dispensa de cumprimento não exime o empregador de pagar o respectivo valor, salvo comprovação de haver o prestador dos serviços obtido novo emprego. IRR-227\tAVISO-PRÉVIO. RENÚNCIA PELO EMPREGADO. (RR-0000280-61.2024.5.09.0322, Tribunal Pleno, publicado em 03.09.2025, rel. Min. Aloysio Silva Corrêa da Veiga) O direito ao aviso prévio é irrenunciável pelo empregado. O pedido de dispensa de cumprimento não exime o empregador de pagar o respectivo valor, salvo comprovação de haver o trabalhador obtido novo emprego.",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "sumula-tst/10",
+    "rotulo": "Sumula 10 do TST",
+    "texto": "O direito aos salários do período de férias escolares assegurado aos professores (art. 322, caput e § 3º, da CLT) não exclui o direito ao aviso prévio, na hipótese de dispensa sem justa causa ao término do ano letivo ou no curso das férias escolares.",
+    "obra": "TST",
+    "pos": 2
+   },
+   {
+    "urn": "sumula-tst/182",
+    "rotulo": "Sumula 182 do TST",
+    "texto": "O tempo do aviso prévio, mesmo indenizado, conta-se para efeito da indenização adicional prevista no art. 9º da Lei nº 6.708, de 30.10.1979. IRR-228\tAVISO PRÉVIO. PROJEÇÃO. INDENIZAÇÃO ADICIONAL. DISPENSA SEM JUSTA CAUSA NOS TRINTA DIAS QUEANTECEDEM A DATA DA CORREÇÃO SALARIAL. (RR-0000312-60.2024.5.12.0006, Tribunal Pleno, publicado em 02.09.2025, rel. Min. Aloysio Silva Corrêa da Veiga) O tempo do aviso prévio, mesmo indenizado, conta-se para efeito da indenização adicional prevista no art. 9º da Lei nº 6.708, de 30.10.1979, e no art. 9º da Lei nº 7.238, de 29.10.1984.",
+    "obra": "TST",
+    "pos": 3
+   },
+   {
+    "urn": "sumula-tst/31",
+    "rotulo": "Sumula 31 do TST",
+    "texto": "É incabível o aviso prévio na despedida indireta.",
+    "obra": "TST",
+    "pos": 4
+   },
+   {
+    "urn": "sumula-tst/371",
+    "rotulo": "Sumula 371 do TST",
+    "texto": "A projeção do contrato de trabalho para o futuro, pela concessão do aviso prévio indenizado, tem efeitos limitados às vantagens econômicas obtidas no período de pré-aviso, ou seja, salários, reflexos e verbas rescisórias. No caso de concessão de auxílio-doença no curso do aviso prévio, todavia, só se concretizam os efeitos da dispensa depois de expirado o benefício previdenciário. (ex-OJs nºs 40 e 135 da SBDI-I  inseridas, respectivamente, em 28.11.1995 e 27.11.1998)",
+    "obra": "TST",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "grupo economico responsabilidade solidaria",
+  "grupo": "A",
+  "gabarito": {
+   "urn": "clt/art-2/par-2",
+   "rotulo": "CLT, art. 2, § 2º",
+   "texto": "§ 2o Sempre que uma ou mais empresas, tendo, embora, cada uma delas, personalidade jurídica própria, estiverem sob a direção, controle ou administração de outra, ou ainda quando, mesmo guardando cada uma sua autonomia, integrem grupo econômico, serão responsáveis solidariamente pelas obrigações decorrentes da relação de emprego.",
+   "posicao": 10
+  },
+  "topo": [
+   {
+    "urn": "oj-sdi1-tst/411",
+    "rotulo": "OJ 411 da SBDI-I do TST",
+    "texto": "O sucessor não responde solidariamente por débitos trabalhistas de empresa não adquirida, integrante do mesmo grupo econômico da empresa sucedida, quando, à época, a empresa devedora direta era solvente ou idônea economicamente, ressalvada a hipótese de má-fé ou fraude na sucessão.",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "oj-sdi1-trans-tst/30",
+    "rotulo": "OJ Transitoria 30 da SBDI-I do TST",
+    "texto": "É solidária a responsabilidade entre a empresa cindida subsistente e aquelas que absorverem parte do seu patrimônio, quando constatada fraude na cisão parcial.",
+    "obra": "TST",
+    "pos": 2
+   },
+   {
+    "urn": "sumula-tst/129",
+    "rotulo": "Sumula 129 do TST",
+    "texto": "A prestação de serviços a mais de uma empresa do mesmo grupo econômico, durante a mesma jornada de trabalho, não caracteriza a coexistência de mais de um contrato de trabalho, salvo ajuste em contrário.",
+    "obra": "TST",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-2/par-3",
+    "rotulo": "CLT, art. 2, § 3º",
+    "texto": "§ 3o Não caracteriza grupo econômico a mera identidade de sócios, sendo necessárias, para a configuração do grupo, a demonstração do interesse integrado, a efetiva comunhão de interesses e a atuação conjunta das empresas dele integrantes.",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "oj-sdi1-tst/324",
+    "rotulo": "OJ 324 da SBDI-I do TST",
+    "texto": "É assegurado o adicional de periculosidade apenas aos empregados que trabalham em sistema elétrico de potência em condições de risco, ou que o façam com equipamentos e instalações elétricas similares, que ofereçam risco equivalente, ainda que em unidade consumidora de energia elétrica. IRR-264\tADICIONAL DE PERICULOSIDADE. SISTEMA ELÉTRICO DE POTÊNCIA. CONDIÇÕES DE RISCO SIMILARES. (RR-0020998-43.2021.5.04.0025, Tribunal Pleno, publicado em 02.09.2025, rel. Min. Aloysio Silva Corrêa da Veiga) É assegurado o adicional de periculosidade apenas aos empregados que trabalham em sistema elétrico de potência em condições de risco, ou que o façam com equipamentos e instalações elétricas similares, que ofereçam risco equivalente, ainda que em unidade consumidora de energia elétrica.",
+    "obra": "TST",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "ausencia do reclamante arquivamento custas",
+  "grupo": "A",
+  "gabarito": {
+   "urn": "clt/art-844/par-2",
+   "rotulo": "CLT, art. 844, § 2º",
+   "texto": "§ 2o Na hipótese de ausência do reclamante, este será condenado ao pagamento das custas calculadas na forma do art. 789 desta Consolidação , ainda que beneficiário da justiça gratuita, salvo se comprovar, no prazo de quinze dias, que a ausência ocorreu por motivo legalmente justificável.",
+   "posicao": 2
+  },
+  "topo": [
+   {
+    "urn": "sumula-tst/9",
+    "rotulo": "Sumula 9 do TST",
+    "texto": "A ausência do reclamante, quando adiada a instrução após contestada a ação em audiência, não importa arquivamento do processo.",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-844/par-2",
+    "rotulo": "CLT, art. 844, § 2º",
+    "texto": "§ 2o Na hipótese de ausência do reclamante, este será condenado ao pagamento das custas calculadas na forma do art. 789 desta Consolidação , ainda que beneficiário da justiça gratuita, salvo se comprovar, no prazo de quinze dias, que a ausência ocorreu por motivo legalmente justificável.",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-844/par-3",
+    "rotulo": "CLT, art. 844, § 3º",
+    "texto": "§ 3o O pagamento das custas a que se refere o § 2o é condição para a propositura de nova demanda.",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-844",
+    "rotulo": "CLT, art. 844",
+    "texto": "Art. 844 - O não-comparecimento do reclamante à audiência importa o arquivamento da reclamação, e o não-comparecimento do reclamado importa revelia, além de confissão quanto à matéria de fato.",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-852-B/par-1",
+    "rotulo": "CLT, art. 852-B, § 1º",
+    "texto": "§ 1º O não atendimento, pelo reclamante, do disposto nos incisos I e II deste artigo importará no arquivamento da reclamação e condenação ao pagamento de custas sobre o valor da causa.",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "peticao inicial pedido certo determinado",
+  "grupo": "A",
+  "gabarito": {
+   "urn": "clt/art-840/par-1",
+   "rotulo": "CLT, art. 840, § 1º",
+   "texto": "§ 1o Sendo escrita, a reclamação deverá conter a designação do juízo, a qualificação das partes, a breve exposição dos fatos de que resulte o dissídio, o pedido, que deverá ser certo, determinado e com indicação de seu valor, a data e a assinatura do reclamante ou de seu representante.",
+   "posicao": 8
+  },
+  "topo": [
+   {
+    "urn": "clt/art-852-B/inc-I",
+    "rotulo": "CLT, art. 852-B, I",
+    "texto": "I - o pedido deverá ser certo ou determinado e indicará o valor correspondente;",
+    "obra": "CLT",
+    "pos": 1
+   },
+   {
+    "urn": "sumula-tst/263",
+    "rotulo": "Sumula 263 do TST",
+    "texto": "Salvo nas hipóteses do art. 330 do CPC de 2015 (art. 295 do CPC de 1973), o indeferimento da petição inicial, por encontrar-se desacompanhada de documento indispensável à propositura da ação ou não preencher outro requisito legal, somente é cabível se, após intimada para suprir a irregularidade em 15 (quinze) dias, mediante indicação precisa do que deve ser corrigido ou completado, a parte não o fizer (art. 321 do CPC de 2015).",
+    "obra": "TST",
+    "pos": 2
+   },
+   {
+    "urn": "sumula-tst/405",
+    "rotulo": "Sumula 405 do TST",
+    "texto": "Em face do que dispõem a MP 1.984-22/2000 e o art. 969 do CPC de 2015, é cabível o pedido de tutela provisória formulado na petição inicial de ação rescisória ou na fase recursal, visando a suspender a execução da decisão rescindenda.",
+    "obra": "TST",
+    "pos": 3
+   },
+   {
+    "urn": "sumula-tst/408",
+    "rotulo": "Sumula 408 do TST",
+    "texto": "Não padece de inépcia a petição inicial de ação rescisória apenas porque omite a subsunção do fundamento de rescindibilidade no art. 966 do CPC de 2015 (art. 485 do CPC de 1973) ou o capitula erroneamente em um de seus incisos. Contanto que não se afaste dos fatos e fundamentos invocados como causa de pedir, ao Tribunal é lícito emprestar-lhes a adequada qualificação jurídica (\"iura novit curia\"). No entanto, fundando-se a ação rescisória no art. 966, inciso V, do CPC de 2015 (art. 485, inciso V, do CPC de 1973), é indispensável expressa indicação, na petição inicial da ação rescisória, da norma jurídica manifestamente violada (dispositivo legal violado sob o CPC de 1973), por se tratar de causa de pedir da rescisória, não se aplicando, no caso, o princípio \"iura novit curia\". (ex-Ojs nºs 32 e 33 da SBDI-II - inseridas em 20.09.2000)",
+    "obra": "TST",
+    "pos": 4
+   },
+   {
+    "urn": "sumula-tst/415",
+    "rotulo": "Sumula 415 do TST",
+    "texto": "Exigindo o mandado de segurança prova documental pré-constituída, inaplicável o art. 321 do CPC de 2015 (art. 284 do CPC de 1973) quando verificada, na petição inicial do \"mandamus\", a ausência de documento indispensável ou de sua autenticação. (ex-OJ nº 52 da SBDI-II - inserida em 20.09.2000).",
+    "obra": "TST",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "fornecimento gratuito de equipamento de protecao",
+  "grupo": "A",
+  "gabarito": {
+   "urn": "clt/art-166",
+   "rotulo": "CLT, art. 166",
+   "texto": "Art. 166 - A empresa é obrigada a fornecer aos empregados, gratuitamente, equipamento de proteção individual adequado ao risco e em perfeito estado de conservação e funcionamento, sempre que as medidas de ordem geral não ofereçam completa proteção contra os riscos de acidentes e danos à saúde dos empregados.",
+   "posicao": 2
+  },
+  "topo": [
+   {
+    "urn": "sumula-tst/289",
+    "rotulo": "Sumula 289 do TST",
+    "texto": "O simples fornecimento do aparelho de proteção pelo empregador não o exime do pagamento do adicional de insalubridade. Cabe-lhe tomar as medidas que conduzam à diminuição ou eliminação da nocividade, entre as quais as relativas ao uso efetivo do equipamento pelo empregado.",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-166",
+    "rotulo": "CLT, art. 166",
+    "texto": "Art. 166 - A empresa é obrigada a fornecer aos empregados, gratuitamente, equipamento de proteção individual adequado ao risco e em perfeito estado de conservação e funcionamento, sempre que as medidas de ordem geral não ofereçam completa proteção contra os riscos de acidentes e danos à saúde dos empregados.",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-167",
+    "rotulo": "CLT, art. 167",
+    "texto": "Art. 167 - O equipamento de proteção só poderá ser posto à venda ou utilizado com a indicação do Certificado de Aprovação do Ministério do Trabalho.",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "sumula-tst/80",
+    "rotulo": "Sumula 80 do TST",
+    "texto": "A eliminação da insalubridade mediante fornecimento de aparelhos protetores aprovados pelo órgão competente do Poder Executivo exclui a percepção do respectivo adicional.",
+    "obra": "TST",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-389/inc-IV",
+    "rotulo": "CLT, art. 389, IV",
+    "texto": "IV - a fornecer, gratuitamente, a juízo da autoridade competente, os recursos de proteção individual, tais como óculos, máscaras, luvas e roupas especiais, para a defesa dos olhos, do aparelho respiratório e da pele, de acordo com a natureza do trabalho.",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "multa por atraso no pagamento das verbas rescisorias",
+  "grupo": "A",
+  "gabarito": {
+   "urn": "clt/art-477/par-8",
+   "rotulo": "CLT, art. 477, § 8º",
+   "texto": "§ 8º - A inobservância do disposto no § 6º deste artigo sujeitará o infrator à multa de 160 BTN, por trabalhador, bem assim ao pagamento da multa a favor do empregado, em valor equivalente ao seu salário, devidamente corrigido pelo índice de variação do BTN, salvo quando, comprovadamente, o trabalhador der causa à mora.",
+   "posicao": 4
+  },
+  "topo": [
+   {
+    "urn": "oj-sdi1-tst/238",
+    "rotulo": "OJ 238 da SBDI-I do TST",
+    "texto": "Submete-se à multa do artigo 477 da CLT a pessoa jurídica de direito público que não observa o prazo para pagamento das verbas rescisórias, pois nivela-se a qualquer particular, em direitos e obrigações, despojando-se do \"jus imperii\" ao celebrar um contrato de emprego.",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "sumula-tst/314",
+    "rotulo": "Sumula 314 do TST",
+    "texto": "Se ocorrer a rescisão contratual no período de 30 (trinta) dias que antecede à data-base, observado a Súmula nº 182 do TST, o pagamento das verbas rescisórias com o salário já corrigido não afasta o direito à indenização adicional prevista nas Leis nºs 6.708, de 30.10.1979 e 7.238, de 28.10.1984.",
+    "obra": "TST",
+    "pos": 2
+   },
+   {
+    "urn": "sumula-tst/69",
+    "rotulo": "Sumula 69 do TST",
+    "texto": "A partir da Lei nº 10.272, de 05.09.2001, havendo rescisão do contrato de trabalho e sendo revel e confesso quanto à matéria de fato, deve ser o empregador condenado ao pagamento das verbas rescisórias, não quitadas na primeira audiência, com acréscimo de 50% (cinqüenta por cento).",
+    "obra": "TST",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-477/par-8",
+    "rotulo": "CLT, art. 477, § 8º",
+    "texto": "§ 8º - A inobservância do disposto no § 6º deste artigo sujeitará o infrator à multa de 160 BTN, por trabalhador, bem assim ao pagamento da multa a favor do empregado, em valor equivalente ao seu salário, devidamente corrigido pelo índice de variação do BTN, salvo quando, comprovadamente, o trabalhador der causa à mora.",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-467",
+    "rotulo": "CLT, art. 467",
+    "texto": "Art. 467. Em caso de rescisão de contrato de trabalho, havendo controvérsia sobre o montante das verbas rescisórias, o empregador é obrigado a pagar ao trabalhador, à data do comparecimento à Justiça do Trabalho, a parte incontroversa dessas verbas, sob pena de pagá-las acrescidas de cinqüenta por cento\".",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "jornada de doze horas por trinta e seis de descanso",
+  "grupo": "A",
+  "gabarito": {
+   "urn": "clt/art-59-A",
+   "rotulo": "CLT, art. 59-A",
+   "texto": "Art. 59-A. Em exceção ao disposto no art. 59 desta Consolidação, é facultado às partes, mediante acordo individual escrito, convenção coletiva ou acordo coletivo de trabalho, estabelecer horário de trabalho de doze horas seguidas por trinta e seis horas ininterruptas de descanso, observados ou indenizados os intervalos para repouso e alimentação.",
+   "posicao": 2
+  },
+  "topo": [
+   {
+    "urn": "clt/art-235-F",
+    "rotulo": "CLT, art. 235-F",
+    "texto": "Art. 235-F. Convenção e acordo coletivo poderão prever jornada especial de 12 (doze) horas de trabalho por 36 (trinta e seis) horas de descanso para o trabalho do motorista profissional empregado em regime de compensação.",
+    "obra": "CLT",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-59-A",
+    "rotulo": "CLT, art. 59-A",
+    "texto": "Art. 59-A. Em exceção ao disposto no art. 59 desta Consolidação, é facultado às partes, mediante acordo individual escrito, convenção coletiva ou acordo coletivo de trabalho, estabelecer horário de trabalho de doze horas seguidas por trinta e seis horas ininterruptas de descanso, observados ou indenizados os intervalos para repouso e alimentação.",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-66",
+    "rotulo": "CLT, art. 66",
+    "texto": "Art. 66 - Entre 2 (duas) jornadas de trabalho haverá um período mínimo de 11 (onze) horas consecutivas para descanso.",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "oj-sdi1-tst/388",
+    "rotulo": "OJ 388 da SBDI-I do TST",
+    "texto": "O empregado submetido à jornada de 12 horas de trabalho por 36 de descanso, que compreenda a totalidade do período noturno, tem direito ao adicional noturno, relativo às horas trabalhadas após as 5 horas da manhã.",
+    "obra": "TST",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-235-C/par-12",
+    "rotulo": "CLT, art. 235-C, § 12º",
+    "texto": "§ 12. Durante o tempo de espera, o motorista poderá realizar movimentações necessárias do veículo, as quais não serão consideradas como parte da jornada de trabalho, ficando garantido, porém, o gozo do descanso de 8 (oito) horas ininterruptas aludido no § 3o .",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "periodo aquisitivo de ferias faltas injustificadas",
+  "grupo": "A",
+  "gabarito": {
+   "urn": "clt/art-130",
+   "rotulo": "CLT, art. 130",
+   "texto": "Art. 130 - Após cada período de 12 (doze) meses de vigência do contrato de trabalho, o empregado terá direito a férias, na seguinte proporção:",
+   "posicao": 7
+  },
+  "topo": [
+   {
+    "urn": "clt/art-140",
+    "rotulo": "CLT, art. 140",
+    "texto": "Art. 140 - Os empregados contratados há menos de 12 (doze) meses gozarão, na oportunidade, férias proporcionais, iniciando-se, então, novo período aquisitivo. (Redação dada pelo Decreto-lei nº 1.535, de 13.4.1977",
+    "obra": "CLT",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-133/par-2",
+    "rotulo": "CLT, art. 133, § 2º",
+    "texto": "§ 2º - Iniciar-se-á o decurso de novo período aquisitivo quando o empregado, após o implemento de qualquer das condições previstas neste artigo, retornar ao serviço.",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-133",
+    "rotulo": "CLT, art. 133",
+    "texto": "Art. 133 - Não terá direito a férias o empregado que, no curso do período aquisitivo:",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-133/inc-IV",
+    "rotulo": "CLT, art. 133, IV",
+    "texto": "IV - tiver percebido da Previdência Social prestações de acidente de trabalho ou de auxílio-doença por mais de 6 (seis) meses, embora descontínuos.",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "sumula-tst/171",
+    "rotulo": "Sumula 171 do TST",
+    "texto": "Salvo na hipótese de dispensa do empregado por justa causa, a extinção do contrato de trabalho sujeita o empregador ao pagamento da remuneração das férias proporcionais, ainda que incompleto o período aquisitivo de 12 (doze) meses (art. 147 da CLT) (ex-Prejulgado nº 51).",
+    "obra": "TST",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "duracao normal do trabalho dos bancarios",
+  "grupo": "A",
+  "gabarito": {
+   "urn": "clt/art-224",
+   "rotulo": "CLT, art. 224",
+   "texto": "Art. 224 - A duração normal do trabalho dos empregados em bancos, casas bancárias e Caixa Econômica Federal será de 6 (seis) horas continuas nos dias úteis, com exceção dos sábados, perfazendo um total de 30 (trinta) horas de trabalho por semana.",
+   "posicao": 2
+  },
+  "topo": [
+   {
+    "urn": "clt/art-225",
+    "rotulo": "CLT, art. 225",
+    "texto": "Art. 225 - A duração normal de trabalho dos bancários poderá ser excepcionalmente prorrogada até 8 (oito) horas diárias, não excedendo de 40 (quarenta) horas semanais, observados os preceitos gerais sobre a duração do trabalho.",
+    "obra": "CLT",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-224",
+    "rotulo": "CLT, art. 224",
+    "texto": "Art. 224 - A duração normal do trabalho dos empregados em bancos, casas bancárias e Caixa Econômica Federal será de 6 (seis) horas continuas nos dias úteis, com exceção dos sábados, perfazendo um total de 30 (trinta) horas de trabalho por semana.",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-224/par-1",
+    "rotulo": "CLT, art. 224, § 1º",
+    "texto": "§ 1º A duração normal do trabalho estabelecida neste artigo ficará compreendida entre sete e vinte e duas horas, assegurando-se ao empregado, no horário diário, um intervalo de quinze minutos para alimentação.",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-233",
+    "rotulo": "CLT, art. 233",
+    "texto": "Art. 233 - A duração normal de trabalho dos músicos profissionais poderá ser elevada até oito horas diárias, observados os preceitos gerais sobre duração do trabalho.",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-303",
+    "rotulo": "CLT, art. 303",
+    "texto": "Art. 303 - A duração normal do trabalho dos empregados compreendidos nesta Seção não deverá exceder de 5 (cinco) horas, tanto de dia como à noite.",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "verbas rescisorias incontroversas acrescimo de cinquenta",
+  "grupo": "A",
+  "gabarito": {
+   "urn": "clt/art-467",
+   "rotulo": "CLT, art. 467",
+   "texto": "Art. 467. Em caso de rescisão de contrato de trabalho, havendo controvérsia sobre o montante das verbas rescisórias, o empregador é obrigado a pagar ao trabalhador, à data do comparecimento à Justiça do Trabalho, a parte incontroversa dessas verbas, sob pena de pagá-las acrescidas de cinqüenta por cento\".",
+   "posicao": 2
+  },
+  "topo": [
+   {
+    "urn": "sumula-tst/69",
+    "rotulo": "Sumula 69 do TST",
+    "texto": "A partir da Lei nº 10.272, de 05.09.2001, havendo rescisão do contrato de trabalho e sendo revel e confesso quanto à matéria de fato, deve ser o empregador condenado ao pagamento das verbas rescisórias, não quitadas na primeira audiência, com acréscimo de 50% (cinqüenta por cento).",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-467",
+    "rotulo": "CLT, art. 467",
+    "texto": "Art. 467. Em caso de rescisão de contrato de trabalho, havendo controvérsia sobre o montante das verbas rescisórias, o empregador é obrigado a pagar ao trabalhador, à data do comparecimento à Justiça do Trabalho, a parte incontroversa dessas verbas, sob pena de pagá-las acrescidas de cinqüenta por cento\".",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "sumula-tst/314",
+    "rotulo": "Sumula 314 do TST",
+    "texto": "Se ocorrer a rescisão contratual no período de 30 (trinta) dias que antecede à data-base, observado a Súmula nº 182 do TST, o pagamento das verbas rescisórias com o salário já corrigido não afasta o direito à indenização adicional prevista nas Leis nºs 6.708, de 30.10.1979 e 7.238, de 28.10.1984.",
+    "obra": "TST",
+    "pos": 3
+   },
+   {
+    "urn": "oj-sdi1-tst/238",
+    "rotulo": "OJ 238 da SBDI-I do TST",
+    "texto": "Submete-se à multa do artigo 477 da CLT a pessoa jurídica de direito público que não observa o prazo para pagamento das verbas rescisórias, pois nivela-se a qualquer particular, em direitos e obrigações, despojando-se do \"jus imperii\" ao celebrar um contrato de emprego.",
+    "obra": "TST",
+    "pos": 4
+   },
+   {
+    "urn": "sumula-tst/73",
+    "rotulo": "Sumula 73 do TST",
+    "texto": "A ocorrência de justa causa, salvo a de abandono de emprego, no decurso do prazo do aviso prévio dado pelo empregador, retira do empregado qualquer direito às verbas rescisórias de natureza indenizatória.",
+    "obra": "TST",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "transferencia adicional de vinte e cinco por cento",
+  "grupo": "A",
+  "gabarito": {
+   "urn": "clt/art-469/par-3",
+   "rotulo": "CLT, art. 469, § 3º",
+   "texto": "§ 3º - Em caso de necessidade de serviço o empregador poderá transferir o empregado para localidade diversa da que resultar do contrato, não obstante as restrições do artigo anterior, mas, nesse caso, ficará obrigado a um pagamento suplementar, nunca inferior a 25% (vinte e cinco por cento) dos salários que o empregado percebia naquela localidade, enquanto durar essa situação. (Parágrafo incluído pela Lei nº 6.203, de 17.4.1975)",
+   "posicao": 16
+  },
+  "topo": [
+   {
+    "urn": "oj-sdi1-tst/113",
+    "rotulo": "OJ 113 da SBDI-I do TST",
+    "texto": "O fato de o empregado exercer cargo de confiança ou a existência de previsão de transferência no contrato de trabalho não exclui o direito ao adicional. O pressuposto legal apto a legitimar a percepção do mencionado adicional é a transferência provisória.",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "sumula-tst/215",
+    "rotulo": "Sumula 215 do TST",
+    "texto": "Inexistindo acordo escrito para prorrogação da jornada de trabalho, o adicional referente às horas extras é devido na base de 25% (vinte e cinco por cento).",
+    "obra": "TST",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-241",
+    "rotulo": "CLT, art. 241",
+    "texto": "Art. 241 - As horas excedentes das do horário normal de oito horas serão pagas como serviço extraordinário na seguinte base: as duas primeiras com o acréscimo de 25% (vinte e cinco por cento) sobre o salário-hora normal; as duas subseqüentes com um adicional de 50% (cinqüenta por cento) e as restantes com um adicional de 75% (setenta e cinco por cento).",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "sumula-tst/265",
+    "rotulo": "Sumula 265 do TST",
+    "texto": "A transferência para o período diurno de trabalho implica a perda do direito ao adicional noturno. IRR-243\tADICIONAL NOTURNO. ALTERAÇÃO DE TURNO DE TRABALHO. POSSIBILIDADE DE SUPRESSÃO. (RR-0010348-50.2023.5.03.0006, Tribunal Pleno, publicado em 02.09.2025, rel. Min. Aloysio Silva Corrêa da Veiga) A transferência para o período diurno de trabalho implica a perda do direito ao adicional noturno.",
+    "obra": "TST",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-241/par-unico",
+    "rotulo": "CLT, art. 241, parágrafo único",
+    "texto": "Parágrafo único - Para o pessoal da categoria \"c\", a primeira hora será majorada de 25% (vinte e cinco por cento), a segunda hora será paga com o acréscimo de 50% (cinqüenta por cento) e as duas subseqüentes com o de 60% (sessenta por cento), salvo caso de negligência comprovada.",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "faltas justificadas sem prejuizo do salario",
+  "grupo": "A",
+  "gabarito": {
+   "urn": "clt/art-473",
+   "rotulo": "CLT, art. 473",
+   "texto": "Art. 473 - O empregado poderá deixar de comparecer ao serviço sem prejuízo do salário:",
+   "posicao": 2
+  },
+  "topo": [
+   {
+    "urn": "sumula-tst/89",
+    "rotulo": "Sumula 89 do TST",
+    "texto": "Se as faltas já são justificadas pela lei, consideram-se como ausências legais e não serão descontadas para o cálculo do período de férias.",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-473",
+    "rotulo": "CLT, art. 473",
+    "texto": "Art. 473 - O empregado poderá deixar de comparecer ao serviço sem prejuízo do salário:",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "sumula-tst/155",
+    "rotulo": "Sumula 155 do TST",
+    "texto": "As horas em que o empregado falta ao serviço para comparecimento necessário, como parte, à Justiça do Trabalho não serão descontadas de seus salários (ex-Prejulgado nº 30).",
+    "obra": "TST",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-392/par-4",
+    "rotulo": "CLT, art. 392, § 4º",
+    "texto": "§ 4o É garantido à empregada, durante a gravidez, sem prejuízo do salário e demais direitos:",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-131/inc-IV",
+    "rotulo": "CLT, art. 131, IV",
+    "texto": "IV - justificada pela empresa, entendendo-se como tal a que não tiver determinado o desconto do correspondente salário;",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "justica gratuita insuficiencia de recursos",
+  "grupo": "A",
+  "gabarito": {
+   "urn": "clt/art-790/par-3",
+   "rotulo": "CLT, art. 790, § 3º",
+   "texto": "§ 3o É facultado aos juízes, órgãos julgadores e presidentes dos tribunais do trabalho de qualquer instância conceder, a requerimento ou de ofício, o benefício da justiça gratuita, inclusive quanto a traslados e instrumentos, àqueles que perceberem salário igual ou inferior a 40% (quarenta por cento) do limite máximo dos benefícios do Regime Geral de Previdência Social.",
+   "posicao": 13
+  },
+  "topo": [
+   {
+    "urn": "oj-sdi1-tst/269",
+    "rotulo": "OJ 269 da SBDI-I do TST",
+    "texto": "I - O benefício da justiça gratuita pode ser requerido em qualquer tempo ou grau de jurisdição, desde que, na fase recursal, seja o requerimento formulado no prazo alusivo ao recurso; II - Indeferido o requerimento de justiça gratuita formulado na fase recursal, cumpre ao relator fixar prazo para que o recorrente efetue o preparo (art. 99, § 7º, do CPC de 2015)",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-790/par-4",
+    "rotulo": "CLT, art. 790, § 4º",
+    "texto": "§ 4o O benefício da justiça gratuita será concedido à parte que comprovar insuficiência de recursos para o pagamento das custas do processo.",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-791-A/par-4",
+    "rotulo": "CLT, art. 791-A, § 4º",
+    "texto": "§ 4o Vencido o beneficiário da justiça gratuita, desde que não tenha obtido em juízo, ainda que em outro processo, créditos capazes de suportar a despesa, as obrigações decorrentes de sua sucumbência ficarão sob condição suspensiva de exigibilidade e somente poderão ser executadas se, nos dois anos subsequentes ao trânsito em julgado da decisão que as certificou, o credor demonstrar que deixou de existir a situação de insuficiência de recursos que justificou a concessão de gratuidade, extinguindo-se, passado esse prazo, tais obrigações do beneficiário. (Declarado inconstitucional pela ADI 5766)",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-899/par-10",
+    "rotulo": "CLT, art. 899, § 10º",
+    "texto": "§ 10. São isentos do depósito recursal os beneficiários da justiça gratuita, as entidades filantrópicas e as empresas em recuperação judicial.",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "oj-sdi1-tst/389",
+    "rotulo": "OJ 389 da SBDI-I do TST",
+    "texto": "Constitui ônus da parte recorrente, sob pena de deserção, depositar previamente a multa aplicada com fundamento nos §§ 4º e 5º, do art. 1.021, do CPC de 2015 (§ 2º do art. 557 do CPC de 1973), à exceção da Fazenda Pública e do beneficiário de justiça gratuita, que farão o pagamento ao final.",
+    "obra": "TST",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "deposito recursal para interposicao de recurso",
+  "grupo": "A",
+  "gabarito": {
+   "urn": "clt/art-899",
+   "rotulo": "CLT, art. 899",
+   "texto": "Art. 899 - Os recursos serão interpostos por simples petição e terão efeito meramente devolutivo, salvo as exceções previstas neste Título, permitida a execução provisória até a penhora.",
+   "posicao": 2
+  },
+  "topo": [
+   {
+    "urn": "sumula-tst/245",
+    "rotulo": "Sumula 245 do TST",
+    "texto": "O depósito recursal deve ser feito e comprovado no prazo alusivo ao recurso. A interposição antecipada deste não prejudica a dilação legal.",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-899/par-7",
+    "rotulo": "CLT, art. 899, § 7º",
+    "texto": "§ 7o No ato de interposição do agravo de instrumento, o depósito recursal corresponderá a 50% (cinquenta por cento) do valor do depósito do recurso ao qual se pretende destrancar.",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "sumula-tst/99",
+    "rotulo": "Sumula 99 do TST",
+    "texto": "Havendo recurso ordinário em sede de rescisória, o depósito recursal só é exigível quando for julgado procedente o pedido e imposta condenação em pecúnia, devendo este ser efetuado no prazo recursal, no limite e nos termos da legislação vigente, sob pena de deserção. (ex-Súmula nº 99 - alterada pela Res. 110/2002, DJ 15.04.2002 - e ex-OJ nº 117 da SBDI-II - DJ 11.08.2003)",
+    "obra": "TST",
+    "pos": 3
+   },
+   {
+    "urn": "oj-sdi1-tst/217",
+    "rotulo": "OJ 217 da SBDI-I do TST",
+    "texto": "Para a formação do agravo de instrumento, não é necessária a juntada de comprovantes de recolhimento de custas e de depósito recursal relativamente ao recurso ordinário, desde que não seja objeto de controvérsia no recurso de revista a validade daqueles recolhimentos.",
+    "obra": "TST",
+    "pos": 4
+   },
+   {
+    "urn": "oj-sdi1-tst/140",
+    "rotulo": "OJ 140 da SBDI-I do TST",
+    "texto": "Em caso de recolhimento insuficiente das custas processuais ou do depósito recursal, somente haverá deserção do recurso se, concedido o prazo de 5 (cinco) dias previsto no § 2º do art. 1.007 do CPC de 2015, o recorrente não complementar e comprovar o valor devido.",
+    "obra": "TST",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "rescisao indireta do contrato de trabalho",
+  "grupo": "B",
+  "gabarito": {
+   "urn": "clt/art-483",
+   "rotulo": "CLT, art. 483",
+   "texto": "Art. 483 - O empregado poderá considerar rescindido o contrato e pleitear a devida indenização quando:",
+   "posicao": 47
+  },
+  "topo": [
+   {
+    "urn": "sumula-tst/69",
+    "rotulo": "Sumula 69 do TST",
+    "texto": "A partir da Lei nº 10.272, de 05.09.2001, havendo rescisão do contrato de trabalho e sendo revel e confesso quanto à matéria de fato, deve ser o empregador condenado ao pagamento das verbas rescisórias, não quitadas na primeira audiência, com acréscimo de 50% (cinqüenta por cento).",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "sumula-tst/430",
+    "rotulo": "Sumula 430 do TST",
+    "texto": "Convalidam-se os efeitos do contrato de trabalho que, considerado nulo por ausência de concurso público, quando celebrado originalmente com ente da Administração Pública Indireta, continua a existir após a sua privatização.",
+    "obra": "TST",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-477/par-4/inc-I",
+    "rotulo": "CLT, art. 477, I",
+    "texto": "I - em dinheiro, depósito bancário ou cheque visado, conforme acordem as partes; ou",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-487/par-4",
+    "rotulo": "CLT, art. 487, § 4º",
+    "texto": "§ 4º - É devido o aviso prévio na despedida indireta. (Parágrafo incluído pela Lei nº 7.108, de 5.7.1983)",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "oj-sdi1-tst/366",
+    "rotulo": "OJ 366 da SBDI-I do TST",
+    "texto": "Ainda que desvirtuada a finalidade do contrato de estágio celebrado na vigência da Constituição Federal de 1988, é inviável o reconhecimento do vínculo empregatício com ente da Administração Pública direta ou indireta, por força do art. 37, II, da CF/1988, bem como o deferimento de indenização pecuniária, exceto em relação às parcelas previstas na Súmula nº 363 do TST, se requeridas.",
+    "obra": "TST",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "sobreaviso escala de plantao",
+  "grupo": "B",
+  "gabarito": {
+   "urn": "clt/art-244/par-2",
+   "rotulo": "CLT, art. 244, § 2º",
+   "texto": "§ 2º Considera-se de \"sobre-aviso\" o empregado efetivo, que permanecer em sua própria casa, aguardando a qualquer momento o chamado para o serviço. Cada escala de \"sobre-aviso\" será, no máximo, de vinte e quatro horas, As horas de \"sobre-aviso\", para todos os efeitos, serão contadas à razão de 1/3 (um terço) do salário normal. (Restaurado pelo Decreto-lei n º 5, de 4.4.1966)",
+   "posicao": 3
+  },
+  "topo": [
+   {
+    "urn": "sumula-tst/428",
+    "rotulo": "Sumula 428 do TST",
+    "texto": "I - O uso de instrumentos telemáticos ou informatizados fornecidos pela empresa ao empregado, por si só, não caracteriza o regime de sobreaviso. II - Considera-se em sobreaviso o empregado que, à distância e submetido a controle patronal por instrumentos telemáticos ou informatizados, permanecer em regime de plantão ou equivalente, aguardando a qualquer momento o chamado para o serviço durante o período de descanso.",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "sumula-tst/229",
+    "rotulo": "Sumula 229 do TST",
+    "texto": "Por aplicação analógica do art. 244, § 2º, da CLT, as horas de sobreaviso dos eletricitários são remuneradas à base de 1/3 sobre a totalidade das parcelas de natureza salarial.",
+    "obra": "TST",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-244/par-2",
+    "rotulo": "CLT, art. 244, § 2º",
+    "texto": "§ 2º Considera-se de \"sobre-aviso\" o empregado efetivo, que permanecer em sua própria casa, aguardando a qualquer momento o chamado para o serviço. Cada escala de \"sobre-aviso\" será, no máximo, de vinte e quatro horas, As horas de \"sobre-aviso\", para todos os efeitos, serão contadas à razão de 1/3 (um terço) do salário normal. (Restaurado pelo Decreto-lei n º 5, de 4.4.1966)",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-244/par-3",
+    "rotulo": "CLT, art. 244, § 3º",
+    "texto": "§ 3º Considera-se de \"prontidão\" o empregado que ficar nas dependências da estrada, aguardando ordens. A escala de prontidão será, no máximo, de doze horas. As horas de prontidão serão, para todos os efeitos, contadas à razão de 2/3 (dois terços) do salário-hora normal. (Restaurado pelo Decreto-lei n º 5, de 4.4.1966)",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-386",
+    "rotulo": "CLT, art. 386",
+    "texto": "Art. 386 - Havendo trabalho aos domingos, será organizada uma escala de revezamento quinzenal, que favoreça o repouso dominical.",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "empregado hipersuficiente pode negociar direto",
+  "grupo": "B",
+  "gabarito": {
+   "urn": "clt/art-444/par-unico",
+   "rotulo": "CLT, art. 444, parágrafo único",
+   "texto": "Parágrafo único. A livre estipulação a que se refere o caput deste artigo aplica-se às hipóteses previstas no art. 611-A desta Consolidação , com a mesma eficácia legal e preponderância sobre os instrumentos coletivos, no caso de empregado portador de diploma de nível superior e que perceba salário mensal igual ou superior a duas vezes o limite máximo dos benefícios do Regime Geral de Previdência Social.",
+   "posicao": 4
+  },
+  "topo": [
+   {
+    "urn": "clt/art-510-A",
+    "rotulo": "CLT, art. 510-A",
+    "texto": "Art. 510-A. Nas empresas com mais de duzentos empregados, é assegurada a eleição de uma comissão para representá-los, com a finalidade de promover-lhes o entendimento direto com os empregadores.",
+    "obra": "CLT",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-507-A",
+    "rotulo": "CLT, art. 507-A",
+    "texto": "Art. 507-A. Nos contratos individuais de trabalho cuja remuneração seja superior a duas vezes o limite máximo estabelecido para os benefícios do Regime Geral de Previdência Social, poderá ser pactuada cláusula compromissória de arbitragem, desde que por iniciativa do empregado ou mediante a sua concordância expressa, nos termos previstos na Lei n o 9.307, de 23 de setembro de 1996 .",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-198",
+    "rotulo": "CLT, art. 198",
+    "texto": "Art.198 - É de 60 kg (sessenta quilogramas) o peso máximo que um empregado pode remover individualmente, ressalvadas as disposições especiais relativas ao trabalho do menor e da mulher.",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-444/par-unico",
+    "rotulo": "CLT, art. 444, parágrafo único",
+    "texto": "Parágrafo único. A livre estipulação a que se refere o caput deste artigo aplica-se às hipóteses previstas no art. 611-A desta Consolidação , com a mesma eficácia legal e preponderância sobre os instrumentos coletivos, no caso de empregado portador de diploma de nível superior e que perceba salário mensal igual ou superior a duas vezes o limite máximo dos benefícios do Regime Geral de Previdência Social.",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-510-A/par-1",
+    "rotulo": "CLT, art. 510-A, § 1º",
+    "texto": "§ 1o A comissão será composta:",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "demissao em massa sem negociacao com o sindicato",
+  "grupo": "B",
+  "gabarito": {
+   "urn": "clt/art-477-A",
+   "rotulo": "CLT, art. 477-A",
+   "texto": "Art. 477-A. As dispensas imotivadas individuais, plúrimas ou coletivas equiparam-se para todos os fins, não havendo necessidade de autorização prévia de entidade sindical ou de celebração de convenção coletiva ou acordo coletivo de trabalho para sua efetivação.",
+   "posicao": 6
+  },
+  "topo": [
+   {
+    "urn": "clt/art-617/par-1",
+    "rotulo": "CLT, art. 617, § 1º",
+    "texto": "§ 1º Expirado o prazo de 8 (oito) dias sem que o Sindicato tenha se desincumbido do encargo recebido, poderão os interessados dar conhecimento do fato à Federação a que estiver vinculado o Sindicato e, em falta dessa, à correspondente Confederação, para que, no mesmo prazo, assuma a direção dos entendimentos. Esgotado êsse prazo, poderão os interessados prosseguir diretamente na negociação coletiva até final.",
+    "obra": "CLT",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-500",
+    "rotulo": "CLT, art. 500",
+    "texto": "Art. 500 - O pedido de demissão do empregado estável só será válido quando feito com a assistência do respectivo Sindicato e, se não o houver, perante autoridade local competente do Ministério do Trabalho e Previdência Social ou da Justiça do Trabalho. (Revigorado com nova redação, pela Lei nº 5.584, de 26.6.1970)",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "sumula-tst/379",
+    "rotulo": "Sumula 379 do TST",
+    "texto": "O dirigente sindical somente poderá ser dispensado por falta grave mediante a apuração em inquérito judicial, inteligência dos arts. 494 e 543, §3º, da CLT. IRR-257\tDIRIGENTE SINDICAL. DESPEDIDA. FALTA GRAVE. INQUÉRITO JUDICIAL. NECESSIDADE. (RR-0020182-22.2020.5.04.0211, Tribunal Pleno, publicado em 02.09.2025, rel. Min. Aloysio Silva Corrêa da Veiga) A resolução do contrato de trabalho em que o empregado seja dirigente sindical somente poderá operar-se por decisão proferida em inquérito judicial, conforme previsto nos artigos 494 e 543, paragrafo 3º, da CLT.",
+    "obra": "TST",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-477-B",
+    "rotulo": "CLT, art. 477-B",
+    "texto": "Art. 477-B. Plano de Demissão Voluntária ou Incentivada, para dispensa individual, plúrima ou coletiva, previsto em convenção coletiva ou acordo coletivo de trabalho, enseja quitação plena e irrevogável dos direitos decorrentes da relação empregatícia, salvo disposição em contrário estipulada entre as partes.",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-616/par-2",
+    "rotulo": "CLT, art. 616, § 2º",
+    "texto": "§ 2º No caso de persistir a recusa à negociação coletiva, pelo desatendimento às convocações feitas pelo Departamento Nacional do Trabalho ou órgãos regionais do Ministério de Trabalho e Previdência Social, ou se malograr a negociação entabolada, é facultada aos Sindicatos ou emprêsas interessadas a instauração de dissídio coletivo.",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "acumulo de funcao servico compativel com a condicao pessoal",
+  "grupo": "B",
+  "gabarito": {
+   "urn": "clt/art-456/par-unico",
+   "rotulo": "CLT, art. 456, parágrafo único",
+   "texto": "Parágrafo único. A falta de prova ou inexistindo cláusula expressa e tal respeito, entender-se-á que o empregado se obrigou a todo e qualquer serviço compatível com a sua condição pessoal.",
+   "posicao": 2
+  },
+  "topo": [
+   {
+    "urn": "clt/art-4/par-2/inc-VII",
+    "rotulo": "CLT, art. 4, VII",
+    "texto": "VII - higiene pessoal;",
+    "obra": "CLT",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-456/par-unico",
+    "rotulo": "CLT, art. 456, parágrafo único",
+    "texto": "Parágrafo único. A falta de prova ou inexistindo cláusula expressa e tal respeito, entender-se-á que o empregado se obrigou a todo e qualquer serviço compatível com a sua condição pessoal.",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-444/par-unico",
+    "rotulo": "CLT, art. 444, parágrafo único",
+    "texto": "Parágrafo único. A livre estipulação a que se refere o caput deste artigo aplica-se às hipóteses previstas no art. 611-A desta Consolidação , com a mesma eficácia legal e preponderância sobre os instrumentos coletivos, no caso de empregado portador de diploma de nível superior e que perceba salário mensal igual ou superior a duas vezes o limite máximo dos benefícios do Regime Geral de Previdência Social.",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-176",
+    "rotulo": "CLT, art. 176",
+    "texto": "Art. 176 - Os locais de trabalho deverão ter ventilação natural, compatível com o serviço realizado.",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-176/par-unico",
+    "rotulo": "CLT, art. 176, parágrafo único",
+    "texto": "Parágrafo único - A ventilação artificial será obrigatória sempre que a natural não preencha as condições de conforto térmico.",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "perda da gratificacao apos dez anos de funcao",
+  "grupo": "B",
+  "gabarito": {
+   "urn": "clt/art-468/par-2",
+   "rotulo": "CLT, art. 468, § 2º",
+   "texto": "§ 2o A alteração de que trata o § 1o deste artigo, com ou sem justo motivo, não assegura ao empregado o direito à manutenção do pagamento da gratificação correspondente, que não será incorporada, independentemente do tempo de exercício da respectiva função.",
+   "posicao": null
+  },
+  "topo": [
+   {
+    "urn": "sumula-tst/372",
+    "rotulo": "Sumula 372 do TST",
+    "texto": "I - Percebida a gratificação de função por dez ou mais anos pelo empregado, se o empregador, sem justo motivo, revertê-lo a seu cargo efetivo, não poderá retirar-lhe a gratificação tendo em vista o princípio da estabilidade financeira. (item cancelado por perda de eficácia a partir de 11.11.2017, pela Lei 13.467/2017)  Res. 225/2025, DEJT divulgado em 30.06, 01 e 02.07.2025 II - Mantido o empregado no exercício da função comissionada, não pode o empregador reduzir o valor da gratificação. (ex-OJ nº 303 da SBDI-I - DJ 11.08.2003)",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "sumula-tst/209",
+    "rotulo": "Sumula 209 do TST",
+    "texto": "A reversão do empregado ao cargo efetivo implica a perda das vantagens salariais inerentes ao cargo em comissão, salvo se nele houver permanecido 10 (dez) ou mais anos ininterruptos.",
+    "obra": "TST",
+    "pos": 2
+   },
+   {
+    "urn": "sumula-tst/109",
+    "rotulo": "Sumula 109 do TST",
+    "texto": "O bancário não enquadrado no § 2º do art. 224 da CLT, que receba gratificação de função, não pode ter o salário relativo a horas extraordinárias compensado com o valor daquela vantagem.",
+    "obra": "TST",
+    "pos": 3
+   },
+   {
+    "urn": "oj-sdi1-trans-tst/27",
+    "rotulo": "OJ Transitoria 27 da SBDI-I do TST",
+    "texto": "A Gratificação Jubileu, instituída pela Resolução nº 1.761/1967, que foi alterada, reduzindo-se o seu valor, pela Resolução nº 1.885/70, era devida a todo empregado que completasse 25, 30, 35 e 40 anos de serviço no Banco. Era vantagem a ser paga de uma única vez, na data da aposentadoria, fluindo desta data o prazo prescricional, sendo inaplicável a Súmula nº 294 do TST, que é restrito aos casos em que se postulam prestações sucessivas.",
+    "obra": "TST",
+    "pos": 4
+   },
+   {
+    "urn": "oj-sdi1-tst/208",
+    "rotulo": "OJ 208 da SBDI-I do TST",
+    "texto": "A alteração da gratificação por trabalho com raios X, de quarenta para dez por cento, na forma da Lei nº 7.923/89, não causou prejuízo ao trabalhador porque passou a incidir sobre o salário incorporado com todas as demais vantagens.",
+    "obra": "TST",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "abandono de emprego apos trinta dias de falta",
+  "grupo": "B",
+  "gabarito": {
+   "urn": "clt/art-482/al-i",
+   "rotulo": "CLT, art. 482, alínea 'i'",
+   "texto": "i) abandono de emprego;",
+   "posicao": 5
+  },
+  "topo": [
+   {
+    "urn": "sumula-tst/32",
+    "rotulo": "Sumula 32 do TST",
+    "texto": "Presume-se o abandono de emprego se o trabalhador não retornar ao serviço no prazo de 30 (trinta) dias após a cessação do benefício previdenciário nem justificar o motivo de não o fazer. IRR-226\tCESSAÇÃO DE BENEFÍCIO PREVIDENCIÁRIO. ABANDONO DE EMPREGO. PRESUNÇÃO. CRITÉRIOS. PRAZO PARA RETORNO. APRESENTAÇÃO DE JUSTIFICATIVA. (RR-0000193-17.2024.5.09.0125, Tribunal Pleno, publicado em 02.09.2025, rel. Min. Aloysio Silva Corrêa da Veiga) Presume-se o abandono de emprego se o trabalhador não retornar ao serviço no prazo de 30 (trinta) dias após a cessação do benefício previdenciário nem justificar o motivo de não o fazer.",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "sumula-tst/62",
+    "rotulo": "Sumula 62 do TST",
+    "texto": "O prazo de decadência do direito do empregador de ajuizar inquérito em face do empregado que incorre em abandono de emprego é contado a partir do momento em que o empregado pretendeu seu retorno ao serviço.",
+    "obra": "TST",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-853",
+    "rotulo": "CLT, art. 853",
+    "texto": "Art. 853 - Para a instauração do inquérito para apuração de falta grave contra empregado garantido com estabilidade, o empregador apresentará reclamação por escrito à Junta ou Juízo de Direito, dentro de 30 (trinta) dias, contados da data da suspensão do empregado.",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-474",
+    "rotulo": "CLT, art. 474",
+    "texto": "Art. 474 - A suspensão do empregado por mais de 30 (trinta) dias consecutivos importa na rescisão injusta do contrato de trabalho.",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-482/al-i",
+    "rotulo": "CLT, art. 482, alínea 'i'",
+    "texto": "i) abandono de emprego;",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "embargos a execucao com o juizo garantido",
+  "grupo": "B",
+  "gabarito": {
+   "urn": "clt/art-884",
+   "rotulo": "CLT, art. 884",
+   "texto": "Art. 884 - Garantida a execução ou penhorados os bens, terá o executado 5 (cinco) dias para apresentar embargos, cabendo igual prazo ao exeqüente para impugnação.",
+   "posicao": 2
+  },
+  "topo": [
+   {
+    "urn": "sumula-tst/419",
+    "rotulo": "Sumula 419 do TST",
+    "texto": "Na execução por carta precatória, os embargos de terceiro serão oferecidos no juízo deprecado, salvo se indicado pelo juízo deprecante o bem constrito ou se já devolvida a carta (art. 676, parágrafo único, do CPC de 2015).",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-884",
+    "rotulo": "CLT, art. 884",
+    "texto": "Art. 884 - Garantida a execução ou penhorados os bens, terá o executado 5 (cinco) dias para apresentar embargos, cabendo igual prazo ao exeqüente para impugnação.",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-789-A/inc-V",
+    "rotulo": "CLT, art. 789-A, V",
+    "texto": "V – embargos à execução, embargos de terceiro e embargos à arrematação: R$ 44,26 (quarenta e quatro reais e vinte e seis centavos);",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "oj-sdi2-tst/54",
+    "rotulo": "OJ 54 da SBDI-II do TST",
+    "texto": "Ajuizados embargos de terceiro (art. 674 do CPC de 2015 - art. 1.046 do CPC de 1973) para pleitear a desconstituição da penhora, é incabível mandado de segurança com a mesma finalidade.",
+    "obra": "TST",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-884/par-6",
+    "rotulo": "CLT, art. 884, § 6º",
+    "texto": "§ 6o A exigência da garantia ou penhora não se aplica às entidades filantrópicas e/ou àqueles que compõem ou compuseram a diretoria dessas instituições.",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "trabalho intermitente com convocacao por periodos",
+  "grupo": "B",
+  "gabarito": {
+   "urn": "clt/art-443/par-3",
+   "rotulo": "CLT, art. 443, § 3º",
+   "texto": "§ 3o Considera-se como intermitente o contrato de trabalho no qual a prestação de serviços, com subordinação, não é contínua, ocorrendo com alternância de períodos de prestação de serviços e de inatividade, determinados em horas, dias ou meses, independentemente do tipo de atividade do empregado e do empregador, exceto para os aeronautas, regidos por legislação própria.",
+   "posicao": 2
+  },
+  "topo": [
+   {
+    "urn": "clt/art-452-A/par-2",
+    "rotulo": "CLT, art. 452-A, § 2º",
+    "texto": "§ 2o Recebida a convocação, o empregado terá o prazo de um dia útil para responder ao chamado, presumindo-se, no silêncio, a recusa.",
+    "obra": "CLT",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-443/par-3",
+    "rotulo": "CLT, art. 443, § 3º",
+    "texto": "§ 3o Considera-se como intermitente o contrato de trabalho no qual a prestação de serviços, com subordinação, não é contínua, ocorrendo com alternância de períodos de prestação de serviços e de inatividade, determinados em horas, dias ou meses, independentemente do tipo de atividade do empregado e do empregador, exceto para os aeronautas, regidos por legislação própria.",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-452-A/par-1",
+    "rotulo": "CLT, art. 452-A, § 1º",
+    "texto": "§ 1o O empregador convocará, por qualquer meio de comunicação eficaz, para a prestação de serviços, informando qual será a jornada, com, pelo menos, três dias corridos de antecedência.",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-243",
+    "rotulo": "CLT, art. 243",
+    "texto": "Art. 243 - Para os empregados de estações do interior, cujo serviço for de natureza intermitente ou de pouca intensidade, não se aplicam os preceitos gerais sobre duração do trabalho, sendo-lhes, entretanto, assegurado o repouso contínuo de dez horas, no mínimo, entre dois períodos de trabalho e descanso semanal.",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-452-A",
+    "rotulo": "CLT, art. 452-A",
+    "texto": "Art. 452-A. O contrato de trabalho intermitente deve ser celebrado por escrito e deve conter especificamente o valor da hora de trabalho, que não pode ser inferior ao valor horário do salário mínimo ou àquele devido aos demais empregados do estabelecimento que exerçam a mesma função em contrato intermitente ou não.",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "contratacao por empresa de fachada para fraudar direitos",
+  "grupo": "B",
+  "gabarito": {
+   "urn": "clt/art-9",
+   "rotulo": "CLT, art. 9",
+   "texto": "Art. 9º - Serão nulos de pleno direito os atos praticados com o objetivo de desvirtuar, impedir ou fraudar a aplicação dos preceitos contidos na presente Consolidação.",
+   "posicao": 18
+  },
+  "topo": [
+   {
+    "urn": "sumula-tst/331",
+    "rotulo": "Sumula 331 do TST",
+    "texto": "I - A contratação de trabalhadores por empresa interposta é ilegal, formando-se o vínculo diretamente com o tomador dos serviços, salvo no caso de trabalho temporário (Lei nº 6.019, de 03.01.1974). (item I cancelado por perda de eficácia a partir de 11.11.2017, pela Lei 13.467/2017)  Res. 225/2025, DEJT divulgado em 30.06, 01 e 02.07.2025 II - A contratação irregular de trabalhador, mediante empresa interposta, não gera vínculo de emprego com os órgãos da Administração Pública direta, indireta ou fundacional (art. 37, II, da CF/1988). III - Não forma vínculo de emprego com o tomador a contratação de serviços de vigilância (Lei nº 7.102, de 20.06.1983) e de conservação e limpeza, bem como a de serviços especializados ligados à atividade-meio do tomador, desde que inexistente a pessoalidade e a subordinação direta. IV - O inadimplemento das obrigações trabalhistas, por parte do empregador, implica a responsabilidade subsidiária do tomador dos serviços quanto àquelas obrigações, desde que haja participado da relação processual e conste também do título executivo judicial. V - Os entes integrantes da Administração Pública direta e indireta respondem subsidiariamente, nas mesmas condições do item IV, caso evidenciada a sua conduta culposa no cumprimento das obrigações da Lei n.º 8.666, de 21.06.1993, especialmente na fiscalização do cumprimento das obrigações contratuais e legais da prestadora de serviço como empregadora. A aludida responsabilidade não decorre de mero inadimplemento das obrigações trabalhistas assumidas pela empresa regularmente contratada. VI  A responsabilidade subsidiária do tomador de serviços abrange todas as verbas decorrentes da condenação referentes ao período da prestação laboral.",
+    "obra": "TST",
+    "pos": 1
+   },
+   {
+    "urn": "oj-sdi1-tst/321",
+    "rotulo": "OJ 321 da SBDI-I do TST",
+    "texto": "Salvo os casos de trabalho temporário e de serviço de vigilância, previstos nas Leis nºs 6.019, de 03.01.74, e 7.102, de 20.06.83, é ilegal a contratação de trabalhadores por empresa interposta, formando-se o vínculo empregatício diretamente com o tomador dos serviços, inclusive ente público, em relação ao período anterior à vigência da CF/88.",
+    "obra": "TST",
+    "pos": 2
+   },
+   {
+    "urn": "clt/art-431",
+    "rotulo": "CLT, art. 431",
+    "texto": "Art. 431. A contratação do aprendiz poderá ser efetivada pela empresa onde se realizará a aprendizagem ou pelas entidades mencionadas nos incisos II e III do art. 430 , caso em que não gera vínculo de emprego com a empresa tomadora dos serviços.",
+    "obra": "CLT",
+    "pos": 3
+   },
+   {
+    "urn": "clt/art-10",
+    "rotulo": "CLT, art. 10",
+    "texto": "Art. 10 - Qualquer alteração na estrutura jurídica da empresa não afetará os direitos adquiridos por seus empregados.",
+    "obra": "CLT",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-431/par-unico",
+    "rotulo": "CLT, art. 431, parágrafo único",
+    "texto": "Parágrafo único. Aos candidatos rejeitados pela seleção profissional deverá ser dada, tanto quanto possível, orientação profissional para ingresso em atividade mais adequada às qualidades e aptidões que tiverem demonstrado.",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ },
+ {
+  "consulta": "assedio no ambiente de trabalho ofensa a honra",
+  "grupo": "B",
+  "gabarito": {
+   "urn": "clt/art-223-C",
+   "rotulo": "CLT, art. 223-C",
+   "texto": "Art. 223-C. A honra, a imagem, a intimidade, a liberdade de ação, a autoestima, a sexualidade, a saúde, o lazer e a integridade física são os bens juridicamente tutelados inerentes à pessoa física.",
+   "posicao": 5
+  },
+  "topo": [
+   {
+    "urn": "clt/art-482/al-j",
+    "rotulo": "CLT, art. 482, alínea 'j'",
+    "texto": "j) ato lesivo da honra ou da boa fama praticado no serviço contra qualquer pessoa, ou ofensas físicas, nas mesmas condições, salvo em caso de legítima defesa, própria ou de outrem;",
+    "obra": "CLT",
+    "pos": 1
+   },
+   {
+    "urn": "clt/art-482/al-k",
+    "rotulo": "CLT, art. 482, alínea 'k'",
+    "texto": "k) ato lesivo da honra ou da boa fama ou ofensas físicas praticadas contra o empregador e superiores hierárquicos, salvo em caso de legítima defesa, própria ou de outrem;",
+    "obra": "CLT",
+    "pos": 2
+   },
+   {
+    "urn": "sumula-tst/438",
+    "rotulo": "Sumula 438 do TST",
+    "texto": "O empregado submetido a trabalho contínuo em ambiente artificialmente frio, nos termos do parágrafo único do art. 253 da CLT, ainda que não labore em câmara frigorífica,  tem direito ao intervalo intrajornada previsto no caput do art. 253 da CLT.",
+    "obra": "TST",
+    "pos": 3
+   },
+   {
+    "urn": "oj-sdi1-tst/421",
+    "rotulo": "OJ 421 da SBDI-I do TST",
+    "texto": "A condenação em honorários advocatícios nos autos de ação de indenização por danos morais e materiais decorrentes de acidente de trabalho ou de doença profissional, remetida à Justiça do Trabalho após ajuizamento na Justiça comum, antes da vigência da Emenda Constitucional nº 45/2004, decorre da mera sucumbência, nos termos do art. 85 do CPC de 2015 (art. 20 do CPC de 1973), não se sujeitando aos requisitos da Lei nº 5.584/1970.",
+    "obra": "TST",
+    "pos": 4
+   },
+   {
+    "urn": "clt/art-223-C",
+    "rotulo": "CLT, art. 223-C",
+    "texto": "Art. 223-C. A honra, a imagem, a intimidade, a liberdade de ação, a autoestima, a sexualidade, a saúde, o lazer e a integridade física são os bens juridicamente tutelados inerentes à pessoa física.",
+    "obra": "CLT",
+    "pos": 5
+   }
+  ]
+ }
+]
