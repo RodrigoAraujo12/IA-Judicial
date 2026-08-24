@@ -98,12 +98,33 @@ def indexar(chave: str, rebaixar: bool = False) -> None:
         )
 
     con = banco.conectar()
+    # O vetor sobrevive a reingestao quando o texto que o gerou nao mudou. Sem
+    # isto, reindexar a obra zera todos os vetores pelo cascade - e a busca passa
+    # a responder so pela via lexical, sem dizer que emagreceu.
+    # O denominador conta VETORES; `guardados` conta textos distintos, e os dois
+    # numeros diferem - redacoes com o mesmo texto indexado compartilham vetor.
+    # Relatar "de len(guardados)" daria um "5747 de 5341" sem sentido.
+    tinham_vetor = int(
+        con.execute(
+            """SELECT COUNT(*) FROM vetores v
+                 JOIN dispositivos d ON d.id = v.dispositivo_id
+                WHERE d.obra = ?""",
+            (chave,),
+        ).fetchone()[0]
+    )
+    guardados = banco.vetores_guardados(con, chave)
     con.execute("DELETE FROM dispositivos WHERE obra = ?", (chave,))
     fonte_id = banco.registrar_fonte(con, chave, obra["url"], bruto)
     banco.gravar(con, registros, fonte_id)
+    recolocados, sem_vetor = banco.restaurar_vetores(con, chave, guardados)
     con.commit()
 
     print(f"  gravados: {len(registros)} redacoes")
+    if recolocados:
+        print(f"  vetores preservados: {recolocados} de {tinham_vetor}")
+    if sem_vetor:
+        print(f"  sem vetor: {sem_vetor} redacoes - para a busca densa, rode:")
+        print("    python -m app.corpus.indexar vetores")
     print(f"  estatisticas: {banco.estatisticas(con)}")
     conferir_catalogo(con, chave)
     con.close()

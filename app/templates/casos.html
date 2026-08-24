@@ -1,10 +1,6 @@
 {% extends "base.html" %}
 {% block titulo %}Casos salvos{% endblock %}
 
-{% block progresso %}
-<span class="progresso"><a href="/">Nova entrevista</a> &middot; <a href="/corpus">Consultar a lei</a></span>
-{% endblock %}
-
 {% block corpo %}
 <article class="lista">
   <p class="rotulo">Casos salvos <span class="contador">{{ casos | length }}</span></p>

@@ -10,7 +10,22 @@
   <header class="topo">
     <h1>Triagem trabalhista</h1>
     <span class="sub">reclamante &middot; triagem e corpus normativo</span>
-    {% block progresso %}{% endblock %}
+    {#- As tres secoes do sistema, sempre as tres, com a atual marcada. Antes cada
+        pagina listava so as OUTRAS duas: a aba da secao em que se estava sumia, e
+        com ela a nocao de que o sistema tem tres partes.
+
+        Relatorio e peca ficam de fora de proposito. Sao resultado de um POST, e
+        uma aba ali levaria a uma entrevista em branco - descartando as respostas
+        sem avisar. Delas se volta pelo botao do navegador. -#}
+    {% set secoes = {"/": "Entrevista", "/corpus": "Consultar a lei", "/casos": "Casos salvos"} %}
+    {% set aqui = "/" if request.url.path.startswith("/caso/") else request.url.path %}
+    {% if aqui in secoes %}
+      <nav class="secoes">
+        {% for href, nome in secoes.items() %}
+          <a href="{{ href }}"{% if href == aqui %} class="aqui" aria-current="page"{% endif %}>{{ nome }}</a>
+        {% endfor %}
+      </nav>
+    {% endif %}
   </header>
   {% block corpo %}{% endblock %}
 </body>

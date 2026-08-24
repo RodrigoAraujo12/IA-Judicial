@@ -79,11 +79,48 @@ body {
   color: var(--muted);
 }
 
-.topo .progresso {
+/* As tres secoes, no alto a direita. Antes eram dois links soltos em 0.78rem
+   cinza - tamanho de legenda, para o que e a navegacao inteira do sistema.
+   Agora sao abas: descem ate o filete do cabecalho, e a marca da secao atual e
+   esse mesmo filete trocado de cor. Sem sombra e sem pilula - a regra da casa e
+   filete. */
+.topo .secoes {
   margin-left: auto;
-  font-size: 0.78rem;
+  display: flex;
+  gap: 0.15rem;
+  /* Estica ate a borda de baixo do cabecalho. O `stretch` vence o `baseline` do
+     .topo, e a margem negativa cobre o padding de 0.85rem: e o que assenta a
+     marca da aba ativa SOBRE o filete, em vez de flutuando acima dele. */
+  align-self: stretch;
+  margin-bottom: -0.85rem;
+}
+
+.topo .secoes a {
+  display: flex;
+  align-items: center;
+  padding: 0 0.75rem;
+  font-size: 0.9rem;
   color: var(--muted);
-  font-variant-numeric: tabular-nums;
+  border-bottom: 2px solid transparent;
+}
+
+.topo .secoes a:hover {
+  color: var(--ink);
+  background: var(--paper);
+  text-decoration: none;
+}
+
+.topo .secoes a.aqui {
+  color: var(--accent);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+/* Janela estreita: o subtitulo sai antes que as abas comecem a se espremer. Ele
+   explica, elas navegam - e navegar ganha. */
+@media (max-width: 760px) {
+  .topo { padding-left: 1rem; padding-right: 1rem; }
+  .topo .sub { display: none; }
 }
 
 /* --- estrutura ----------------------------------------------------------- */
@@ -347,8 +384,8 @@ button:hover { filter: brightness(1.08); }
 .sufixo { font-size: 0.8rem; color: var(--muted); }
 input.curto { min-width: 8rem; }
 
-.topo a, .rail a.ativo { color: var(--accent); text-decoration: none; }
-.topo a:hover { text-decoration: underline; }
+.rail a.ativo { color: var(--accent); }
+.topo a { text-decoration: none; }
 
 .salvo { font-size: 0.78rem; color: var(--accent); font-variant-numeric: tabular-nums; }
 
