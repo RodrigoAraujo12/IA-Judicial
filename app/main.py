@@ -7,6 +7,7 @@ Roda local, sem IA. Sobe com:
 from __future__ import annotations
 
 import json
+import re
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -36,13 +37,32 @@ CATALOGO: Catalogo = carregar()
 PERGUNTAS_POR_ID = {p.id: p for p in CATALOGO.entrevista.perguntas}
 
 
+# Salario redondo se digita sem centavos: "3.500". Ali o ponto e separador de
+# MILHAR, e le-lo como decimal transformava R$ 3.500 em R$ 3,50 - erro de tres
+# ordens de grandeza, gravado em casos.db sem nenhum sinal de que algo deu errado.
+# Sem centavos nao ha virgula para desempatar, entao quem desempata e o formato:
+# grupos de exatamente tres digitos depois de cada ponto so existem em milhar.
+_MILHAR = re.compile(r"^\d{1,3}(?:\.\d{3})+$")
+
+
 def _moeda(bruto: str) -> float | None:
+    """Converte o campo de moeda. Devolve None quando nao da para ter certeza.
+
+    None e resposta legitima aqui: o campo em branco - ou ilegivel - alimenta o
+    terceiro estado do motor. Chutar um numero e que nao e opcao.
+    """
     limpo = bruto.strip().replace("R$", "").replace(" ", "")
     if not limpo:
         return None
-    # aceita 3.500,00 e 3500.00
+
     if "," in limpo:
+        # Formato do pais: ponto e milhar, virgula e decimal. "3.500,00" -> 3500.0
         limpo = limpo.replace(".", "").replace(",", ".")
+    elif _MILHAR.match(limpo):
+        # "3.500", "10.000", "1.234.567": so milhar. Note que "3.5" e "3.50" NAO
+        # casam - tres digitos e a exigencia - e seguem sendo decimais.
+        limpo = limpo.replace(".", "")
+
     try:
         return float(limpo)
     except ValueError:
@@ -164,7 +184,7 @@ async def caso_salvar(request: Request):
 
 
 @app.get("/caso/{caso_id}", response_class=HTMLResponse)
-async def caso_abrir(request: Request, caso_id: int):
+def caso_abrir(request: Request, caso_id: int):
     dados = persistencia.carregar(caso_id)
     if dados is None:
         return RedirectResponse("/casos", status_code=303)
@@ -173,7 +193,7 @@ async def caso_abrir(request: Request, caso_id: int):
 
 
 @app.get("/casos", response_class=HTMLResponse)
-async def casos(request: Request):
+def casos(request: Request):
     return templates.TemplateResponse(request, "casos.html", {"casos": persistencia.listar()})
 
 
@@ -181,8 +201,14 @@ async def casos(request: Request):
 
 
 @app.get("/corpus", response_class=HTMLResponse)
-async def corpus(request: Request, q: str = "", em: str = ""):
+def corpus(request: Request, q: str = "", em: str = ""):
     """Consulta ao corpus. GET com query string para o resultado ser linkavel.
+
+    Sincrono de proposito, e nao por esquecimento. A busca hibrida leva 118 ms
+    medidos - 68 deles embutindo a consulta no BGE-M3 - e nada disso e await:
+    dentro de um `async def` esse tempo todo trava o event loop. Como `def`, o
+    FastAPI executa no threadpool e o painel da entrevista, que faz POST em
+    /analise 180 ms depois de cada tecla, nao fica na fila atras da busca.
 
     `em` e a data em que a norma deve estar vigente. Nunca some do formulario: uma
     busca juridica sem data responde para o presente e cala sobre o resto, que e o

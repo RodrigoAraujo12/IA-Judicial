@@ -136,22 +136,32 @@ class Resultado:
     aviso: str | None = None
 
 
-# A matriz de vetores custa 23 MB e uma leitura do banco. Carrega uma vez por
-# processo; o indice so muda por reingestao, que reinicia o servidor de todo jeito.
+# A matriz de vetores custa 23 MB e uma leitura do banco, entao fica em memoria
+# entre as consultas. O que ela NAO pode fazer e ficar em memoria para sempre:
+#
+# `python -m app.corpus.indexar vetores` roda em outro processo e nao encosta no
+# uvicorn. Um cache que so se desfaz no arranque deixava o servidor respondendo
+# com a matriz velha depois de reindexar - ou, pior, com matriz nenhuma: quem
+# subisse o servidor antes de existir corpus.db tinha a primeira tentativa
+# falhada memorizada e a via densa desligada pelo resto da vida do processo, sem
+# uma linha de log dizendo que a busca havia emagrecido para so lexical.
 _matriz = None
-_matriz_tentada = False
+_matriz_carimbo: object = object()  # sentinela: nunca igual a um carimbo real
 
 
 def _obter_matriz(con: sqlite3.Connection):
-    global _matriz, _matriz_tentada
-    if not _matriz_tentada:
-        _matriz_tentada = True
-        try:
-            from app.corpus import vetores
+    global _matriz, _matriz_carimbo
+    marca = banco.carimbo(con)
+    if marca is not None and marca == _matriz_carimbo:
+        return _matriz
 
-            _matriz = vetores.carregar_matriz(con)
-        except Exception:
-            _matriz = None
+    _matriz_carimbo = marca
+    try:
+        from app.corpus import vetores
+
+        _matriz = vetores.carregar_matriz(con)
+    except Exception:
+        _matriz = None
     return _matriz
 
 

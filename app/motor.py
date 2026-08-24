@@ -96,18 +96,24 @@ def avaliar_condicao(cond: Condicao, respostas: Respostas) -> bool | None:
             if isinstance(v, list):
                 return any(x in alvo for x in v)
             return v in alvo
-        case "maior":
-            return _num(v) > _num(cond.valor)
-        case "menor":
-            return _num(v) < _num(cond.valor)
+        case "maior" | "menor":
+            # Numero ilegivel devolve DESCONHECIDO, nao um veredito.
+            a, b = _num(v), _num(cond.valor)
+            if a is None or b is None:
+                return None
+            return a > b if cond.op == "maior" else a < b
     return None
 
 
-def _num(v: Any) -> float:
+def _num(v: Any) -> float | None:
+    """None quando nao da para ler numero. Antes devolvia 0.0, e o zero mentia:
+    uma resposta ilegivel virava "menor que qualquer coisa" e o pedido saia
+    decidido - com a mesma cara de quem decidiu por regra. E o buraco exato no
+    terceiro estado que este modulo existe para defender."""
     try:
         return float(v)
     except (TypeError, ValueError):
-        return 0.0
+        return None
 
 
 def avaliar_grupos(grupos: list[list[Condicao]], respostas: Respostas) -> tuple[bool | None, list[str]]:

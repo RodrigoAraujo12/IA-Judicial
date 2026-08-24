@@ -176,6 +176,37 @@ CLT, art. 384 nao estava em vigor em 2026-08-18: vigorou ate 2017-11-10
 (Lei 13.467/2017).
 ```
 
+**O vetor precisa ver o dispositivo inteiro.** O orçamento de tokens da
+embedding era 128, e isso truncava **900 das 5.748 redações** — 15,7% do corpus.
+O corte não era aleatório: caía nos parágrafos. `texto_indexado` antepõe o rótulo,
+a variante sem "§" e o caput ao texto do dispositivo, e nos subordinados esse
+prefixo consumia o orçamento antes de o texto começar. No art. 71 §4º o prefixo
+levava 91 dos 128 tokens, e o vetor **nunca via** "de natureza indenizatória" —
+exatamente o termo pelo qual esse dispositivo é procurado.
+
+O corpus inteiro cabe em 256 (mediana 83 tokens, p90 140, máximo 255). Subir o
+teto custou 5 minutos de máquina, não uma reingestão: para texto que não estoura
+128, o vetor nos dois orçamentos é bit a bit o mesmo — conferido, diferença máxima
+`0.0` —, então só as 900 truncadas precisaram voltar ao modelo. O que mudou nas
+72 consultas do gabarito:
+
+| via | acerto@1 | acerto@5 | MRR | recall@50 |
+|---|---|---|---|---|
+| densa em 128 | 49/72 | 55/72 | 0,714 | 69/72 |
+| densa em 256 | 50/72 | 57/72 | 0,738 | 71/72 |
+| fusão em 128 | 53/72 | 65/72 | 0,808 | 72/72 |
+| **fusão em 256** | **54/72** | **67/72** | **0,822** | **72/72** |
+
+A via lexical não se moveu — 50/72 e 0,768 antes e depois —, o que é o controle:
+a mudança ficou onde deveria. Casos individuais: o art. 71 §4º saiu de #7 para #1
+na via densa, e o art. 469 §3º ("transferência, adicional de 25%") de #253 para
+#18.
+
+O `maxlen` fica gravado junto de cada vetor. Sem isso, mexer nessa constante não
+refazia nada e os vetores do orçamento antigo continuavam no banco com cara de
+saudáveis — a busca degradaria em silêncio, que é o modo de falha que este
+projeto recusa. Com a coluna, `indexar vetores` sabe sozinho quais refazer.
+
 **Vigência é por dispositivo, não por obra.** O art. 71 §4º tem uma redação até
 10/11/2017 e outra depois — a Reforma mudou a regra *e* a natureza jurídica. Um
 índice que guarda só a redação atual responde a pergunta errada num contrato de
@@ -231,11 +262,11 @@ termo forense que a lei não usa — "rescisão indireta" para o art. 483,
 | via | acerto@1 | acerto@5 | MRR | recall@50 |
 |---|---|---|---|---|
 | lexical | 50/72 | 63/72 | 0,768 | 70/72 |
-| densa | 49/72 | 55/72 | 0,714 | 69/72 |
-| **fusão RRF** | **53/72** | **65/72** | **0,808** | **72/72** |
+| densa | 50/72 | 57/72 | 0,738 | 71/72 |
+| **fusão RRF** | **54/72** | **67/72** | **0,822** | **72/72** |
 
 **Recall@50 é 72/72.** Quando a resposta está na CLT, a busca a encontra sempre; o
-que falha é a ordem. Sobra uma folga de 7 consultas — e é só isso que um
+que falha é a ordem. Sobra uma folga de 5 consultas — e é só isso que um
 reranqueador poderia disputar.
 
 ### O que aconteceu com reranqueadores reais
@@ -245,9 +276,14 @@ melhores candidatos da fusão:
 
 | | tamanho | acerto@1 | acerto@5 | grupo B | latência |
 |---|---|---|---|---|---|
-| fusão RRF (hoje) | — | 53/72 | 65/72 | 16/20 | 63 ms |
+| fusão RRF (hoje) | — | 54/72 | 67/72 | 17/20 | 63 ms |
 | mmarco-mMiniLMv2 int8 | 119 MB | 50/72 | 64/72 | 13/20 | 141 ms |
 | bge-reranker-base | 1,1 GB | 51/72 | 68/72 | 17/20 | 565 ms |
+
+As duas linhas de reranqueador são de um experimento anterior, medido sobre os
+vetores truncados em 128 tokens; não foram refeitas. A comparação portanto
+**subestima** a fusão de hoje, e o modelo grande, que já empatava dentro do ruído,
+agora empata com 1,1 GB de desvantagem.
 
 O modelo pequeno **piora**: nenhuma configuração testada superou a fusão em
 acerto@5, e todas derrubaram o grupo B, que era justamente o alvo. A explicação é
@@ -261,7 +297,13 @@ num pacote que já pesa 1,4 GB, mais 9× de latência por consulta.
 
 ### O que valeu mais que o reranqueador
 
-Ajustar **uma constante**. O `k` do RRF estava em 60, valor herdado de avaliação
+Duas constantes. Nenhum modelo novo.
+
+A primeira foi o orçamento de tokens da embedding, de 128 para 256 — está contada
+acima, em "o vetor precisa ver o dispositivo inteiro": +2 consultas em acerto@5 na
+fusão, por 5 minutos de reembutição.
+
+A segunda é o `k` do RRF, que estava em 60, valor herdado de avaliação
 TREC, onde se fundem dezenas de sistemas parecidos. Aqui são duas listas, de
 forças bem diferentes: com k=60 a curva achata, 1/(60+1) e 1/(60+10) quase
 empatam, e a fusão vira média de opinião. Chegava a ficar **abaixo da via lexical
@@ -275,6 +317,11 @@ sozinha** no primeiro resultado.
 Seis consultas em acerto@1, de graça, sem modelo novo — mais do que qualquer
 reranqueador testado entregou. O intervalo k=1..20 é um platô; o que importava era
 não estar em 60.
+
+Somadas, as duas constantes valem +7 em acerto@1 e +4 em acerto@5 sobre o ponto de
+partida — enquanto o reranqueador de 1,1 GB entregava +3 em acerto@5 e **−2** em
+acerto@1. É o argumento inteiro desta seção numa linha: antes de acrescentar um
+modelo, medir o que os que já estão lá não estão conseguindo ver.
 
 **Quando reabrir a discussão.** Hoje o corpus é só a CLT. Quando entrarem CF,
 súmulas do TST, OJs e NRs, o lote de candidatos passa a misturar obras e a chance

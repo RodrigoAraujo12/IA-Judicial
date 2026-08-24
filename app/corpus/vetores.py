@@ -33,10 +33,30 @@ MODELO = Path(__file__).parent.parent.parent / "modelos" / "bge-m3"
 NOME = "bge-m3"
 DIM = 1024
 
-# Medido nesta maquina: lote 8 e maxlen 128 sao o melhor ponto. Lotes maiores
-# ficam MAIS lentos por item - o gargalo e banda de memoria, nao paralelismo.
+# Medido nesta maquina: lote 8 e o melhor ponto. Lotes maiores ficam MAIS lentos
+# por item - o gargalo e banda de memoria, nao paralelismo.
 LOTE = 8
-MAXLEN = 128
+
+# 256 porque e o teto do corpus, nao um numero redondo. Medido sobre as 5.748
+# redacoes da CLT: mediana 83 tokens, p90 140, MAXIMO 255. Em 256 nenhuma redacao
+# perde texto; em 128 perdiam 900 delas, 15,7% do corpus.
+#
+# E o corte nao era aleatorio: caia nos PARAGRAFOS. `_texto_indexado` antepoe
+# rotulo, a variante "paragrafo par." e o caput ao texto do dispositivo, e nos
+# subordinados esse prefixo consome o orcamento antes de o texto comecar. No art.
+# 71 par. 4o o prefixo levava 91 dos 128 tokens, e o vetor nunca via "de natureza
+# indenizatoria" - que e exatamente o termo pelo qual esse dispositivo e buscado.
+#
+# 13 dos 72 alvos de `avaliacao.py` estavam truncados, todos paragrafos. Reembuti-
+# los em 256 melhorou a posicao na via densa de 8 deles, piorou 1: o art. 71 par.
+# 4o saiu de #7 para #1, o art. 469 par. 3o de #253 para #18.
+#
+# Para texto que nao estoura 128, o vetor em 128 e em 256 e BIT A BIT o mesmo
+# (conferido: diferenca maxima 0.0 sobre uma amostra). Por isso subir o teto so
+# obriga a reembutir as que truncavam, e nao o corpus inteiro - e por isso o
+# `maxlen` fica gravado junto do vetor, para que a proxima mudanca aqui saiba
+# sozinha o que refazer.
+MAXLEN = 256
 
 
 class ModeloAusente(RuntimeError):
@@ -107,12 +127,16 @@ def indexar(con: sqlite3.Connection, progresso: bool = True) -> int:
     achar a lei de 2016. O filtro de vigencia acontece na CONSULTA, nunca aqui -
     apagar a historia do indice seria irreversivel, filtrar e barato.
     """
+    # Pendente e tanto quem nunca teve vetor quanto quem tem um vetor produzido
+    # com outro orcamento de tokens. O segundo caso e o que a coluna `maxlen`
+    # existe para tornar visivel: sem ela, subir MAXLEN nao refazia nada e os
+    # vetores truncados ficavam no banco parecendo saudaveis.
     pendentes = con.execute(
         """SELECT d.id, d.texto_indexado FROM dispositivos d
            LEFT JOIN vetores v ON v.dispositivo_id = d.id AND v.modelo = ?
-           WHERE v.dispositivo_id IS NULL
+           WHERE v.dispositivo_id IS NULL OR v.maxlen IS NOT ?
            ORDER BY d.id""",
-        (NOME,),
+        (NOME, MAXLEN),
     ).fetchall()
     if not pendentes:
         return 0
@@ -123,8 +147,9 @@ def indexar(con: sqlite3.Connection, progresso: bool = True) -> int:
         bloco = pendentes[i : i + LOTE]
         vetores = codificar([l["texto_indexado"] for l in bloco])
         con.executemany(
-            "INSERT OR REPLACE INTO vetores (dispositivo_id, modelo, dim, denso) VALUES (?, ?, ?, ?)",
-            [(l["id"], NOME, DIM, v.tobytes()) for l, v in zip(bloco, vetores)],
+            """INSERT OR REPLACE INTO vetores (dispositivo_id, modelo, dim, maxlen, denso)
+               VALUES (?, ?, ?, ?, ?)""",
+            [(l["id"], NOME, DIM, MAXLEN, v.tobytes()) for l, v in zip(bloco, vetores)],
         )
         feitos += len(bloco)
         if progresso and feitos % 200 < LOTE:

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from contextlib import closing
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -26,6 +27,10 @@ CREATE INDEX IF NOT EXISTS idx_casos_atualizado ON casos(atualizado_em DESC);
 """
 
 
+# `with sqlite3.connect(...)` commita a transacao e NAO fecha a conexao - e o
+# engano mais comum da API. Cada salvar/carregar/listar deixava um handle aberto
+# ate o coletor passar; num app que grava a cada alteracao do formulario, isso
+# acumula. `closing` por fora e o que de fato fecha.
 def conectar() -> sqlite3.Connection:
     BANCO.parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(BANCO)
@@ -37,7 +42,7 @@ def conectar() -> sqlite3.Connection:
 def salvar(nome: str, respostas: dict[str, Any], caso_id: int | None = None) -> int:
     agora = datetime.now().isoformat(timespec="seconds")
     dados = json.dumps(respostas, ensure_ascii=False, default=str)
-    with conectar() as con:
+    with closing(conectar()) as con, con:
         if caso_id:
             con.execute(
                 "UPDATE casos SET nome = ?, respostas = ?, atualizado_em = ? WHERE id = ?",
@@ -52,7 +57,7 @@ def salvar(nome: str, respostas: dict[str, Any], caso_id: int | None = None) -> 
 
 
 def carregar(caso_id: int) -> tuple[str, dict[str, Any]] | None:
-    with conectar() as con:
+    with closing(conectar()) as con, con:
         linha = con.execute("SELECT nome, respostas FROM casos WHERE id = ?", (caso_id,)).fetchone()
     if linha is None:
         return None
@@ -60,7 +65,7 @@ def carregar(caso_id: int) -> tuple[str, dict[str, Any]] | None:
 
 
 def listar(limite: int = 50) -> list[dict[str, Any]]:
-    with conectar() as con:
+    with closing(conectar()) as con, con:
         linhas = con.execute(
             "SELECT id, nome, atualizado_em FROM casos ORDER BY atualizado_em DESC LIMIT ?",
             (limite,),
@@ -69,5 +74,5 @@ def listar(limite: int = 50) -> list[dict[str, Any]]:
 
 
 def excluir(caso_id: int) -> None:
-    with conectar() as con:
+    with closing(conectar()) as con, con:
         con.execute("DELETE FROM casos WHERE id = ?", (caso_id,))
