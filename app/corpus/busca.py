@@ -1,6 +1,7 @@
 """Recuperacao no corpus.
 
-Duas vias funcionam hoje; a terceira entra com o BGE-M3.
+As tres vias funcionam. As duas de busca sao fundidas por RRF; a de referencia
+responde sozinha.
 
 **Via 0 - lookup.** `clt/art-71/par-4` mais uma data devolve o dispositivo. Nao e
 busca, e join: precisao total, sem modelo no caminho. Cobre o uso mais frequente
@@ -10,7 +11,9 @@ do escritorio, que e conferir a norma que o relatorio ja citou.
 "Sumula 437", "art. 384", "intrajornada". Vetor denso troca numero; BM25 nao.
 
 **Via 2 - densa (BGE-M3).** Para a pergunta em linguagem de cliente, onde nenhuma
-palavra da consulta aparece no texto da lei. Ainda nao implementada.
+palavra da consulta aparece no texto da lei. Degrada para lexical - e nao para
+erro - quando faltam os vetores ou o modelo: numa maquina onde os 2,2 GB nao
+couberam, meia busca vale mais que um 500.
 
 Toda consulta leva uma DATA. Nao ha busca "no corpus" em abstrato: ha busca no
 corpus como ele estava quando o fato aconteceu. O default e hoje por conveniencia
@@ -222,9 +225,10 @@ def buscar(
 ) -> Resultado:
     """Ponto de entrada. Escolhe a via pela forma da consulta.
 
-    Referencia vai para o lookup; pergunta em linguagem natural vai para as vias
-    de busca, fundidas por RRF. A de referencia continua fora da fusao, porque
-    ela nao e palpite ranqueado e sim resposta exata.
+    Referencia vai para o lookup; pergunta em linguagem natural vai para as duas
+    vias de busca, fundidas por RRF. A de referencia continua fora da fusao, porque
+    ela nao e palpite ranqueado e sim resposta exata - ranquear um join junto de
+    dois aproximados so faria a certeza competir com o chute.
 
     `obras` e o conjunto que o caso pode consultar - nacionais mais as do seu TRT,
     ver `app/jurisdicao.py`. Vale para as duas vias de busca e NAO para a via de
