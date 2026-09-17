@@ -218,21 +218,27 @@ def corpus(request: Request, q: str = "", em: str = "", trt: str = ""):
 
     `trt` e o tribunal regional cujas obras entram junto das nacionais. Aqui nao
     ha caso, entao ele e escolhido a mao - e o padrao e nenhum: consulta livre
-    sem tribunal ve so o que vale para o pais inteiro.
+    sem tribunal ve so o que vale para o pais inteiro. Os 24 tribunais aparecem
+    sempre, mesmo os que ainda nao tem obra no indice: escolher um desses devolve
+    so as nacionais e DIZ isso, em vez de esconder o tribunal da lista. "todos" e
+    pesquisa comparada - como os outros regionais tratam a materia - e por isso
+    existe aqui e nao no caso, onde sumula de outro tribunal nao e resposta.
     """
     disponivel = corpus_banco.BANCO.exists()
     try:
         quando = date.fromisoformat(em) if em else date.today()
     except ValueError:
         quando = date.today()
+    todos = trt == "todos"
     trt_escolhido = int(trt) if trt.isdigit() and int(trt) in jurisdicao.ABRANGENCIA else None
 
     contexto: dict[str, Any] = {
         "disponivel": disponivel,
         "consulta": q,
         "quando": quando.isoformat(),
-        "trt": trt_escolhido,
-        "regionais": [],
+        "trt": "todos" if todos else trt_escolhido,
+        "tribunais": sorted(jurisdicao.ABRANGENCIA),
+        "com_obra": [],
         "resultado": None,
         "estatisticas": {},
     }
@@ -242,11 +248,10 @@ def corpus(request: Request, q: str = "", em: str = "", trt: str = ""):
         try:
             contexto["estatisticas"] = corpus_banco.estatisticas(con)
             todas = corpus_banco.obras(con)
-            contexto["regionais"] = jurisdicao.trts_no_corpus(todas)
+            contexto["com_obra"] = jurisdicao.trts_no_corpus(todas)
             if q.strip():
-                contexto["resultado"] = corpus_busca.buscar(
-                    con, q, quando, limite=20, obras=jurisdicao.obras_para(todas, trt_escolhido)
-                )
+                obras = None if todos else jurisdicao.obras_para(todas, trt_escolhido)
+                contexto["resultado"] = corpus_busca.buscar(con, q, quando, limite=20, obras=obras)
         finally:
             con.close()
 

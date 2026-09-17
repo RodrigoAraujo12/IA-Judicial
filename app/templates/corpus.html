@@ -26,15 +26,24 @@
         tribunal
         <select name="trt">
           <option value="">s&oacute; normas nacionais</option>
-          {% for t in regionais %}
-            <option value="{{ t }}" {% if t == trt %}selected{% endif %}>{{ rotulo_trt(t) }}</option>
-          {% else %}
-            <option value="" disabled>nenhum TRT no &iacute;ndice ainda</option>
+          <option value="todos" {% if trt == 'todos' %}selected{% endif %}>todos os tribunais</option>
+          {% for t in tribunais %}
+            <option value="{{ t }}" {% if t == trt %}selected{% endif %}>
+              {{ rotulo_trt(t) }}{% if t not in com_obra %} &middot; sem obra no &iacute;ndice{% endif %}
+            </option>
           {% endfor %}
         </select>
       </label>
       <button type="submit">Consultar</button>
     </form>
+
+    {% if trt and trt != 'todos' and trt not in com_obra %}
+      <div class="caixa alerta">
+        O {{ rotulo_trt(trt) }} ainda n&atilde;o tem s&uacute;mula no &iacute;ndice: os resultados
+        abaixo s&atilde;o s&oacute; das normas nacionais. Ingerir o tribunal &eacute; um comando,
+        <code>python -m app.corpus.indexar trtN</code>, quando houver parser para ele.
+      </div>
+    {% endif %}
 
     <p class="ajuda">
       A data n&atilde;o &eacute; enfeite: ela decide qual reda&ccedil;&atilde;o responde. Um contrato de 2016
