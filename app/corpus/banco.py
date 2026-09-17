@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import hashlib
 import sqlite3
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
@@ -329,6 +330,53 @@ def vigente_em(
            ORDER BY vigencia_inicio DESC, ordem DESC LIMIT 1""",
         (urn, ref, ref),
     ).fetchone()
+
+
+def obras(con: sqlite3.Connection) -> list[str]:
+    """As obras presentes no indice, pelo nome (`clt`, `sumula-tst`, `sumula-trt13`)."""
+    return [r[0] for r in con.execute("SELECT DISTINCT obra FROM dispositivos ORDER BY obra")]
+
+
+def filtro_obras(obras: Iterable[str] | None) -> tuple[str, list[str]]:
+    """Clausula SQL que restringe `d.obra` ao conjunto dado. Um lugar so.
+
+    As vias lexical e densa filtram obra em consultas diferentes, e o filtro que
+    existisse em duas versoes acabaria divergindo em silencio - a lexical
+    excluindo a sumula regional e a densa trazendo-a de volta pela fusao.
+
+    `None` e "sem filtro": e o comportamento de antes e o que o teste de controle
+    compara. Conjunto VAZIO e "nenhuma obra permitida" e nao devolve nada, em vez
+    de virar "todas" por acidente de sintaxe.
+    """
+    if obras is None:
+        return "", []
+    lista = sorted(set(obras))
+    if not lista:
+        return " AND 0", []
+    return f" AND d.obra IN ({','.join('?' * len(lista))})", lista
+
+
+def ids_vigentes(
+    con: sqlite3.Connection, quando: date | None = None, obras: Iterable[str] | None = None
+) -> set[int]:
+    """Ids das redacoes vigentes na data, nas obras permitidas.
+
+    E a mascara da via densa: a similaridade e calculada sobre a matriz inteira e
+    so os ids daqui contam. Filtrar por obra AQUI, e nao depois do corte em
+    `limite`, e o que impede um caso da Paraiba de receber menos resultados so
+    porque sumulas de outro tribunal ocupavam o topo.
+    """
+    ref = (quando or date.today()).isoformat()
+    clausula, params = filtro_obras(obras)
+    return {
+        int(r["id"])
+        for r in con.execute(
+            f"""SELECT d.id FROM dispositivos d
+                WHERE d.revogado = 0 AND d.vigencia_inicio <= ?
+                  AND (d.vigencia_fim IS NULL OR d.vigencia_fim >= ?){clausula}""",
+            (ref, ref, *params),
+        )
+    }
 
 
 def redacoes(con: sqlite3.Connection, urn: str) -> list[sqlite3.Row]:

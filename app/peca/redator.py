@@ -28,6 +28,7 @@ import sqlite3
 from dataclasses import dataclass, field
 from datetime import date
 
+from app import jurisdicao
 from app.motor import Analise, PedidoAvaliado, Prescricao, Respostas, data_ajuizamento
 from app.schema import REFORMA, Armadilha, Catalogo, Pedido, VariacaoTemporal
 
@@ -108,6 +109,8 @@ class Pendencia:
 @dataclass
 class Minuta:
     juizo: str
+    # Recado de tela, nao texto de peca: qual TRT o sistema derivou e por que.
+    competencia: str
     reclamante: str
     reclamada: str
     fatos: list[tuple[str, str]] = field(default_factory=list)
@@ -262,10 +265,25 @@ def montar(
     """Monta a minuta. `con` ausente significa corpus nao ingerido: as citacoes
     saem pelo rotulo do catalogo, sem transcricao."""
     local = (respostas.get("local_prestacao") or "").strip()
+    uf = str(respostas.get("uf_prestacao") or "").strip().upper()
+    # "Bayeux" vira "Bayeux/PB"; "Joao Pessoa/PB" fica como esta. A UF entra no
+    # enderecamento porque ha Bayeux e Contagem em mais de um estado, e o
+    # municipio sozinho nao diz a qual Vara se dirige.
+    if local and uf and "/" not in local:
+        local = f"{local}/{uf}"
     juizo = (
         f"UMA DAS VARAS DO TRABALHO DE {local.upper()}"
         if local
         else "UMA DAS VARAS DO TRABALHO"
+    )
+    # Nao vai para o corpo da peca: enderecamento e a Vara, nao o tribunal. Vai
+    # para o quadro de trabalho, onde a advogada confere se o sistema derivou o
+    # tribunal certo antes de protocolar.
+    competencia = (
+        f"{jurisdicao.rotulo(analise.trt)}, pela prestação de serviços em {local} "
+        "(art. 651 da CLT)."
+        if analise.trt is not None
+        else "TRT competente não derivado: falta a UF onde os serviços eram prestados."
     )
 
     fatos = []
@@ -298,6 +316,7 @@ def montar(
 
     return Minuta(
         juizo=juizo,
+        competencia=competencia,
         reclamante=qualificar_reclamante(catalogo, respostas),
         reclamada=qualificar_reclamada(respostas),
         fatos=fatos,

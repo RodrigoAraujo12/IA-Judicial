@@ -36,7 +36,9 @@ class Condicao(BaseModel):
 
 
 class Fundamento(BaseModel):
-    tipo: Literal["cf", "clt", "lei", "sumula_tst", "oj_tst", "nr", "tema_stf", "sv_stf"]
+    tipo: Literal[
+        "cf", "clt", "lei", "sumula_tst", "oj_tst", "sumula_trt", "nr", "tema_stf", "sv_stf"
+    ]
     ref: str
     nota: str | None = None
     # Marca tese em disputa: o relatorio destaca em vez de afirmar.

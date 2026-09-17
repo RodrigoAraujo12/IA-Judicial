@@ -219,6 +219,16 @@ def interpretar(tipo: str, ref: str) -> Referencia:
                 r.obra, r.urns = "sumula-tst", [f"sumula-tst/{m.group(1)}"]
             return r
 
+        case "sumula_trt":
+            # "Sumula 9 do TRT-13", "Sumula 9 do TRT da 13a Regiao". O tribunal
+            # faz parte da obra: sumula-trt13/9 e sumula-trt6/9 sao verbetes
+            # diferentes de tribunais diferentes.
+            m = re.search(r"(\d+)\D+?trt\D*?(\d{1,2})", texto, re.I)
+            if m:
+                r.obra = f"sumula-trt{int(m.group(2))}"
+                r.urns = [f"{r.obra}/{int(m.group(1))}"]
+            return r
+
         case "oj_tst":
             m = re.search(r"oj\s+(\d+)\s+da\s+sdi-?(\d)", texto, re.I)
             if m:

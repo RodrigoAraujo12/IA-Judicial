@@ -69,6 +69,62 @@ perguntas:
     obrigatoria: true
     ajuda: Define a competencia territorial (art. 651 da CLT).
 
+  # O TRT nao e escolhido: e derivado daqui. A advogada responde ONDE o servico
+  # era prestado, e o sistema diz qual tribunal julga (app/jurisdicao.py). Isso
+  # tambem decide que sumulas regionais entram no caso.
+  - id: uf_prestacao
+    secao: contrato
+    texto: Estado (UF) onde os servicos eram prestados
+    tipo: escolha
+    obrigatoria: true
+    opcoes:
+      - { valor: AC, rotulo: Acre }
+      - { valor: AL, rotulo: Alagoas }
+      - { valor: AP, rotulo: Amapa }
+      - { valor: AM, rotulo: Amazonas }
+      - { valor: BA, rotulo: Bahia }
+      - { valor: CE, rotulo: Ceara }
+      - { valor: DF, rotulo: Distrito Federal }
+      - { valor: ES, rotulo: Espirito Santo }
+      - { valor: GO, rotulo: Goias }
+      - { valor: MA, rotulo: Maranhao }
+      - { valor: MT, rotulo: Mato Grosso }
+      - { valor: MS, rotulo: Mato Grosso do Sul }
+      - { valor: MG, rotulo: Minas Gerais }
+      - { valor: PA, rotulo: Para }
+      - { valor: PB, rotulo: Paraiba }
+      - { valor: PR, rotulo: Parana }
+      - { valor: PE, rotulo: Pernambuco }
+      - { valor: PI, rotulo: Piaui }
+      - { valor: RJ, rotulo: Rio de Janeiro }
+      - { valor: RN, rotulo: Rio Grande do Norte }
+      - { valor: RS, rotulo: Rio Grande do Sul }
+      - { valor: RO, rotulo: Rondonia }
+      - { valor: RR, rotulo: Roraima }
+      - { valor: SC, rotulo: Santa Catarina }
+      - { valor: SP, rotulo: Sao Paulo }
+      - { valor: SE, rotulo: Sergipe }
+      - { valor: TO, rotulo: Tocantins }
+    ajuda: >-
+      O estado da PRESTACAO, nao o da sede da empresa nem o da contratacao. E o
+      que define o TRT competente.
+
+  # Sao Paulo e o unico estado com dois tribunais. So aqui a UF nao basta.
+  - id: regiao_sp
+    secao: contrato
+    texto: Em que parte de Sao Paulo?
+    tipo: escolha
+    obrigatoria: true
+    opcoes:
+      - { valor: metropolitana, rotulo: "Capital, Grande Sao Paulo ou Baixada Santista (TRT-2)" }
+      - { valor: interior, rotulo: "Interior do estado (TRT-15)" }
+    ajuda: >-
+      Em duvida, conferir a lista de municipios da jurisdicao no site do TRT-2.
+    mostrar_se:
+      - - campo: uf_prestacao
+          op: igual
+          valor: SP
+
   - id: registro_ctps
     secao: contrato
     texto: Havia registro em CTPS durante todo o periodo?

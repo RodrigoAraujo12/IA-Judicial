@@ -44,6 +44,7 @@ ATRAVESSA = {
     "funcao": "Operador de empilhadeira",
     "salario_base": 2100.0,
     "local_prestacao": "Joao Pessoa/PB",
+    "uf_prestacao": "PB",
     "registro_ctps": True,
     "jornada_contratual": "44h",
     "intervalo_gozado": "parcial",
@@ -77,6 +78,15 @@ sem_nome = montar({**ATRAVESSA, "reclamante_nome": ""})
 conferir("falta de nome aparece como falta", sem_nome.reclamante.startswith("[RECLAMANTE NÃO QUALIFICADO]"), True)
 
 conferir("o juizo vem do local da prestacao", "JOAO PESSOA/PB" in m.juizo, True)
+conferir("o local que ja traz a UF nao a recebe duas vezes", m.juizo.count("/PB"), 1)
+# O tribunal e derivado da UF, nunca escolhido - e vai para o quadro de trabalho,
+# nao para o enderecamento, que e a Vara.
+conferir("a competencia diz o tribunal derivado", m.competencia.startswith("TRT da 13ª Região"), True)
+conferir("e o tribunal nao entra no enderecamento", "TRT" in m.juizo, False)
+so_municipio = montar({**ATRAVESSA, "local_prestacao": "Bayeux"})
+conferir("municipio sem UF recebe a UF no enderecamento", "BAYEUX/PB" in so_municipio.juizo, True)
+sem_uf = montar({k: v for k, v in ATRAVESSA.items() if k != "uf_prestacao"})
+conferir("sem UF, a competencia diz que falta", "não derivado" in sem_uf.competencia, True)
 
 
 # --- 2. fatos ---------------------------------------------------------------

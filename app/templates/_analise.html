@@ -31,6 +31,16 @@
   </div>
 {% endif %}
 
+{% if a.trt %}
+  <div class="bloco">
+    <div class="item">
+      <span class="nome">{{ rotulo_trt(a.trt) }}</span>
+      <span class="nota">Derivado do local da presta&ccedil;&atilde;o (art. 651 da CLT).
+      S&uacute;mulas deste tribunal entram no caso; as dos demais, n&atilde;o.</span>
+    </div>
+  </div>
+{% endif %}
+
 {% if a.atravessa_reforma %}
   <div class="bloco">
     <div class="item critica">

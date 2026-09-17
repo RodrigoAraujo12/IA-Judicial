@@ -35,6 +35,7 @@
   <p class="meta">
     {{ respostas.get('funcao', 'Fun&ccedil;&atilde;o n&atilde;o informada') }}
     {%- if respostas.get('local_prestacao') %} &middot; {{ respostas.local_prestacao }}{% endif %}
+    {%- if a.trt %} &middot; {{ rotulo_trt(a.trt) }}{% endif %}
     {%- if respostas.get('data_admissao') and respostas.get('data_saida') %}
       &middot; {{ respostas.data_admissao }} a {{ respostas.data_saida }}
     {%- endif %}

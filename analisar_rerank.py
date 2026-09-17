@@ -27,6 +27,7 @@ A saida separa os casos em tres, porque exigem decisoes diferentes:
 import sys
 from datetime import date
 
+from app import jurisdicao
 from app.corpus import banco, busca
 from avaliacao import CASOS, posicao
 
@@ -48,12 +49,15 @@ if est["com_vetor"] < est["redacoes"]:
 
 hoje = date.today()
 FUNDO = max(POOLS)
+# Sobre as obras nacionais, como o placar: o gabarito tem resposta na CLT, e
+# medir com sumula regional no lote mudaria a regua sem mudar a busca.
+NACIONAIS = jurisdicao.obras_para(banco.obras(con), None)
 
 # Uma passada so; tudo o mais e leitura destes registros.
 registros = []
 for consulta, alvo, grupo in CASOS:
-    lex = busca.lexical(con, consulta, hoje, FUNDO)
-    den = busca.densa(con, consulta, hoje, FUNDO)
+    lex = busca.lexical(con, consulta, hoje, FUNDO, NACIONAIS)
+    den = busca.densa(con, consulta, hoje, FUNDO, NACIONAIS)
     hib = busca.rrf([lex, den], limite=FUNDO) if den else lex
     registros.append({
         "consulta": consulta, "alvo": alvo, "grupo": grupo,

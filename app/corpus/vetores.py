@@ -42,11 +42,14 @@ from __future__ import annotations
 import sqlite3
 import threading
 import time
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
 import numpy as np
+
+from app.corpus import banco
 
 MODELO = Path(__file__).parent.parent.parent / "modelos" / "bge-m3"
 NOME = "bge-m3"
@@ -269,26 +272,19 @@ def buscar(
     consulta: str,
     quando: date | None = None,
     limite: int = 10,
+    obras: Iterable[str] | None = None,
 ) -> list[tuple[int, float]]:
     """Devolve (dispositivo_id, similaridade) dos mais proximos, ja filtrados.
 
-    O filtro de vigencia vem ANTES do corte em `limite`: filtrar depois devolveria
-    menos resultados que o pedido sempre que houvesse redacao antiga no topo, e o
-    buraco apareceria como "a busca nao achou".
+    O filtro de vigencia e de obra vem ANTES do corte em `limite`: filtrar depois
+    devolveria menos resultados que o pedido sempre que houvesse redacao antiga -
+    ou sumula de outro tribunal - no topo, e o buraco apareceria como "a busca
+    nao achou".
     """
     q = codificar([consulta])[0]
     sims = matriz.vetores @ q
 
-    ref = (quando or date.today()).isoformat()
-    validos = {
-        int(r["id"])
-        for r in con.execute(
-            """SELECT id FROM dispositivos
-               WHERE revogado = 0 AND vigencia_inicio <= ?
-                 AND (vigencia_fim IS NULL OR vigencia_fim >= ?)""",
-            (ref, ref),
-        )
-    }
+    validos = banco.ids_vigentes(con, quando, obras)
 
     ordem = np.argsort(-sims)
     saida: list[tuple[int, float]] = []

@@ -2,6 +2,7 @@
 
     python -m app.corpus.indexar clt          # texto da lei, do Planalto
     python -m app.corpus.indexar tst          # sumulas e OJs, do Livro do TST
+    python -m app.corpus.indexar trt13        # sumulas do TRT-13, do site do NUGEP
     python -m app.corpus.indexar vetores      # Via 2: vetores densos (BGE-M3)
     python -m app.corpus.indexar clt --rebaixar   # rebaixa a captura do site
 
@@ -20,7 +21,7 @@ import time
 from datetime import date
 
 from app.catalogo.loader import carregar
-from app.corpus import banco, planalto, tst
+from app.corpus import banco, planalto, trt13, tst
 from app.corpus.banco import Dispositivo
 from app.corpus.refs import interpretar
 
@@ -222,6 +223,78 @@ def indexar_tst(rebaixar: bool = False) -> None:
     con.close()
 
 
+def indexar_trt13(rebaixar: bool = False) -> None:
+    """Sumulas do TRT-13, uma pagina por verbete no site do NUGEP.
+
+    Primeira obra regional. O que ela testa, alem do parser, e o filtro por
+    tribunal: depois desta ingestao um caso da Paraiba passa a ver 45 verbetes
+    que um caso de Pernambuco nao ve.
+    """
+    print("Sumulas do TRT da 13a Regiao")
+    paginas = trt13.baixar(forcar=rebaixar)
+    bruto = b"".join(paginas.values())
+    print(f"  fonte: {len(paginas) - 1} paginas de sumula mais o indice, {len(bruto):,} bytes")
+
+    achados = trt13.verbetes(paginas)
+    if not achados:
+        raise SystemExit("  NENHUM verbete reconhecido - o parser quebrou, nao o site.")
+
+    registros = [
+        Dispositivo(
+            urn=v.urn,
+            obra=trt13.OBRA,
+            especie="sumula",
+            rotulo=v.rotulo,
+            texto=v.texto,
+            # Titulo so no indexado, pela mesma razao do TST: e ementa, nao verbete.
+            texto_indexado=f"{v.rotulo} {v.titulo} {v.texto}",
+            pai=None,
+            ordem=v.numero,
+            vigencia_inicio=v.vigencia_inicio.isoformat(),
+            vigencia_fim=v.vigencia_fim.isoformat() if v.vigencia_fim else None,
+            revogado=v.revogado,
+            alterado_por=v.cabecalho[:200] or None,
+        )
+        for v in achados
+    ]
+
+    con = banco.conectar()
+    tinham_vetor = int(
+        con.execute(
+            """SELECT COUNT(*) FROM vetores v
+                 JOIN dispositivos d ON d.id = v.dispositivo_id
+                WHERE d.obra = ?""",
+            (trt13.OBRA,),
+        ).fetchone()[0]
+    )
+    guardados = banco.vetores_guardados(con, trt13.OBRA)
+    con.execute("DELETE FROM dispositivos WHERE obra = ?", (trt13.OBRA,))
+    fonte_id = banco.registrar_fonte(con, trt13.OBRA, trt13.URL_INDICE, bruto)
+    banco.gravar(con, registros, fonte_id)
+    recolocados, sem_vetor = banco.restaurar_vetores(con, trt13.OBRA, guardados)
+    con.commit()
+
+    por_status: dict[str, int] = {}
+    for v in achados:
+        por_status[v.status] = por_status.get(v.status, 0) + 1
+    vigentes = sum(1 for r in registros if not r.vigencia_fim and not r.revogado)
+    print(f"  {trt13.OBRA}: {len(registros)} verbetes, {vigentes} vigentes hoje")
+    print("  por status: " + ", ".join(f"{k} {n}" for k, n in sorted(por_status.items())))
+    sem_data = [v.numero for v in achados if v.vigencia_inicio == trt13.PISO]
+    if sem_data:
+        print(f"  no piso por falta de data legivel: {sem_data}")
+    if faltando := trt13.lacunas(achados):
+        print(f"  numeros ausentes na faixa: {faltando}")
+    if recolocados:
+        print(f"  vetores preservados: {recolocados} de {tinham_vetor}")
+    if sem_vetor:
+        print(f"  sem vetor: {sem_vetor} verbetes - para a busca densa, rode:")
+        print("    python -m app.corpus.indexar vetores")
+    print(f"  estatisticas: {banco.estatisticas(con)}")
+    conferir_catalogo(con, trt13.OBRA)
+    con.close()
+
+
 def conferir_catalogo(con, chave: str) -> None:
     """A metrica que decide: o catalogo consegue encontrar o que cita?"""
     catalogo = carregar()
@@ -305,6 +378,12 @@ def main() -> None:
         if not args:
             return
 
+    if "trt13" in args:
+        indexar_trt13(rebaixar)
+        args = [a for a in args if a != "trt13"]
+        if not args:
+            return
+
     if "vetores" in args:
         print("Vetores densos (BGE-M3)")
         indexar_vetores()
@@ -314,7 +393,7 @@ def main() -> None:
 
     for chave in args or list(OBRAS):
         if chave not in OBRAS:
-            print(f"obra desconhecida: {chave}. Disponiveis: {', '.join(OBRAS)}, tst, vetores")
+            print(f"obra desconhecida: {chave}. Disponiveis: {', '.join(OBRAS)}, tst, trt13, vetores")
             raise SystemExit(1)
         indexar(chave, rebaixar)
 

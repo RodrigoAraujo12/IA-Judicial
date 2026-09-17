@@ -65,6 +65,8 @@ python testar_norma_estranha.py # norma de terceiro transcrita no meio da pagina
 python testar_inicial.py   # qualificação e história dos fatos, ponta a ponta
 python testar_peca.py      # a minuta: cisão, terceiro estado, ausência de valor
 python testar_vias.py      # placar das vias sobre as 72 consultas de avaliacao.py
+python testar_jurisdicao.py # UF -> TRT, e sumula de outro tribunal fora do caso
+python testar_trt13.py     # sumulas do TRT-13: datas do historico e janela de vigencia
 python analisar_rerank.py  # a folga que um reranqueador teria (exige vetores)
 ```
 
@@ -108,11 +110,12 @@ que ele existe para evitar.
 app/
   schema.py              contratos de dados (pydantic)
   motor.py               avaliação de três estados, prescrição, regimes
+  jurisdicao.py          do local da prestação ao TRT; que obras valem para o caso
   persistencia.py        SQLite — casos, a fonte da verdade
   main.py                FastAPI
   catalogo/
     loader.py            carga + validação cruzada dos YAML
-    entrevista.yaml      roteiro de perguntas (79, em 10 secoes)
+    entrevista.yaml      roteiro de perguntas (81, em 10 secoes)
     armadilhas.yaml      verificações que não são pedidos (12)
     pedidos/*.yaml       o catálogo — 26 pedidos
   corpus/
@@ -120,6 +123,8 @@ app/
     banco.py             índice normativo em SQLite: vigência, FTS5, vetores
     planalto.py          ingestão do HTML do Planalto
     indexar.py           CLI de ingestão, com conferência contra o catálogo
+    tst.py               súmulas e OJs do TST, do Livro consolidado (RTF)
+    trt13.py             súmulas do TRT-13, página a página no site do NUGEP
     busca.py             as vias de recuperação e a fusão RRF
   peca/
     redator.py           minuta da inicial — só dá forma, não decide
@@ -393,6 +398,108 @@ construção. Recall@50 de 100% quer dizer "quando a resposta está no corpus, a
 busca acha" — não "o sistema responde tudo". Pergunta sobre FGTS, terceirização ou
 súmula não tem onde cair, porque essas obras ainda não foram ingeridas.
 
+## Competência: o TRT do caso
+
+O direito do trabalho é federal, e por isso quase tudo que o corpus tem vale igual
+em João Pessoa e em Campinas. O que muda de um estado para outro é a
+jurisprudência do tribunal regional — e ela só pode entrar no índice se o sistema
+souber, caso a caso, **qual** tribunal julga. É isso que
+[`app/jurisdicao.py`](app/jurisdicao.py) responde.
+
+**O tribunal é derivado, nunca escolhido.** A entrevista pergunta em que UF o
+serviço era prestado, e o TRT sai daí, porque é isso que o art. 651 da CLT manda
+olhar — não o foro da contratação nem o da sede da empresa. Deixar escolher o
+tribunal à mão abriria a porta exatamente para o erro que o artigo existe para
+evitar. O que a advogada vê é o resultado, no painel, no relatório e no quadro de
+trabalho da minuta, para conferir.
+
+**São Paulo é a única exceção.** Vinte e cinco unidades têm um tribunal só, ou
+dividem um com a vizinha (PA e AP, DF e TO, AM e RR, RO e AC). São Paulo tem
+dois: capital, Grande São Paulo e Baixada Santista são a 2ª Região; o interior é
+a 15ª. Só ali aparece uma segunda pergunta, e só ali ela é feita.
+
+**Sem UF não há tribunal.** É o terceiro estado do motor, de novo: o sistema não
+assume o tribunal da advogada por padrão, porque ela pode atender alguém que
+trabalhou noutro estado. A minuta diz que a competência não foi derivada e por quê.
+
+**Obra regional tem sufixo, e o sufixo é o filtro.** A convenção é `-trtNN` no
+nome da obra: `sumula-trt13`, `oj-trt13`. Obra sem sufixo é nacional e vale para
+todo caso. As vias lexical e densa recebem o conjunto de obras que o caso pode
+consultar — nacionais mais as do seu TRT — e é uma cláusula só, em
+[`banco.filtro_obras`](app/corpus/banco.py), que serve às duas. A via de
+referência fica **fora** do filtro de propósito: quem digita "Súmula 12 do TRT-6"
+num caso da Paraíba está pedindo aquele texto, e filtro que esconde resposta
+exata é censura, não competência.
+
+Isso não é só regra jurídica; é o que preserva o ranking. Quando o TST entrou, as
+duas vias caíram 8 consultas em acerto@1 por competição de densidade — ver
+[Sobre reranking](#sobre-reranking). Súmulas de 24 tribunais no mesmo lote fariam
+o mesmo, multiplicado. Com o filtro, um caso da Paraíba disputa contra a CLT, o
+TST e a 13ª Região, e só.
+
+**O controle.** Enquanto o corpus só tem obras nacionais, filtrar por "só
+nacionais" tem de devolver exatamente o que a busca sem filtro devolve, consulta a
+consulta, nas duas vias. `testar_vias.py` confere isso sobre as 72 consultas do
+gabarito e imprime o resultado ao lado do placar: 72/72 idênticas. Se um dia esse
+número se mover num corpus sem obra regional, o filtro vazou.
+
+Na consulta livre em `/corpus` não há caso, então ali o tribunal é escolhido num
+seletor — com "só normas nacionais" como padrão, e listando apenas os TRTs que já
+têm obra no índice.
+
+### A primeira obra regional: as súmulas do TRT-13
+
+Entram 45 verbetes, a faixa inteira de 1 a 45, em
+[`app/corpus/trt13.py`](app/corpus/trt13.py). Hoje 35 valem: 28 nunca alteradas,
+5 alteradas e 2 revisadas. As 10 canceladas ficam no índice com **janela**, não
+como revogadas — a Súmula 7 caiu em 03.03.2021, e um caso de 2016 continua
+encontrando-a, pela mesma razão que o art. 71 §4º tem duas redações.
+
+A fonte é diferente da do TST, e pior. Não há arquivo consolidado: o NUGEP publica
+um índice com um link por súmula e o texto de cada uma numa página própria. São
+46 requisições, todas guardadas em `dados/fontes/trt13/`, e o registro de fonte
+leva o sha256 da concatenação. O servidor recusa cliente que não pareça
+navegador: `User-Agent: Mozilla/5.0` seco recebe 403; a assinatura completa de um
+Chrome, 200.
+
+O HTML foi colado do Word e chega picotado em spans que partem palavra e data ao
+meio — `1<span>9.12.2017`, `0<span>1</span>.201<span>8`. Por isso tag inline vira
+**nada**, e não espaço, e só tag de bloco vira quebra de linha. Sem isso a data
+vira "1 9.12.2017" e a súmula nasce no piso.
+
+A vigência sai do bloco "Histórico", e cada evento tem um sentido:
+
+- **"Redação original: ... DEJT em 28, 29 e 30.06.2010"** abre a janela. Vale a
+  **última** data da linha: a publicação se completa no último dia, e a data do
+  acórdão, que vem antes, não é a da súmula.
+- **"Redação alterada"** e **"Inclusão do item II"** substituem o início. O texto
+  da página é o novo; a fonte não guarda o antigo. Uma redação por verbete, como
+  no TST.
+- **"Súmula cancelada: ... DEJT em 28.04.2017"** fecha a janela na véspera. Só
+  cai em `revogado` o cancelamento sem data legível, e não há nenhum.
+- **"Revisão: IAC ... Tema 10"** não move o início. A revisão fixa tese sobre a
+  matéria, mas o verbete continua com o texto original — mover a vigência para
+  2026 esconderia a súmula de todo caso anterior, e o texto que ele veria é o
+  mesmo. A tese fica fora do `texto`: é acórdão, não verbete.
+- **"..., e em 07, 08 e 11.03.2019, por mera formalidade"** é republicação e é
+  descartada antes de ler a data. Sem isso três súmulas de 2016 nasceriam em 2019.
+
+O efeito no gabarito é medido, não presumido. O placar continua sendo tirado
+sobre as obras nacionais — o gabarito tem resposta na CLT e foi calibrado antes de
+existir obra regional —, e `testar_vias.py` imprime ao lado em quantas das 72
+consultas o top-5 muda quando o caso é da 13ª Região:
+
+| | |
+|---|---|
+| top-5 muda | 7 de 72 consultas |
+| verbete do TRT-13 em #1 | 0 |
+| obra fora do permitido | 0 de 72, em todas as vias |
+
+Sete consultas ganham uma súmula regional entre as cinco primeiras sem que nenhuma
+tome o topo: a súmula entra como complemento, não como competidora — o oposto do
+que aconteceu quando o TST entrou sem filtro. É esse número que reabre a
+discussão de reranking, se um dia ele crescer.
+
 ## A minuta da inicial
 
 `/peca` monta a peça a partir das mesmas respostas que alimentam o relatório.
@@ -438,7 +545,8 @@ Triagem completa. Em andamento e a fazer:
 
 | | | |
 |---|---|---|
-| **Corpus** | CLT e TST prontas | 4.716 dispositivos, 6.804 redações, com eixo de vigência. CLT do Planalto; súmulas e OJs (SBDI-I, SBDI-I Transitória, SBDI-II) do Livro consolidado do TST. Faltam CF, leis esparsas, NRs, súmulas do TRT-13. |
+| **Corpus** | CLT e TST prontas | 4.716 dispositivos, 6.804 redações, com eixo de vigência. CLT do Planalto; súmulas e OJs (SBDI-I, SBDI-I Transitória, SBDI-II) do Livro consolidado do TST; súmulas do TRT-13 do site do NUGEP. Faltam CF, leis esparsas, NRs. |
+| **Regional** | TRT-13 pronto | O caso deriva o TRT do local da prestação e a busca só vê as obras dele — ver [Competência](#competência-o-trt-do-caso). Súmulas do TRT-13 ingeridas: 45 verbetes, 35 vigentes, 10 com janela de cancelamento. Outros tribunais entram um a um, quando houver caso deles. |
 | **Via densa** | pronta | BGE-M3 em ONNX, CPU por padrão e GPU quando houver (5x na consulta, 17x na indexação). Fusão RRF acerta 62 de 72 no conjunto de avaliação, com recall@50 de 71/72. Reranking foi medido e reprovado - ver [Sobre reranking](#sobre-reranking). |
 | **Inicial** | minuta pronta | Os quatro blocos — qualificação, fatos, fundamentação, pedidos — saem como peça em `/peca`, montada por template. Sem modelo de linguagem: o texto é função determinista das respostas. |
 | **Recurso, embargos, contrarrazões** | a fazer | Partem de um **documento** (sentença, acórdão, recurso da outra parte), não da entrevista. Exigem uma camada de leitura que não existe. |

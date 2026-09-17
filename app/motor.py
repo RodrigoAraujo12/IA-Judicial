@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Any, Literal
 
+from app import jurisdicao
 from app.schema import REFORMA, Armadilha, Catalogo, Condicao, Pedido
 
 Status = Literal["cabivel", "possivel", "afastado"]
@@ -49,6 +50,10 @@ class Analise:
     armadilhas: list[Armadilha] = field(default_factory=list)
     prescricao: Prescricao | None = None
     atravessa_reforma: bool = False
+    # Tribunal regional competente, derivado do local da prestacao (art. 651).
+    # None enquanto a UF nao foi respondida - e o terceiro estado, de novo: nao
+    # se chuta o tribunal da advogada para um caso que pode ser de outro estado.
+    trt: int | None = None
     respondidas: int = 0
     total_visiveis: int = 0
     visiveis: set[str] = field(default_factory=set)
@@ -265,6 +270,7 @@ def analisar(catalogo: Catalogo, respostas: Respostas, hoje: date | None = None)
             analise.armadilhas.append(armadilha)
 
     analise.prescricao = avaliar_prescricao(respostas, hoje)
+    analise.trt = jurisdicao.trt_do_caso(respostas)
 
     # Segundo passe: perguntas que dependem do resultado da triagem. Nao ha
     # circularidade porque as respostas dadas aqui nunca alimentam o `quando` de um

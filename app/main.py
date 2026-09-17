@@ -18,7 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.datastructures import FormData
 
-from app import persistencia
+from app import jurisdicao, persistencia
 from app.catalogo.loader import carregar
 from app.corpus import banco as corpus_banco
 from app.corpus import busca as corpus_busca
@@ -31,6 +31,8 @@ BASE = Path(__file__).parent
 app = FastAPI(title="Triagem trabalhista")
 app.mount("/static", StaticFiles(directory=BASE / "static"), name="static")
 templates = Jinja2Templates(directory=BASE / "templates")
+# "TRT da 13ª Região (PB)" e escrito num lugar so, e os templates chamam de la.
+templates.env.globals["rotulo_trt"] = jurisdicao.rotulo
 
 # Estoura na subida se algum YAML estiver quebrado ou inconsistente.
 CATALOGO: Catalogo = carregar()
@@ -201,7 +203,7 @@ def casos(request: Request):
 
 
 @app.get("/corpus", response_class=HTMLResponse)
-def corpus(request: Request, q: str = "", em: str = ""):
+def corpus(request: Request, q: str = "", em: str = "", trt: str = ""):
     """Consulta ao corpus. GET com query string para o resultado ser linkavel.
 
     Sincrono de proposito, e nao por esquecimento. A busca hibrida leva 118 ms
@@ -213,17 +215,24 @@ def corpus(request: Request, q: str = "", em: str = ""):
     `em` e a data em que a norma deve estar vigente. Nunca some do formulario: uma
     busca juridica sem data responde para o presente e cala sobre o resto, que e o
     erro que este indice existe para nao cometer.
+
+    `trt` e o tribunal regional cujas obras entram junto das nacionais. Aqui nao
+    ha caso, entao ele e escolhido a mao - e o padrao e nenhum: consulta livre
+    sem tribunal ve so o que vale para o pais inteiro.
     """
     disponivel = corpus_banco.BANCO.exists()
     try:
         quando = date.fromisoformat(em) if em else date.today()
     except ValueError:
         quando = date.today()
+    trt_escolhido = int(trt) if trt.isdigit() and int(trt) in jurisdicao.ABRANGENCIA else None
 
     contexto: dict[str, Any] = {
         "disponivel": disponivel,
         "consulta": q,
         "quando": quando.isoformat(),
+        "trt": trt_escolhido,
+        "regionais": [],
         "resultado": None,
         "estatisticas": {},
     }
@@ -232,8 +241,12 @@ def corpus(request: Request, q: str = "", em: str = ""):
         con = corpus_banco.conectar()
         try:
             contexto["estatisticas"] = corpus_banco.estatisticas(con)
+            todas = corpus_banco.obras(con)
+            contexto["regionais"] = jurisdicao.trts_no_corpus(todas)
             if q.strip():
-                contexto["resultado"] = corpus_busca.buscar(con, q, quando, limite=20)
+                contexto["resultado"] = corpus_busca.buscar(
+                    con, q, quando, limite=20, obras=jurisdicao.obras_para(todas, trt_escolhido)
+                )
         finally:
             con.close()
 

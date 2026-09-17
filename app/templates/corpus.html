@@ -20,6 +20,19 @@
         vigente em
         <input type="date" name="em" value="{{ quando }}">
       </label>
+      {# Aqui nao ha caso, entao o tribunal e escolhido a mao. Na entrevista ele
+         e derivado do local da prestacao, e nao se escolhe. #}
+      <label class="data">
+        tribunal
+        <select name="trt">
+          <option value="">s&oacute; normas nacionais</option>
+          {% for t in regionais %}
+            <option value="{{ t }}" {% if t == trt %}selected{% endif %}>{{ rotulo_trt(t) }}</option>
+          {% else %}
+            <option value="" disabled>nenhum TRT no &iacute;ndice ainda</option>
+          {% endfor %}
+        </select>
+      </label>
       <button type="submit">Consultar</button>
     </form>
 

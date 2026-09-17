@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import re
 import sqlite3
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date
 
@@ -80,25 +81,30 @@ def _consulta_fts(texto: str) -> str:
 
 
 def lexical(
-    con: sqlite3.Connection, consulta: str, quando: date | None = None, limite: int = 10
+    con: sqlite3.Connection,
+    consulta: str,
+    quando: date | None = None,
+    limite: int = 10,
+    obras: Iterable[str] | None = None,
 ) -> list[Achado]:
-    """Via 1. BM25 sobre `texto_indexado`, ja filtrado por vigencia."""
+    """Via 1. BM25 sobre `texto_indexado`, ja filtrado por vigencia e por obra."""
     expressao = _consulta_fts(consulta)
     if not expressao:
         return []
 
     ref = (quando or date.today()).isoformat()
+    clausula, params = banco.filtro_obras(obras)
     linhas = con.execute(
-        """SELECT d.*, bm25(dispositivos_fts, 3.0, 1.0) AS score
+        f"""SELECT d.*, bm25(dispositivos_fts, 3.0, 1.0) AS score
            FROM dispositivos_fts
            JOIN dispositivos d ON d.id = dispositivos_fts.rowid
            WHERE dispositivos_fts MATCH ?
              AND d.revogado = 0
              AND d.vigencia_inicio <= ?
-             AND (d.vigencia_fim IS NULL OR d.vigencia_fim >= ?)
+             AND (d.vigencia_fim IS NULL OR d.vigencia_fim >= ?){clausula}
            ORDER BY score
            LIMIT ?""",
-        (expressao, ref, ref, limite),
+        (expressao, ref, ref, *params, limite),
     ).fetchall()
     # bm25() do SQLite e tanto menor quanto melhor; inverte para o score subir.
     return [_achado(l, "lexical", -l["score"]) for l in linhas]
@@ -118,7 +124,8 @@ def _tipo_provavel(consulta: str) -> str:
     if baixa.lstrip().startswith("s") and "vinculante" in baixa:
         return "sv_stf"
     if "sumula" in baixa or "súmula" in baixa:
-        return "sumula_tst"
+        # "Sumula 9 do TRT-13" e regional; sem tribunal, e do TST.
+        return "sumula_trt" if re.search(r"\btrt\b|\btrt-?\d", baixa) else "sumula_tst"
     if baixa.lstrip().startswith("oj"):
         return "oj_tst"
     if baixa.lstrip().startswith("nr"):
@@ -166,7 +173,11 @@ def _obter_matriz(con: sqlite3.Connection):
 
 
 def densa(
-    con: sqlite3.Connection, consulta: str, quando: date | None = None, limite: int = 10
+    con: sqlite3.Connection,
+    consulta: str,
+    quando: date | None = None,
+    limite: int = 10,
+    obras: Iterable[str] | None = None,
 ) -> list[Achado]:
     """Via 2. Similaridade de cosseno sobre os vetores do BGE-M3.
 
@@ -181,7 +192,7 @@ def densa(
     from app.corpus import vetores
 
     try:
-        pares = vetores.buscar(con, matriz, consulta, quando, limite)
+        pares = vetores.buscar(con, matriz, consulta, quando, limite, obras)
     except vetores.ModeloAusente:
         # A matriz veio do corpus.db, mas embutir a CONSULTA exige o modelo. Sao
         # duas faltas diferentes, e so a primeira estava tratada: quem recebe o
@@ -203,14 +214,23 @@ def densa(
 
 
 def buscar(
-    con: sqlite3.Connection, consulta: str, quando: date | None = None, limite: int = 10
+    con: sqlite3.Connection,
+    consulta: str,
+    quando: date | None = None,
+    limite: int = 10,
+    obras: Iterable[str] | None = None,
 ) -> Resultado:
     """Ponto de entrada. Escolhe a via pela forma da consulta.
 
     Referencia vai para o lookup; pergunta em linguagem natural vai para as vias
-    de busca. Quando a densa entrar, esta funcao passa a fundir as duas por RRF -
-    a de referencia continua fora da fusao, porque ela nao e palpite ranqueado e
-    sim resposta exata.
+    de busca, fundidas por RRF. A de referencia continua fora da fusao, porque
+    ela nao e palpite ranqueado e sim resposta exata.
+
+    `obras` e o conjunto que o caso pode consultar - nacionais mais as do seu TRT,
+    ver `app/jurisdicao.py`. Vale para as duas vias de busca e NAO para a via de
+    referencia: quem digita "Sumula 12 do TRT-6" num caso da Paraiba esta pedindo
+    aquele texto de proposito, e filtro que esconde resposta exata e censura, nao
+    competencia. `None` e sem filtro, que e o comportamento anterior.
     """
     if _E_REFERENCIA.match(consulta):
         r = interpretar(_tipo_provavel(consulta), consulta)
@@ -246,8 +266,8 @@ def buscar(
     # "dispensa imotivada" e "despedida sem justa causa" sao a mesma coisa; a densa
     # troca numero de artigo. RRF aproveita o acerto de qualquer uma das duas sem
     # precisar que os scores sejam comparaveis - e nao sao.
-    lex = lexical(con, consulta, quando, max(limite, 20))
-    den = densa(con, consulta, quando, max(limite, 20))
+    lex = lexical(con, consulta, quando, max(limite, 20), obras)
+    den = densa(con, consulta, quando, max(limite, 20), obras)
     if not den:
         return Resultado(lex[:limite], "lexical")
     return Resultado(rrf([lex, den], limite=limite), "hibrida")

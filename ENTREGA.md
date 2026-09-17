@@ -122,7 +122,7 @@ abrir o navegador não acontece.
 
 ## Estado do projeto nesta data
 
-26 pedidos, 12 verificações, 79 perguntas em 10 seções. Corpus com 3.660
+26 pedidos, 12 verificações, 81 perguntas em 10 seções. Corpus com 3.660
 dispositivos e 5.748 redações da CLT, todas vetorizadas. Nove arquivos de teste,
 todos passando.
 
@@ -132,6 +132,19 @@ pacote está com a versão anterior: para atualizar, basta trocar esse arquivo �
 
 O que foi feito por último, e que vale saber porque muda o comportamento:
 
+- **Súmulas do TRT-13 no corpus.** 45 verbetes do site do NUGEP, uma página
+  por súmula, com janela de vigência lida do bloco "Histórico": 35 valem
+  hoje, 10 canceladas ficam com data de fim. Só entram em caso cujo TRT é o
+  13 — um caso de Pernambuco não as vê. O `corpus.db` mudou de novo; quem já
+  tem o pacote troca só esse arquivo. Rode `python -m app.corpus.indexar
+  trt13` para refazer.
+- **O caso passou a saber seu TRT.** A entrevista pergunta a UF da prestação
+  (e, em São Paulo, se é capital ou interior) e o tribunal é derivado, nunca
+  escolhido. A busca no corpus filtra por obra: nacionais mais as do TRT do
+  caso. Ainda não há obra regional ingerida, então na prática nada muda no
+  resultado — conferido sobre as 72 consultas do gabarito. É o que as súmulas
+  do TRT-13 encontram pronto quando entrarem. Detalhe em `README.md`, seção
+  "Competência: o TRT do caso".
 - **Caducidade de medida provisória** entrou no eixo de vigência. Antes, texto de
   MP caduca aparecia como lei atual — o art. 223-C respondia para 2016, quando o
   artigo nem existia. Junto vieram dois consertos no parser: o regex que não

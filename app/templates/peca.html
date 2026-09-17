@@ -95,7 +95,8 @@
     {% endfor %}
   </ul>
 
-  {% if m.verificacoes %}
+  {# Sempre presente: a competencia derivada e conferida aqui mesmo quando nenhuma
+     verificacao do catalogo foi acionada. #}
     <div class="caixa aviso-tela">
       <h2>Antes do protocolo</h2>
       <p>
@@ -103,12 +104,13 @@
         alegar ou orientar antes de protocolar.
       </p>
       <ul>
+        {# O tribunal foi derivado, nao escolhido. Fica aqui para ser conferido. #}
+        <li><b>Compet&ecirc;ncia</b> &mdash; {{ m.competencia }}</li>
         {% for v in m.verificacoes %}
           <li><b>{{ v.titulo }}</b> &mdash; {{ v.descricao }}</li>
         {% endfor %}
       </ul>
     </div>
-  {% endif %}
 
   {# Nao e parte da peca: e o que NAO entrou nela, e por que. Fica depois do
      fecho de proposito, para nao se confundir com o texto a protocolar. #}
