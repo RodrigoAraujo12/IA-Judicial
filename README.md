@@ -553,6 +553,57 @@ Triagem completa. Em andamento e a fazer:
 | **Processo parado** | a fazer | Consultor de próxima medida para processo que anda devagar há anos. |
 | **Gabarito de avaliação** | a refazer | As 72 consultas têm resposta na CLT por construção, e o corpus agora tem súmulas. Metade das quedas de acerto@1 é o gabarito ficando estreito, metade é degradação real - e só juízo jurídico separa as duas. |
 | **Jurisprudência** | a decidir | Uso principal é **citar na peça**, o que torna o validador de citações obrigatório. Uso secundário é aferir viabilidade. Muda a escala e exige rastrear superação de tese, não vigência. |
+| **Serviço para escritórios** | a fazer | Login, um escritório por conta, corpus compartilhado e somente leitura, casos de cada um. Reabre a premissa local do `ENTREGA.md` — ver [Rumo](#rumo-um-serviço-para-escritórios). |
+
+## Rumo: um serviço para escritórios
+
+Tudo acima descreve um sistema que roda na máquina de uma advogada. A direção,
+registrada em 17/09/2026, é outra: **um serviço para escritórios trabalhistas de
+todo o país.** Cada escritório entra com login e vê só os seus casos; o corpus é
+um só, compartilhado e somente leitura. Nada disso está feito — esta seção existe
+para que a intenção sobreviva à conversa em que foi dita, e para registrar o que
+ela reabre antes que alguém comece pelo lugar errado.
+
+**A divisão certa já existe, por outro motivo.** `corpus.db` e `casos.db` são
+arquivos separados desde o início, e a separação foi justificada em
+[`banco.py`](app/corpus/banco.py) por ciclos de vida, backups e riscos de LGPD
+diferentes. É exatamente a linha que o serviço precisa: o corpus vira o que é
+comum a todos e ninguém escreve; os casos viram o que é de cada um. Quem for
+desenhar o serviço não parte de um monólito a fatiar — parte de dois bancos que
+já não se misturam.
+
+**O que não existe.** Não há login, sessão nem cookie em
+[`main.py`](app/main.py). A tabela `casos` tem `id`, `nome`, datas e `respostas`
+— nenhuma coluna diz de quem é o caso, porque até hoje a resposta era "de quem
+está sentado na máquina". Os dois caminhos de banco são constantes de módulo
+([`persistencia.py`](app/persistencia.py), [`banco.py`](app/corpus/banco.py)):
+um processo, um arquivo. E o servidor escuta em `127.0.0.1` de propósito.
+
+**O que a mudança reabre, e que não é código.**
+
+- *A premissa do `ENTREGA.md`.* O documento inteiro se apoia em "o dado nunca sai
+  da máquina" como a forma mais barata de cumprir o art. 11 da LGPD. No serviço o
+  dado sai. O escritório passa a ser controlador e o serviço, operador (art. 5º,
+  VI e VII; art. 39), o que pede contrato entre os dois, hospedagem que respeite o
+  art. 33 e um plano para o dado de saúde que a entrevista coleta. Isso não é
+  detalhe de implantação; é o que decide se o serviço pode existir.
+- *"Outros tribunais entram um a um, quando houver caso deles."* Essa regra da
+  tabela acima é regra de produto local. Com escritórios do país inteiro, os 24
+  TRTs deixam de ser sob demanda e viram pré-requisito — e o TRT-13 custou um
+  módulo de 351 linhas contra o site do NUGEP daquele tribunal; os outros 23 têm
+  os seus. É a maior conta de conteúdo do serviço, e a que menos depende de
+  decisão técnica.
+- *O modelo.* O BGE-M3 foi tratado como opcional porque a máquina da advogada
+  podia não comportar 2,2 GB. Num servidor ele sempre cabe; o que passa a
+  importar é quantas consultas ao mesmo tempo uma sessão ONNX aguenta. A
+  degradação para lexical continua como rede de segurança, não como modo normal.
+
+**O que fica em aberto, de propósito.** Um `casos.db` por escritório — que
+preserva o isolamento por arquivo e o modelo de "fonte da verdade" de hoje — ou um
+banco só com coluna de escritório. Onde hospedar. Se a instalação local continua
+como segundo produto (as três formas do `ENTREGA.md` seguem válidas para quem
+preferir). Nenhuma dessas tem resposta óbvia, e este README registra a intenção,
+não o projeto.
 
 ## Limites conhecidos
 

@@ -12,6 +12,13 @@ não há nuvem, não há conta de usuário. Isso não é limitação: a entrevis
 nome, CPF, salário e dado de saúde — dado pessoal sensível pela LGPD, art. 11 —
 e a forma mais barata de proteger isso é ele nunca sair da máquina.
 
+Isso descreve o produto **de hoje**. A direção registrada em 17/09/2026 é outra:
+um serviço em que escritórios trabalhistas de todo o país entram com login e cada
+um vê só os seus casos, sobre um corpus único e somente leitura. O que essa
+mudança reabre — a começar por este argumento de LGPD — está no `README.md`,
+seção "Rumo: um serviço para escritórios". As três formas abaixo continuam
+valendo para quem preferir instalar na própria máquina.
+
 **Depois de instalado, o sistema não precisa de internet.** Isto foi verificado,
 não presumido: fora de `app/corpus/planalto.py` (ingestão da CLT) e
 `app/corpus/baixar_modelo.py` (download do BGE-M3), não existe uma única chamada
