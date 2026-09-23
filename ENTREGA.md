@@ -193,6 +193,9 @@ O que foi feito por último, e que vale saber porque muda o comportamento:
 
 ## O que ficou pendente
 
+- **Registro de acesso** — feito em 23/09/2026: quem abriu qual caso fica em
+  `contas.db` e se lê com `triagem-contas acessos`. Vale só no modo serviço.
+
 - **Mapa probatório** — para cada fato controvertido, quem presenciou. Hoje o
   sistema lista provas por pedido, mas nunca pergunta quem viu o quê.
 - **Perguntas de controle sobre fatos adversos** — *"se eu conversar amanhã com o

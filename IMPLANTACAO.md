@@ -151,7 +151,12 @@ mesmo (o plano grátis dá 20 GB de armazenamento de objetos):
 | ver o app | `systemctl status triagem` e `journalctl -u triagem -n 50` |
 | ver o HTTPS | `journalctl -u caddy -n 50` |
 | contas | `sudo triagem-contas listar` / `redefinir-senha EMAIL` / `desativar EMAIL` |
+| quem abriu qual caso | `sudo triagem-contas acessos` / `acessos EMAIL` / `acessos caso:7@1` |
 | backup agora | `sudo triagem-backup` |
+
+O registro de acesso mora em `contas.db` e por isso já entra no backup diário,
+sem nada a configurar. Ele guarda 180 dias e se limpa sozinho — o porquê do prazo
+está em [Registro de acesso](README.md#registro-de-acesso).
 
 **Restaurar um backup**: o comando está no topo de
 [`implantacao/backup.sh`](implantacao/backup.sh).

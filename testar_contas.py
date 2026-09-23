@@ -154,7 +154,100 @@ try:
     r = anonimo.post("/login", data={"email": "ana@a.adv.br", "senha": "senha-da-ana-123"})
     conferir("depois de dez erros, nem a senha certa entra", "Muitas tentativas" in r.text, True)
 
-    # --- 5. modo local ----------------------------------------------------------
+    # --- 5. registro de acesso ---------------------------------------------------
+
+    # Tudo o que este bloco confere ja aconteceu acima: os logins, os casos
+    # salvos, o caso aberto, a lista, a saida e as dez senhas erradas. O registro
+    # e lido depois do fato, que e exatamente como ele sera usado.
+    print("\nregistro de acesso")
+    tudo = contas.acessos(limite=500)
+    acoes = {a["acao"] for a in tudo}
+    conferir("registrou entrada, criacao, abertura, listagem e saida",
+             {"entrou", "criou", "abriu", "listou", "saiu"} <= acoes, True)
+    conferir("e registrou as tentativas recusadas", "entrada-negada" in acoes, True)
+
+    # Uma tentativa, uma linha - nem zero nem duas. Medido sobre um e-mail que
+    # ainda nao apareceu, para o numero nao depender do que os blocos acima
+    # fizeram. E-mail que nem existe conta igual: e assim que se ve alguem
+    # varrendo enderecos.
+    antes_negadas = len(contas.acessos(limite=500))
+    for senha in ("chute-um-um-um", "chute-dois-dois", "chute-tres-tres"):
+        anonimo.post("/login", data={"email": "fantasma@x.adv.br", "senha": senha})
+    novas = contas.acessos(limite=500, email="fantasma@x.adv.br")
+    conferir("tres tentativas, tres linhas", len(novas), 3)
+    conferir("e nada alem delas foi registrado",
+             len(contas.acessos(limite=500)) - antes_negadas, 3)
+    conferir("e-mail que nem existe tambem deixa rastro",
+             {a["acao"] for a in novas}, {"entrada-negada"})
+
+    # A ana ficou bloqueada no bloco 4. Tentativa barrada pelo bloqueio tambem e
+    # tentativa: sem esta linha, o registro pararia de contar justamente quando o
+    # ataque esta no auge.
+    antes = len(contas.acessos(limite=500, email="ana@a.adv.br"))
+    anonimo.post("/login", data={"email": "ana@a.adv.br", "senha": "senha-da-ana-123"})
+    conferir("recusa por bloqueio tambem e registrada",
+             len(contas.acessos(limite=500, email="ana@a.adv.br")), antes + 1)
+
+    # Nascer e mudar sao eventos diferentes para quem le o registro depois.
+    # Usuario proprio: a Ana ficou bloqueada e a Bia, desativada, nos blocos acima.
+    contas.criar_usuario(a, "caio@a.adv.br", "Caio", "senha-do-caio-123")
+    novo = cliente()
+    novo.post("/login", data={"email": "caio@a.adv.br", "senha": "senha-do-caio-123"})
+    id_novo = novo.post("/caso/salvar", data={"caso_nome": "Caso que nasce"}).json()["id"]
+    novo.post("/caso/salvar", data={"caso_nome": "Caso que muda", "caso_id": str(id_novo)})
+    conferir("o mesmo caso sai como criou e depois salvou",
+             [x["acao"] for x in contas.acessos(caso_id=id_novo, escritorio_id=a)],
+             ["salvou", "criou"])
+
+    # O numero do caso so identifica um caso JUNTO com o escritorio: cada arquivo
+    # numera do 1. Quem investigar sem o escritorio recebe os dois, e tem de ver
+    # isso, nao descobrir depois.
+    escritorios_do_numero = {x["escritorio_id"] for x in contas.acessos(limite=500, caso_id=id_novo)}
+    conferir("o mesmo numero existe em mais de um escritorio", escritorios_do_numero, {a, b})
+    conferir("e o filtro por escritorio separa",
+             {x["escritorio_id"] for x in contas.acessos(limite=500, caso_id=id_novo, escritorio_id=a)},
+             {a})
+
+    conferir("o caso aberto ficou pelo numero", bool(contas.acessos(caso_id=id_a)), True)
+    conferir("a entrada tambem carrega o escritorio",
+             {x["escritorio_id"] for x in contas.acessos(limite=500, email="caio@a.adv.br")
+              if x["acao"] == "entrou"}, {a})
+    conferir("o filtro por e-mail so traz o dele",
+             {a["email"] for a in contas.acessos(limite=500, email="bia@b.adv.br")},
+             {"bia@b.adv.br"})
+
+    # A acao de cada uma fica com o escritorio dela: sem isso o registro nao
+    # responde "quem, de qual escritorio, abriu o caso".
+    de_bia = [a for a in contas.acessos(limite=500, email="bia@b.adv.br") if a["escritorio_id"]]
+    conferir("cada acao carrega o escritorio de quem a fez",
+             {a["escritorio_id"] for a in de_bia}, {b})
+    # A entrada-negada acontece antes de existir sessao: nao ha escritorio ainda.
+    negadas = [a for a in tudo if a["acao"] == "entrada-negada"]
+    conferir("tentativa recusada nao inventa escritorio",
+             {a["escritorio_id"] for a in negadas}, {None})
+
+    conferir("o mais recente vem primeiro", tudo == sorted(tudo, key=lambda a: (a["em"], a["id"]), reverse=True), True)
+
+    # O rastro nao pode morrer com o usuario: e depois de desativar alguem que se
+    # vai perguntar o que essa pessoa andou abrindo. A Bia foi desativada no
+    # bloco 4, e as linhas dela continuam la.
+    conferir("usuario desativado nao apaga o rastro dele",
+             bool(contas.acessos(limite=500, email="bia@b.adv.br")), True)
+
+    # Prazo: o que passou da retencao sai, o resto fica.
+    with contas.closing(contas.conectar()) as con, con:
+        con.execute(
+            "INSERT INTO acessos (em, acao, email, escritorio_id, caso_id, ip) VALUES (?, ?, ?, ?, ?, ?)",
+            ((contas._agora() - contas.RETENCAO - timedelta(days=1)).isoformat(),
+             "abriu", "antiga@a.adv.br", a, 1, "127.0.0.1"),
+        )
+    conferir("a linha velha entrou", bool(contas.acessos(limite=500, email="antiga@a.adv.br")), True)
+    antes = len(contas.acessos(limite=500))
+    saiu = contas.limpar_acessos()
+    conferir("a limpeza tira so a velha", (saiu, len(contas.acessos(limite=500))), (1, antes - 1))
+    conferir("e ela nao esta mais la", contas.acessos(limite=500, email="antiga@a.adv.br"), [])
+
+    # --- 6. modo local ----------------------------------------------------------
 
     print("\nmodo local")
     contas.MODO = "local"
@@ -166,6 +259,14 @@ try:
     conferir("de outra maquina: 403", cliente(client=("192.168.0.10", 50000)).get("/").status_code, 403)
     r = local.get("/", headers={"X-Forwarded-For": "200.1.2.3"})
     conferir("atras de proxy (servidor esquecido em modo local): 403", r.status_code, 403)
+
+    # Sem login nao ha "quem": uma linha dizendo "alguem nesta maquina abriu o
+    # caso 7" nao responde a pergunta que o registro existe para responder.
+    quantas = len(contas.acessos(limite=500))
+    local.get("/casos")
+    local.get(f"/caso/{id_l}")
+    local.post("/caso/salvar", data={"caso_nome": "Outro caso local"})
+    conferir("no modo local nada e registrado", len(contas.acessos(limite=500)), quantas)
 finally:
     contas.DADOS, contas.MODO, persistencia.BANCO = dados_originais, modo_original, banco_original
     shutil.rmtree(temp, ignore_errors=True)

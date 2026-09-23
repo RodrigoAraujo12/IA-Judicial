@@ -107,6 +107,13 @@ async def porteiro(request: Request, call_next):
     return await call_next(request)
 
 
+def _ip(request: Request) -> str | None:
+    """De onde veio o pedido. Atras de proxy reverso o uvicorn precisa de
+    `--proxy-headers` para que isto seja o cliente e nao o proxy; ler
+    `X-Forwarded-For` aqui a mao seria pior, porque qualquer um o envia."""
+    return request.client.host if request.client else None
+
+
 def _destino_seguro(proximo: str) -> str:
     """So caminho interno. "//site.com" e "https://..." viram "/"."""
     return proximo if proximo.startswith("/") and not proximo.startswith("//") else "/"
@@ -136,9 +143,19 @@ async def login_entrar(request: Request):
     elif (token := await run_in_threadpool(contas.entrar, email, senha)) is None:
         erro = "E-mail ou senha não conferem."
     if erro:
+        # Tentativa recusada e o sinal mais util do registro: e o que denuncia
+        # alguem varrendo senhas antes de conseguir entrar.
+        await run_in_threadpool(
+            contas.registrar, "entrada-negada", email=email, ip=_ip(request)
+        )
         return templates.TemplateResponse(
             request, "login.html", {"proximo": proximo, "erro": erro, "email": email}, status_code=401
         )
+    # Registrar com o usuario, e nao so com o e-mail, para que a entrada tambem
+    # carregue o escritorio: "quem entrou, de onde" sem o escritorio obriga quem
+    # investiga a cruzar com a tabela de usuarios, que pode ja ter mudado.
+    usuario = await run_in_threadpool(contas.sessao, token)
+    await run_in_threadpool(contas.registrar, "entrou", usuario, email=email, ip=_ip(request))
 
     resposta = RedirectResponse(proximo, status_code=303)
     resposta.set_cookie(
@@ -159,6 +176,8 @@ async def login_entrar(request: Request):
 @app.post("/sair")
 async def sair(request: Request):
     if token := request.cookies.get(COOKIE):
+        if usuario := getattr(request.state, "usuario", None):
+            await run_in_threadpool(contas.registrar, "saiu", usuario, ip=_ip(request))
         await run_in_threadpool(contas.sair, token)
     resposta = RedirectResponse("/login" if contas.MODO == "servico" else "/", status_code=303)
     resposta.delete_cookie(COOKIE)
@@ -307,12 +326,18 @@ async def caso_salvar(request: Request):
     respostas = parse_respostas(form)
     nome = str(form.get("caso_nome") or "").strip() or "Caso sem nome"
     bruto = str(form.get("caso_id") or "").strip()
+    pedido = int(bruto) if bruto.isdigit() else None
     caso_id = await run_in_threadpool(
-        persistencia.salvar,
-        request.state.banco_casos,
-        nome,
-        respostas,
-        int(bruto) if bruto.isdigit() else None,
+        persistencia.salvar, request.state.banco_casos, nome, respostas, pedido
+    )
+    # "criou" e "salvou" sao eventos diferentes para quem le o registro depois:
+    # um caso que nasce e um caso que muda contam historias distintas.
+    await run_in_threadpool(
+        contas.registrar,
+        "salvou" if pedido == caso_id else "criou",
+        request.state.usuario,
+        caso_id=caso_id,
+        ip=_ip(request),
     )
     return JSONResponse({"id": caso_id, "nome": nome})
 
@@ -323,16 +348,22 @@ def caso_abrir(request: Request, caso_id: int):
     # escritorio nao "existe mas e proibido": ele nao esta neste arquivo.
     dados = persistencia.carregar(request.state.banco_casos, caso_id)
     if dados is None:
+        # Id que nao existe neste arquivo. Costuma ser um favorito velho, mas e
+        # tambem a cara de alguem sondando numeros - e por isso fica registrado.
+        contas.registrar(
+            "caso-inexistente", request.state.usuario, caso_id=caso_id, ip=_ip(request)
+        )
         return RedirectResponse("/casos", status_code=303)
     nome, respostas = dados
+    contas.registrar("abriu", request.state.usuario, caso_id=caso_id, ip=_ip(request))
     return templates.TemplateResponse(request, "entrevista.html", _contexto(respostas, caso_id, nome))
 
 
 @app.get("/casos", response_class=HTMLResponse)
 def casos(request: Request):
-    return templates.TemplateResponse(
-        request, "casos.html", {"casos": persistencia.listar(request.state.banco_casos)}
-    )
+    lista = persistencia.listar(request.state.banco_casos)
+    contas.registrar("listou", request.state.usuario, ip=_ip(request))
+    return templates.TemplateResponse(request, "casos.html", {"casos": lista})
 
 
 # --- corpus normativo -------------------------------------------------------

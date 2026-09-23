@@ -68,7 +68,7 @@ python testar_vias.py      # placar das vias sobre as 72 consultas de avaliacao.
 python testar_jurisdicao.py # UF -> TRT, e sumula de outro tribunal fora do caso
 python testar_trt13.py     # sumulas do TRT-13: datas do historico e janela de vigencia
 python testar_leis.py      # CF, ADCT, Codigo Civil e leis esparsas: o parser fora da CLT
-python testar_contas.py    # modo servico: login, sessao, e um escritorio sem ver o outro
+python testar_contas.py    # modo servico: login, isolamento entre escritorios, registro de acesso
 python analisar_rerank.py  # a folga que um reranqueador teria (exige vetores)
 ```
 
@@ -119,7 +119,7 @@ app/
   motor.py               avaliação de três estados, prescrição, regimes
   jurisdicao.py          do local da prestação ao TRT; que obras valem para o caso
   persistencia.py        SQLite — casos, a fonte da verdade
-  contas.py              modo serviço: escritórios, usuários, senhas e sessões
+  contas.py              modo serviço: escritórios, usuários, senhas, sessões, registro de acesso
   main.py                FastAPI, e o porteiro que decide quem entra
   catalogo/
     loader.py            carga + validação cruzada dos YAML
@@ -658,7 +658,7 @@ Triagem completa. Em andamento e a fazer:
 | **Processo parado** | a fazer | Consultor de próxima medida para processo que anda devagar há anos. |
 | **Gabarito de avaliação** | a refazer | As 72 consultas têm resposta na CLT por construção, e o corpus agora tem súmulas. Metade das quedas de acerto@1 é o gabarito ficando estreito, metade é degradação real - e só juízo jurídico separa as duas. |
 | **Jurisprudência** | a decidir | Uso principal é **citar na peça**, o que torna o validador de citações obrigatório. Uso secundário é aferir viabilidade. Muda a escala e exige rastrear superação de tese, não vigência. |
-| **Serviço para escritórios** | login, isolamento e instalação prontos; falta subir | `TRIAGEM_MODO=servico`: login obrigatório, um arquivo de casos por escritório, corpus compartilhado e somente leitura — ver [Modo serviço](#modo-serviço-login-e-escritórios). A instalação para servidor (HTTPS, backup) está em [`IMPLANTACAO.md`](IMPLANTACAO.md), escrita e ainda não executada: o teste será no plano grátis da Oracle. Reabre a premissa local do `ENTREGA.md` — ver [Rumo](#rumo-um-serviço-para-escritórios). |
+| **Serviço para escritórios** | login, isolamento, registro de acesso e instalação prontos; falta subir | `TRIAGEM_MODO=servico`: login obrigatório, um arquivo de casos por escritório, corpus compartilhado e somente leitura — ver [Modo serviço](#modo-serviço-login-e-escritórios). Quem abriu qual caso fica registrado — ver [Registro de acesso](#registro-de-acesso). A instalação para servidor (HTTPS, backup) está em [`IMPLANTACAO.md`](IMPLANTACAO.md), escrita e ainda não executada: o teste será no plano grátis da Oracle. Reabre a premissa local do `ENTREGA.md` — ver [Rumo](#rumo-um-serviço-para-escritórios). |
 
 ## Rumo: um serviço para escritórios
 
@@ -760,13 +760,60 @@ sistema, e backup diário cifrado das contas e dos casos. Contas e casos moram e
 `TRIAGEM_DADOS` (`/var/lib/triagem` no servidor), fora da pasta do código, e são
 a única coisa que o backup leva; corpus e modelo são reconstruíveis.
 
+### Registro de acesso
+
+Quem abriu qual caso, e quando. É o que se consulta depois de um incidente, e o
+que a LGPD cobra do operador (art. 37). Fica em `contas.db`, tabela `acessos`, e
+é lido pela linha de comando:
+
+```
+triagem-contas acessos                        # as últimas 50 ações
+triagem-contas acessos ana@silvasouza.adv.br  # só as dela
+triagem-contas acessos caso:7                 # quem abriu o caso 7
+triagem-contas acessos caso:7@1               # ... no escritório 1
+```
+
+O que entra: `entrou`, `saiu`, `entrada-negada`, `listou`, `abriu`, `criou`,
+`salvou` e `caso-inexistente`. O que **não** entra é o painel vivo — ele é POST a
+cada 180 ms enquanto se digita e não lê caso nenhum do banco. Registrar leitura
+que não houve encheria o registro de ruído e esconderia o sinal.
+
+Quatro decisões que valem mais que o código:
+
+**O rastro não mora junto da coisa que ele registra.** O registro fica em
+`contas.db`, não no arquivo do escritório. Encerrar um contrato é apagar a pasta
+do escritório — e se o registro estivesse lá dentro, apagar a pasta apagaria a
+prova de quem acessou o quê.
+
+**O e-mail é cópia, não referência, e não há chave estrangeira.** É depois de
+desativar alguém que se pergunta o que essa pessoa andou abrindo. Uma `FK` com
+`CASCADE` apagaria a resposta junto com a pergunta.
+
+**O número do caso só identifica um caso junto com o escritório.** Cada arquivo
+numera do 1, então existe um caso nº 7 em cada escritório. Filtrar só pelo número
+traz os dois, e a leitura avisa em vez de deixar alguém concluir errado. É o
+preço direto de um arquivo por escritório — a mesma escolha que impede um de ver
+o outro.
+
+**Falha no registro não derruba o atendimento.** Um disco cheio não pode impedir
+uma advogada de abrir o caso dela no meio de uma audiência. Mas também não passa
+calado: a falha vai para o log do servidor.
+
+O registro tem prazo — `RETENCAO`, hoje 180 dias. Precisa ser maior que o
+intervalo entre um incidente e a descoberta dele, que costuma ser de meses; e não
+pode ser eterno, porque quem abriu o quê é, ele próprio, dado pessoal (art. 6º,
+III). A limpeza acontece no login, que é a hora barata: poucas vezes ao dia, já
+dentro de uma transação de escrita, e sem tarefa agendada para alguém esquecer.
+
+**No modo local nada é registrado**, e não é esquecimento: sem login não há
+"quem", e uma linha dizendo "alguém nesta máquina abriu o caso 7" não responde a
+pergunta que o registro existe para responder.
+
 **O que ainda falta depois de no ar**, em ordem:
 
-1. **Registro de acesso** — quem abriu qual caso, e quando. É o que responde a um
-   incidente, e a LGPD cobra do operador.
-2. **Troca de senha pelo próprio usuário e recuperação por e-mail.** Hoje só o
+1. **Troca de senha pelo próprio usuário e recuperação por e-mail.** Hoje só o
    administrador troca (`triagem-contas redefinir-senha`).
-3. **Importar os casos de uma instalação local** para o escritório no serviço.
+2. **Importar os casos de uma instalação local** para o escritório no serviço.
 
 ## Limites conhecidos
 

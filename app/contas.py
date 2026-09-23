@@ -5,6 +5,10 @@
     python -m app.contas listar
     python -m app.contas redefinir-senha ana@silvasouza.adv.br
     python -m app.contas desativar ana@silvasouza.adv.br
+    python -m app.contas acessos                        # as ultimas 50 acoes
+    python -m app.contas acessos ana@silvasouza.adv.br  # so as dela
+    python -m app.contas acessos caso:7                 # quem abriu o caso 7
+    python -m app.contas acessos caso:7@1               # ... no escritorio 1
 
 **Dois modos, escolhidos por variavel de ambiente, nunca por deducao.**
 
@@ -31,6 +35,13 @@ lento de proposito: vazar `contas.db` nao entrega as senhas.
 
 **A sessao guarda o hash do token, nao o token.** Quem copia o banco nao herda as
 sessoes abertas.
+
+**O registro de acesso responde "quem abriu qual caso, e quando".** E o que a
+LGPD cobra do operador (art. 37) e o que se consulta depois de um incidente. Ele
+guarda o e-mail como COPIA, para sobreviver ao usuario desativado, e tem prazo -
+`RETENCAO` -, porque quem abriu o que tambem e dado pessoal. Fica em `contas.db`,
+e nao no arquivo do escritorio: o rastro nao pode morar no mesmo lugar que a
+coisa cujo acesso ele registra, ou apagar a pasta apaga a prova.
 """
 
 from __future__ import annotations
@@ -47,6 +58,7 @@ from contextlib import closing
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 MODO = os.environ.get("TRIAGEM_MODO", "local").strip().lower()
 if MODO not in ("local", "servico"):
@@ -68,6 +80,13 @@ SENHA_MINIMA = 10
 # tenta devagar, mas tira do alcance quem tenta um dicionario.
 TENTATIVAS = 10
 JANELA = timedelta(minutes=15)
+
+# Por quanto tempo o registro de acesso e guardado. Precisa ser maior que o
+# intervalo entre um incidente e a descoberta dele, que costuma ser de meses -
+# registro que expira antes disso nao responde nada. Tambem nao e para sempre:
+# quem abriu qual caso e, ele proprio, dado pessoal, e guardar sem prazo
+# contraria a minimizacao do art. 6o, III, da LGPD.
+RETENCAO = timedelta(days=180)
 
 # scrypt: N=2^14, r=8, p=1 e o minimo recomendado para login interativo, e leva
 # ~50 ms aqui. O custo vai gravado junto do hash, para poder subir depois sem
@@ -101,6 +120,26 @@ CREATE TABLE IF NOT EXISTS tentativas (
     em     TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_tentativas ON tentativas(email, em);
+
+-- Quem abriu qual caso, e quando. Ver "registro de acesso", abaixo.
+--
+-- `email` e `escritorio` sao COPIAS, nao referencias, e nao ha chave estrangeira
+-- nenhuma aqui. E deliberado: o rastro tem de continuar legivel depois que o
+-- usuario for desativado e o escritorio encerrado - que e justamente quando
+-- alguem vai perguntar o que aconteceu. Uma FK com CASCADE apagaria a resposta
+-- junto com a pergunta.
+CREATE TABLE IF NOT EXISTS acessos (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    em            TEXT NOT NULL,
+    acao          TEXT NOT NULL,
+    email         TEXT NOT NULL,
+    escritorio_id INTEGER,
+    caso_id       INTEGER,
+    ip            TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_acessos_em    ON acessos(em DESC);
+CREATE INDEX IF NOT EXISTS idx_acessos_email ON acessos(email, em DESC);
+CREATE INDEX IF NOT EXISTS idx_acessos_caso  ON acessos(caso_id, em DESC);
 """
 
 
@@ -252,6 +291,10 @@ def entrar(email: str, senha: str) -> str | None:
 
         con.execute("DELETE FROM tentativas WHERE email = ?", (email,))
         con.execute("DELETE FROM sessoes WHERE expira_em < ?", (_agora().isoformat(),))
+        # O registro de acesso tem prazo, e o login e a hora barata de cobra-lo:
+        # acontece poucas vezes ao dia, ja esta numa transacao de escrita, e nao
+        # exige tarefa agendada nenhuma para lembrar disso.
+        con.execute("DELETE FROM acessos WHERE em < ?", ((_agora() - RETENCAO).isoformat(),))
         token = secrets.token_urlsafe(32)
         con.execute(
             "INSERT INTO sessoes (token_hash, usuario_id, criada_em, expira_em) VALUES (?, ?, ?, ?)",
@@ -283,6 +326,87 @@ def _hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
+# --- registro de acesso -------------------------------------------------------
+
+
+def registrar(
+    acao: str,
+    usuario: Usuario | None = None,
+    *,
+    email: str = "",
+    caso_id: int | None = None,
+    ip: str | None = None,
+) -> None:
+    """Anota uma acao sobre dado de cliente. So no modo servico.
+
+    **No modo local nao registra**, e nao e esquecimento: sem login nao ha "quem",
+    e uma linha dizendo "alguem nesta maquina abriu o caso 7" nao responde a
+    pergunta que o registro existe para responder. O registro nasce com o
+    servico, porque e ali que escritorio e operador sao pessoas diferentes.
+
+    **Falha aqui nao derruba o atendimento.** Um disco cheio nao pode impedir uma
+    advogada de abrir o caso dela no meio de uma audiencia. Mas tambem nao pode
+    passar calado: a falha vai para o log do servidor, onde o monitoramento a ve.
+    """
+    if MODO != "servico":
+        return
+    if usuario is not None:
+        email = usuario.email
+        escritorio_id = usuario.escritorio_id
+    else:
+        escritorio_id = None
+    try:
+        with closing(conectar()) as con, con:
+            con.execute(
+                "INSERT INTO acessos (em, acao, email, escritorio_id, caso_id, ip)"
+                " VALUES (?, ?, ?, ?, ?, ?)",
+                (_agora().isoformat(), acao, email, escritorio_id, caso_id, ip),
+            )
+    except sqlite3.Error as erro:  # noqa: BLE001 - a acao do usuario segue, o aviso nao
+        print(f"AVISO: registro de acesso falhou ({acao}): {erro}", file=sys.stderr)
+
+
+def acessos(
+    limite: int = 50,
+    email: str | None = None,
+    caso_id: int | None = None,
+    escritorio_id: int | None = None,
+) -> list[dict[str, Any]]:
+    """As ultimas acoes registradas, da mais recente para a mais antiga.
+
+    **O numero do caso so identifica um caso junto com o escritorio.** Cada
+    arquivo numera do 1, entao existe um caso nº 7 em cada escritorio, e filtrar
+    so por `caso_id` traz os dois. E consequencia direta de um arquivo por
+    escritorio - a mesma escolha que impede um de ver o outro. Quem investiga um
+    caso especifico passa os dois; quem varre por numero ve a coluna do
+    escritorio e sabe separar.
+    """
+    onde, params = [], []
+    if email:
+        onde.append("email = ?")
+        params.append(email.strip())
+    if caso_id is not None:
+        onde.append("caso_id = ?")
+        params.append(caso_id)
+    if escritorio_id is not None:
+        onde.append("escritorio_id = ?")
+        params.append(escritorio_id)
+    filtro = f" WHERE {' AND '.join(onde)}" if onde else ""
+    with closing(conectar()) as con:
+        linhas = con.execute(
+            f"SELECT * FROM acessos{filtro} ORDER BY em DESC, id DESC LIMIT ?",
+            (*params, int(limite)),
+        ).fetchall()
+    return [dict(l) for l in linhas]
+
+
+def limpar_acessos(agora: datetime | None = None) -> int:
+    """Descarta o que passou de `RETENCAO`. Devolve quantas linhas sairam."""
+    corte = ((agora or _agora()) - RETENCAO).isoformat()
+    with closing(conectar()) as con, con:
+        return int(con.execute("DELETE FROM acessos WHERE em < ?", (corte,)).rowcount)
+
+
 # --- linha de comando ---------------------------------------------------------
 
 
@@ -308,6 +432,33 @@ def main(args: list[str]) -> None:
         elif comando == "desativar" and len(resto) == 1:
             desativar(resto[0])
             print("usuario desativado; as sessoes abertas foram encerradas")
+        elif comando == "acessos" and len(resto) <= 1:
+            alvo = resto[0] if resto else ""
+            if alvo.startswith("caso:"):
+                # "caso:7" ou "caso:7@1" - o numero sozinho existe em todos os
+                # escritorios, entao sem o "@" a saida traz todos eles.
+                numero, _, escritorio = alvo[5:].partition("@")
+                linhas = acessos(
+                    caso_id=int(numero), escritorio_id=int(escritorio) if escritorio else None
+                )
+                if not escritorio and len({a["escritorio_id"] for a in linhas}) > 1:
+                    print(
+                        f"aviso: ha um caso #{numero} em mais de um escritorio. "
+                        f"Use 'caso:{numero}@<escritorio>' para separar.\n"
+                    )
+            else:
+                linhas = acessos(email=alvo or None)
+            if MODO != "servico":
+                print("(modo local: nada e registrado - ver `registrar` em app/contas.py)\n")
+            for a in linhas:
+                onde = f"esc #{a['escritorio_id']}" if a["escritorio_id"] else ""
+                caso = f"caso #{a['caso_id']}" if a["caso_id"] is not None else ""
+                print(
+                    f"{a['em']}  {a['acao']:<16} {a['email']:<32} "
+                    f"{onde:<8} {caso:<10} {a['ip'] or ''}"
+                )
+            if not linhas:
+                print("nenhum acesso registrado com esse filtro")
         elif comando == "listar":
             with closing(conectar()) as con:
                 for e in con.execute("SELECT * FROM escritorios ORDER BY id"):
