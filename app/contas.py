@@ -9,6 +9,7 @@
     python -m app.contas acessos ana@silvasouza.adv.br  # so as dela
     python -m app.contas acessos caso:7                 # quem abriu o caso 7
     python -m app.contas acessos caso:7@1               # ... no escritorio 1
+    python -m app.contas importar-casos 1 /tmp/casos.db # casos de uma instalacao local
 
 **Dois modos, escolhidos por variavel de ambiente, nunca por deducao.**
 
@@ -483,6 +484,24 @@ def main(args: list[str]) -> None:
                 )
             if not linhas:
                 print("nenhum acesso registrado com esse filtro")
+        elif comando == "importar-casos" and len(resto) == 2:
+            from app import persistencia
+
+            escritorio_id, arquivo = int(resto[0]), Path(resto[1])
+            with closing(conectar()) as con:
+                linha = con.execute(
+                    "SELECT nome FROM escritorios WHERE id = ?", (escritorio_id,)
+                ).fetchone()
+            if linha is None:
+                raise ValueError(f"escritorio {escritorio_id} nao existe")
+            r = persistencia.importar(arquivo, banco_de_casos(escritorio_id))
+            print(f"{r['importados']} casos importados para #{escritorio_id} {linha['nome']}")
+            if r["iguais"]:
+                print(
+                    f"AVISO: {r['iguais']} deles ja existiam la, iguais no nome e nas "
+                    "respostas. Foram importados assim mesmo - a importacao nunca decide "
+                    "por voce. Se rodou duas vezes sem querer, apague as copias pela tela."
+                )
         elif comando == "listar":
             with closing(conectar()) as con:
                 for e in con.execute("SELECT * FROM escritorios ORDER BY id"):

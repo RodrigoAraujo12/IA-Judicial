@@ -216,6 +216,7 @@ mesmo (o plano grátis dá 20 GB de armazenamento de objetos):
 | ver o HTTPS | `journalctl -u caddy -n 50` |
 | contas | `sudo triagem-contas listar` / `redefinir-senha EMAIL` / `desativar EMAIL` |
 | quem abriu qual caso | `sudo triagem-contas acessos` / `acessos EMAIL` / `acessos caso:7@1` |
+| trazer casos de uma instalação local | `scp` para `/tmp`, `sudo triagem-contas importar-casos ESC /tmp/casos.db`, depois `sudo shred -u /tmp/casos.db` |
 | backup agora | `sudo triagem-backup` |
 
 O registro de acesso mora em `contas.db` e por isso já entra no backup diário,
@@ -265,6 +266,5 @@ o que exclui Render, Railway, DigitalOcean e Hetzner.
 
 ## O que ainda falta depois de no ar
 
-- Troca de senha pelo próprio usuário, e recuperação por e-mail.
-- Importar os casos de uma instalação local para um escritório do serviço.
+- Recuperação de senha por e-mail (a troca pelo próprio usuário já existe, em `/conta`).
 - O contrato de LGPD com os escritórios — é o que libera dado real.

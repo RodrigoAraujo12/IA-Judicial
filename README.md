@@ -828,11 +828,40 @@ Não há "esqueci a senha" ainda, e isso está dito na tela: recuperação por e
 exige um servidor de envio, que é decisão e custo próprios. Enquanto não existe,
 quem administra redefine por `triagem-contas redefinir-senha`.
 
-**O que ainda falta depois de no ar**, em ordem:
+### Trazer os casos de uma instalação local
+
+Quem já usava o sistema na própria máquina não recomeça do zero ao entrar no
+serviço. O `casos.db` dela vira casos do escritório dela:
+
+```
+scp dados\casos.db ubuntu@SERVIDOR:/tmp/            # do computador dela
+sudo triagem-contas importar-casos 1 /tmp/casos.db   # no servidor
+sudo shred -u /tmp/casos.db                          # apague: é dado de cliente
+```
+
+**Todo caso importado nasce com número novo.** Os dois arquivos numeram do 1,
+então o caso nº 3 de um não é o nº 3 do outro, e reaproveitar o número
+sobrescreveria trabalho alheio em silêncio. Nada no destino é tocado.
+
+**A origem é aberta somente leitura.** Importar não pode estragar o arquivo de
+quem está importando, e ele costuma ser a única cópia.
+
+**Rodar duas vezes duplica, e o comando avisa.** A importação nunca decide por
+quem importa, então ela não descarta o que parece repetido; ela conta quantos já
+existiam com o mesmo nome e as mesmas respostas, e diz. Apagar a cópia é pela
+tela de casos.
+
+Apontar para `contas.db` ou `corpus.db` por engano é o erro fácil — são todos
+`.db`, na mesma pasta. O comando recusa dizendo que o arquivo não é um banco de
+casos, em vez de importar zero e parecer que não havia nenhum.
+
+O terceiro passo não é zelo excessivo: aquele arquivo em `/tmp` tem nome, CPF e
+dado de saúde dos clientes dela.
+
+**O que ainda falta depois de no ar:**
 
 1. **Recuperação de senha por e-mail**, para quem não consegue entrar. Precisa de
    um serviço de envio e da decisão de qual.
-2. **Importar os casos de uma instalação local** para o escritório no serviço.
 
 ## Limites conhecidos
 

@@ -85,6 +85,59 @@ def listar(banco: Path, limite: int = 50) -> list[dict[str, Any]]:
     return [dict(linha) for linha in linhas]
 
 
+def importar(origem: Path, destino: Path) -> dict[str, int]:
+    """Copia os casos de um arquivo para outro. Nunca sobrescreve nada.
+
+    O caminho de quem usava o sistema na propria maquina e passa a usar o
+    servico. Todo caso importado **nasce com numero novo** no destino: os dois
+    arquivos numeram do 1, entao o caso nº 3 de um nao e o nº 3 do outro, e
+    reaproveitar o numero sobrescreveria trabalho alheio em silencio.
+
+    A origem e aberta SOMENTE LEITURA. Importar nao pode estragar o arquivo de
+    quem esta importando - e ele costuma ser a unica copia.
+
+    `iguais` conta os casos que ja existiam no destino com o mesmo nome e as
+    mesmas respostas. Eles sao importados assim mesmo, porque a regra e nunca
+    decidir por quem importa; o numero serve para avisar quem rodou o comando
+    duas vezes sem querer.
+    """
+    if not origem.exists():
+        raise FileNotFoundError(f"nao existe: {origem}")
+
+    con_o = sqlite3.connect(f"file:{origem.as_posix()}?mode=ro", uri=True)
+    con_o.row_factory = sqlite3.Row
+    try:
+        tem = con_o.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'casos'"
+        ).fetchone()
+        if tem is None:
+            # Apontar para corpus.db ou contas.db por engano e o erro facil de
+            # cometer: sao todos .db, na mesma pasta. Dizer isso e melhor que
+            # importar zero caso e parecer que nao havia nenhum.
+            raise ValueError(f"{origem.name} nao e um banco de casos (nao tem a tabela `casos`)")
+        vindos = con_o.execute(
+            "SELECT nome, criado_em, atualizado_em, respostas FROM casos ORDER BY id"
+        ).fetchall()
+    finally:
+        con_o.close()
+
+    with closing(conectar(destino)) as con, con:
+        ja_la = {
+            (l["nome"], l["respostas"])
+            for l in con.execute("SELECT nome, respostas FROM casos")
+        }
+        iguais = 0
+        for c in vindos:
+            if (c["nome"], c["respostas"]) in ja_la:
+                iguais += 1
+            con.execute(
+                """INSERT INTO casos (nome, criado_em, atualizado_em, respostas)
+                   VALUES (?, ?, ?, ?)""",
+                (c["nome"], c["criado_em"], c["atualizado_em"], c["respostas"]),
+            )
+    return {"importados": len(vindos), "iguais": iguais}
+
+
 def excluir(banco: Path, caso_id: int) -> None:
     with closing(conectar(banco)) as con, con:
         con.execute("DELETE FROM casos WHERE id = ?", (caso_id,))

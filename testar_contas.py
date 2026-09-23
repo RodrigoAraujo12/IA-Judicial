@@ -294,7 +294,57 @@ try:
     conferir("a troca ficou registrada", "trocou-senha" in acoes_caio, True)
     conferir("a tentativa com senha errada tambem", "troca-de-senha-negada" in acoes_caio, True)
 
-    # --- 7. modo local ----------------------------------------------------------
+    # --- 7. importar casos de uma instalacao local ------------------------------
+
+    print("\nimportar casos de uma instalacao local")
+
+    # O arquivo de quem usava o sistema na propria maquina.
+    local_db = temp / "vindo-de-casa.db"
+    persistencia.salvar(local_db, "Cliente da maquina dela", {"funcao": "Pedreiro"})
+    persistencia.salvar(local_db, "Outro cliente", {"funcao": "Vendedora"})
+
+    destino = contas.banco_de_casos(a)
+    antes = len(persistencia.listar(destino))
+    r = persistencia.importar(local_db, destino)
+    conferir("importa os dois", r, {"importados": 2, "iguais": 0})
+    nomes = {c["nome"] for c in persistencia.listar(destino)}
+    conferir("os dois chegaram", {"Cliente da maquina dela", "Outro cliente"} <= nomes, True)
+    conferir("e nada do que ja estava la sumiu", len(persistencia.listar(destino)), antes + 2)
+
+    # O numero e novo no destino: os dois arquivos numeram do 1, e reaproveitar o
+    # numero sobrescreveria trabalho alheio.
+    importado = next(c for c in persistencia.listar(destino) if c["nome"] == "Outro cliente")
+    conferir("o caso ganhou numero novo", importado["id"] > antes, True)
+    conferir("e o caso que ja existia continua o mesmo",
+             persistencia.carregar(destino, id_a)[0], "Cliente da Ana")
+
+    # Rodar duas vezes duplica - e a regra e nunca decidir por quem importa -,
+    # mas o comando AVISA, que e o que separa o acidente do silencio.
+    r = persistencia.importar(local_db, destino)
+    conferir("a segunda vez avisa que ja estavam la", r, {"importados": 2, "iguais": 2})
+
+    # A origem e aberta somente leitura: costuma ser a unica copia de quem importa.
+    conferir("a origem fica intacta", len(persistencia.listar(local_db)), 2)
+
+    # Apontar para contas.db ou corpus.db por engano e o erro facil: sao todos
+    # .db, na mesma pasta.
+    try:
+        persistencia.importar(contas.DADOS / "contas.db", destino)
+        conferir("arquivo que nao e de casos e recusado", False, True)
+    except ValueError as erro:
+        conferir("arquivo que nao e de casos e recusado", "nao e um banco de casos" in str(erro), True)
+    try:
+        persistencia.importar(temp / "nao-existe.db", destino)
+        conferir("arquivo inexistente e recusado", False, True)
+    except FileNotFoundError:
+        conferir("arquivo inexistente e recusado", True, True)
+
+    # E o escritorio B continua sem ver nada disso.
+    conferir("o outro escritorio nao recebeu nada",
+             any(c["nome"] == "Outro cliente" for c in persistencia.listar(contas.banco_de_casos(b))),
+             False)
+
+    # --- 8. modo local ----------------------------------------------------------
 
     print("\nmodo local")
     contas.MODO = "local"
