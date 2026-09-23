@@ -92,6 +92,16 @@ class ModeloAusente(RuntimeError):
     pass
 
 
+def modelo_presente() -> bool:
+    """O modelo esta em disco? Barato de perguntar, e serve para decidir ANTES.
+
+    Sem ele a via densa nao tem como embutir a consulta, e perguntar aqui evita
+    carregar os 68 MB da matriz de vetores para descobrir isso depois - numa
+    maquina de 1 GB essa diferenca decide se o servidor respira.
+    """
+    return (MODELO / "model.onnx").exists()
+
+
 # Aceleradores por ordem de aposta. A CPU nao entra na lista porque nao e uma
 # escolha: e o chao, e vai sempre no fim.
 #

@@ -230,11 +230,18 @@ def densa(
     para lexical em vez de quebrar, que e o comportamento certo numa maquina onde
     o modelo nao coube.
     """
+    from app.corpus import vetores
+
+    # Sem modelo em disco a via densa nao tem como embutir a consulta, e carregar
+    # a matriz seria gastar 68 MB de memoria para chegar ao mesmo lugar. Numa
+    # maquina pequena - o plano gratis de 1 GB - e a diferenca entre servir e
+    # ficar trocando pagina com o disco.
+    if not vetores.modelo_presente():
+        return []
+
     matriz = _obter_matriz(con)
     if matriz is None:
         return []
-
-    from app.corpus import vetores
 
     try:
         pares = vetores.buscar(con, matriz, consulta, quando, limite, obras)

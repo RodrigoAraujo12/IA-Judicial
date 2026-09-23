@@ -59,7 +59,7 @@ Menu → **Compute → Instances → Create instance**:
 | Campo | Valor | Por quê |
 |---|---|---|
 | Image | **Canonical Ubuntu 24.04** | o script exige 24.04 ou mais novo |
-| Shape | **Ampere → VM.Standard.A1.Flex**, **2 OCPUs, 8 GB** | não use 12 GB: ver abaixo |
+| Shape | **Ampere → VM.Standard.A1.Flex**, **2 OCPUs, 8 GB** | não use 12 GB: ver abaixo. Sem vaga ARM? ver "Quando o ARM está esgotado" |
 | Networking | criar VCN e sub-rede pública, **com IPv4 público** | |
 | SSH keys | **Generate a key pair** e baixar a chave privada | sem ela não se entra na máquina |
 | Boot volume | o padrão (~47 GB) basta | o plano grátis dá 200 GB |
@@ -69,7 +69,28 @@ pareçam paradas — 7 dias com processador, rede **e memória** abaixo de 20%. 
 usa ~2,7 GB; com 12 GB isso dá 22%, colado no limite. Com 8 GB dá ~34%.
 
 Se aparecer **"Out of capacity"**, as máquinas ARM grátis esgotaram na região
-naquele momento. Tente outro Availability Domain, ou mais tarde.
+naquele momento. São Paulo tem um único Availability Domain, então não há outro
+para tentar: ou se espera, ou se troca de máquina.
+
+### Quando o ARM está esgotado
+
+Aconteceu na primeira tentativa real, em 23/09/2026. A saída que destrava no
+mesmo dia é a outra máquina do plano grátis: **VM.Standard.E2.1.Micro**, Intel,
+**1 núcleo e 1 GB**, que quase sempre tem vaga.
+
+Nela **o modelo de busca por sentido não entra** — carregado ele ocupa ~2,5 GB.
+O instalador detecta memória abaixo de 3 GB e **pula o download sozinho**,
+dizendo o que fez; para forçar, `TRIAGEM_COM_MODELO=1 sudo -E bash ...`.
+
+O que se perde é só a busca por sentido: acerto@5 cai de 62/72 para 58/72. A
+consulta por artigo e a busca por palavra ficam inteiras, e a busca degrada
+sozinha em vez de quebrar (`testar_busca.py` tranca isso). Tudo o que o teste de
+implantação precisa validar — HTTPS, login, isolamento entre escritórios, backup
+e registro de acesso — não depende do modelo.
+
+É máquina de teste, não de produção: 1 GB e um núcleo fraco atendem uma pessoa
+de cada vez. Para valer, o destino é o ARM com 8 GB quando houver vaga, ou a
+Lightsail.
 
 Anote o **IP público** da máquina.
 

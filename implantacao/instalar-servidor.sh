@@ -69,8 +69,19 @@ passo "Ambiente Python e dependencias"
 "$APP/.venv/bin/pip" install -q -r "$APP/requirements.txt"
 
 passo "Modelo de busca por sentido (2,2 GB, uma vez)"
+# Carregado, o modelo ocupa ~2,5 GB de memoria. Numa maquina pequena - o
+# VM.Standard.E2.1.Micro do plano gratis tem 1 GB - ele nao cabe, e insistir
+# seria pior que nao ter: cada consulta ficaria trocando pagina com o disco.
+# Sem ele o sistema continua inteiro na consulta por artigo e na busca por
+# palavra; so a busca por sentido sai (acerto@5 de 62/72 para 58/72), e o
+# codigo ja degrada sozinho (`busca.densa` devolve vazio).
 if [ -s "$APP/modelos/bge-m3/model.onnx_data" ]; then
 	echo "ja esta la"
+elif [ "${TRIAGEM_COM_MODELO:-}" != 1 ] && [ "$memoria_kb" -lt 3000000 ]; then
+	echo "PULADO: esta maquina tem $((memoria_kb / 1024)) MB de memoria, e o modelo"
+	echo "  precisa de ~2,5 GB carregado. A busca por sentido fica desligada; a"
+	echo "  consulta por artigo e a busca por palavra funcionam normalmente."
+	echo "  Para baixar assim mesmo: TRIAGEM_COM_MODELO=1 sudo -E bash \$0 ..."
 else
 	(cd "$APP" && sudo -u "$USUARIO" "$APP/.venv/bin/python" -m app.corpus.baixar_modelo)
 fi

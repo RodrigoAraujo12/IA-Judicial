@@ -90,6 +90,35 @@ depois = urns(busca.lexical(con, consulta, date(2026, 3, 1), 10))
 conferir("busca livre em 2016 alcanca o art. 384", "clt/art-384" in antes, True)
 conferir("a mesma busca em 2026 nao alcanca", "clt/art-384" in depois, False)
 
+
+# --- sem o modelo em disco --------------------------------------------------
+
+# E o modo em que o sistema roda numa maquina pequena: o plano gratis de 1 GB
+# nao comporta os ~2,5 GB do modelo carregado, e o instalador nem o baixa. O que
+# NAO pode acontecer ali e a busca quebrar - ela tem de virar lexical e continuar
+# respondendo, e sem pagar os 68 MB de matriz de vetores para descobrir isso.
+print("\nsem o modelo: a busca degrada para lexical, nao quebra")
+
+from app.corpus import vetores
+
+presente, vetores.modelo_presente = vetores.modelo_presente, lambda: False
+matriz_antes = busca._matriz
+busca._matriz = None
+try:
+    conferir("a via densa se cala", busca.densa(con, "dispensa sem justa causa", date.today()), [])
+    conferir("e nao carrega a matriz de vetores", busca._matriz, None)
+
+    r = busca.buscar(con, "dispensa imotivada aviso previo", date.today())
+    conferir("a busca responde pela via lexical", r.via, "lexical")
+    conferir("e traz resultado de verdade", len(r.achados) > 0, True)
+
+    # A consulta por REFERENCIA nao usa modelo nenhum, e continua exata.
+    r = busca.buscar(con, "art. 71 par. 4o", date(2016, 5, 1))
+    conferir("a consulta por artigo continua inteira", [a.urn for a in r.achados], ["clt/art-71/par-4"])
+finally:
+    vetores.modelo_presente = presente
+    busca._matriz = matriz_antes
+
 print(f"\nestatisticas: {banco.estatisticas(con)}")
 con.close()
 
