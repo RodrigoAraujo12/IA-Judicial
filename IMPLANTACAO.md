@@ -14,10 +14,11 @@ a conta no provedor ainda não existia. **Continue daqui.**
 - **Só casos fictícios no teste.** Dado real de cliente só depois do contrato de
   LGPD com o escritório (o escritório é controlador, o serviço é operador), em
   qualquer provedor.
-- **Os scripts nunca rodaram numa máquina Linux.** Foram escritos e conferidos na
-  sintaxe num Windows, sem Docker nem WSL. A primeira execução real é a da Oracle.
-  Eles podem ser rodados de novo sem estragar nada; se um passo falhar, corrija e
-  rode outra vez.
+- **Os scripts rodaram pela primeira vez em 23/09/2026, e funcionaram.** Até ali
+  tinham sido escritos e conferidos só na sintaxe, num Windows. A execução real
+  foi numa `VM.Standard.E2.1.Micro` da Oracle (Ubuntu 24.04.5, 1 GB, x86), e o
+  serviço subiu com HTTPS válido na primeira tentativa. O que a execução ensinou
+  está anotado ao longo deste guia; nada precisou ser corrigido no meio.
 - **Conferido em 23/09/2026, antes da primeira execução:** os quatro scripts
   passam em `bash -n` e estão com fim de linha Unix (CRLF faria o Linux recusar
   o interpretador); o pacote `caddy` existe no Ubuntu 24.04 (universe, 2.6.2), e
@@ -44,6 +45,29 @@ a conta no provedor ainda não existia. **Continue daqui.**
   Se disser menos, refaça com `python -m app.corpus.indexar` e
   `python -m app.corpus.indexar tst trt13 vetores` — a ingestão leva um minuto e
   os vetores, cerca de uma hora em CPU, retomáveis de onde pararem.
+
+## O que a primeira execução mostrou (23/09/2026)
+
+Subiu em `https://triagem-teste.duckdns.org`, do zero, em cerca de 20 minutos de
+relógio — a maior parte esperando `apt` e `pip` numa máquina de 1 GB.
+
+| Etapa | Resultado |
+|---|---|
+| Rede | o formulário de criação de instância **não** monta a rede sozinho: é preciso o assistente de VCN antes (ver passo 2) |
+| Máquina ARM | esgotada em São Paulo; caiu-se para a Micro de 1 GB |
+| Instalação | os oito passos do script correram sem erro |
+| Modelo | pulado sozinho, como previsto para memória abaixo de 3 GB |
+| HTTPS | certificado do Let's Encrypt emitido na primeira tentativa, válido por 90 dias |
+| Cabeçalhos | HSTS, `X-Frame-Options: DENY`, `nosniff` e `Referrer-Policy` conferidos de fora |
+| Backup | rodou à mão, gerou o arquivo cifrado, e o timer ficou agendado para 03h39 |
+| Registro de acesso | gravou entrada e listagem com o IP real de quem acessou |
+| Memória em uso | 475 MB dos 954, com o app servindo |
+
+Duas coisas que só aparecem rodando: o `git clone` como root deixa o repositório
+com dono root, e `git` recusa comandos do usuário `ubuntu` ali dentro
+("dubious ownership") — use `sudo git -C /opt/triagem`. E o corpus vai por `scp`
+para `/tmp` antes de entrar no lugar definitivo, porque o usuário `ubuntu` não
+escreve em `/opt/triagem/dados`.
 
 ## 1. Conta na Oracle Cloud
 
