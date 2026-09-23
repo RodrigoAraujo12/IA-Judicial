@@ -26,13 +26,13 @@ O que copiar junto:
 | | |
 |---|---|
 | código | 321 KB |
-| `dados/corpus.db` | 33 MB — não está no git, vai por fora |
+| `dados/corpus.db` | 97 MB — não está no git, vai por fora |
 | `modelos/` | 2,2 GB — opcional; o `instalar.bat` baixa se preferir |
 | `dados/casos.db` | **nunca** — é dado de cliente |
 | `.venv/` | não; o `instalar.bat` cria o dela |
 
 Sem o modelo o sistema funciona: a consulta por referência e a busca por palavra
-ficam inteiras, e o acerto@5 cai de 65/72 para 63/72 no conjunto de avaliação. Sem o
+ficam inteiras, e o acerto@5 cai de 62/72 para 58/72 no conjunto de avaliação. Sem o
 `corpus.db` a entrevista e a minuta ainda funcionam — as citações saem pelo
 rótulo, sem transcrição.
 
@@ -67,14 +67,20 @@ python testar_peca.py      # a minuta: cisão, terceiro estado, ausência de val
 python testar_vias.py      # placar das vias sobre as 72 consultas de avaliacao.py
 python testar_jurisdicao.py # UF -> TRT, e sumula de outro tribunal fora do caso
 python testar_trt13.py     # sumulas do TRT-13: datas do historico e janela de vigencia
+python testar_leis.py      # CF, ADCT, Codigo Civil e leis esparsas: o parser fora da CLT
 python analisar_rerank.py  # a folga que um reranqueador teria (exige vetores)
 ```
 
-Para montar o corpus, uma vez só (leva menos de um minuto):
+Para montar o corpus, uma vez só:
 
 ```
-python -m app.corpus.indexar clt
+python -m app.corpus.indexar            # CLT, CF, ADCT, Codigo Civil e leis esparsas (~1 min)
+python -m app.corpus.indexar tst trt13  # sumulas e OJs do TST, sumulas do TRT-13
+python -m app.corpus.indexar vetores    # busca por sentido (~50 min em CPU, retomavel)
 ```
+
+`dados/` não vai para o git. Cada máquina — e o servidor, quando houver — monta
+o seu, ou recebe o `corpus.db` pronto.
 
 Em <http://127.0.0.1:8000/corpus> a consulta aceita tanto referência
 (`art. 71 §4º`, `arts. 58 e 59`, `art. 223-A`) quanto pergunta em linguagem
@@ -275,6 +281,70 @@ Duas armadilhas do formato, ambas encontradas quebrando:
 URL, data de captura e sha256. Citação que não se rastreia até lá não entra na
 peça.
 
+### Além da CLT: CF, ADCT, Código Civil e leis esparsas
+
+Entraram em 23/09/2026 as oito obras do Planalto que o catálogo cita: CF, ADCT,
+Código Civil e as Leis 6.019/1974 (temporário e terceirização), 7.998/1990
+(seguro-desemprego), 8.036/1990 (FGTS), 8.213/1991 (benefícios da Previdência) e
+12.506/2011 (aviso prévio proporcional). Os 14 dispositivos que o catálogo cita
+nelas estão endereçáveis e vigentes, e a minuta passou a transcrevê-los; as Leis
+7.998 e 12.506 o catálogo cita por inteiro, e essas saem pelo nome.
+**Só as obras citadas**: cada lei nova é densidade a mais competindo na busca
+livre, e lei que nenhum pedido usa entra quando houver pedido que a use.
+
+| obra | dispositivos | redações | revogadas sem data |
+|---|---|---|---|
+| CF | 2.645 | 3.089 | 118 |
+| ADCT | 812 | 888 | 103 |
+| Código Civil | 3.739 | 3.739 | 0 |
+| Lei 8.213/1991 | 899 | 1.277 | 240 |
+| Lei 8.036/1990 | 375 | 635 | 164 |
+| Lei 7.998/1990 | 155 | 217 | 31 |
+| Lei 6.019/1974 | 96 | 105 | 7 |
+| Lei 12.506/2011 | 3 | 3 | 0 |
+
+O piso de vigência de cada uma foi lido na própria página — o DOU do rodapé e o
+artigo de vigência da lei —, não de memória. Onde divergem, manda o artigo: o
+Código Civil saiu no DOU de 11/01/2002 e vigorou um ano depois (art. 2.044); a
+Lei 6.019 teve sessenta dias de vacatio (art. 20).
+
+O parser era o da CLT, e **cada lei trouxe uma forma que a CLT não tem**. Todas
+quebravam em silêncio, e [`testar_leis.py`](testar_leis.py) tranca cada uma:
+
+- **"Art. 1.228"**, com ponto de milhar. Lido como "1", o Código Civil parecia
+  regredir mil artigos, e o guarda de norma estranha — o do art. 60 — descartava
+  do art. 1.000 em diante: entravam 948 de 2.046 artigos.
+- **"Art. 5o -A."** (Lei 6.019), com espaço antes do hífen. Aceitar o espaço sem
+  critério lê o "Art. 11 -O direito de ação" da CLT como art. 11-O e apaga a
+  prescrição. Com espaço antes, o sufixo só vale seguido de ponto.
+- **O ADCT** fica no fim da página da CF, com numeração que recomeça no art. 1º.
+  Na passada da CF o guarda de regressão o descarta; na dele, vira obra própria.
+
+E duas das formas **também estavam na CLT**, errando desde a primeira ingestão:
+
+- **Alínea de inciso ia para o caput.** O ADCT, art. 10, II, "b" (estabilidade
+  da gestante) não existia no índice. Na CLT, 211 redações de alínea, em 12
+  artigos, tinham endereço errado — entre eles o art. 452-E (intermitente) e o
+  484-A (distrato). No art. 589 a alínea "a" do inciso I e a do inciso II eram a
+  mesma URN, lidas como redação uma da outra. Junto veio o rótulo: inciso de
+  parágrafo saía citado como "art. 430, III", sem o § 6º.
+- **"§ 3º-A" era lido como § 3º.** O parágrafo com sufixo virava redação nova do
+  parágrafo sem, e o encerrava. O **art. 832, § 3º** (contribuição previdenciária
+  na sentença) aparecia revogado desde 2018, e o **art. 879, § 1º** (a liquidação
+  não modifica a sentença) desde 1999 — os dois em vigor.
+
+**Cinco medidas provisórias caducas** vieram com as Leis 8.213 e 8.036 — 739/2016,
+891/2019, 1.303/2025, 1.336/2026 e 1.355/2026. Foram para a tabela `CADUCIDADE`
+pelo mesmo caminho das quatro da CLT: a página da MP dá o DOU, o Ato Declaratório
+do Congresso dá o dia do encerramento, e as duas capturas ficam em
+`dados/fontes/`. No art. 62 da Lei 8.213 o texto anterior volta em 05/11/2016, no
+dia seguinte ao fim da MP 739.
+
+Na consulta livre, a obra pode vir antes ou depois do artigo — "art. 7º, XXIX da
+CF", "CF, art. 7º", "art. 118 da Lei 8.213/91", "art. 1.228 do CC", "art. 10,
+II, b do ADCT". Antes, toda referência "art. N" era da CLT por falta de
+alternativa; com a CF no índice, "art. 7º da CF" cairia no art. 7º da CLT.
+
 ## Sobre reranking
 
 A pergunta reaparece sempre: falta um reranqueador? Aqui a resposta é **não** — e
@@ -330,6 +400,24 @@ ser reescrito — decidindo, verbete a verbete, qual autoridade responde cada
 consulta —, e isso é juízo jurídico, não ajuste de código.
 
 **Recall@50 é 71/72**, contra 72/72 antes. Uma consulta saiu do lote.
+
+**Quando entraram CF, ADCT, Código Civil e as leis esparsas** (23/09/2026), mais
+10 mil redações passaram a competir. Medido consulta a consulta contra o banco de
+antes, nas obras nacionais:
+
+| | acerto@1 | acerto@5 | MRR |
+|---|---|---|---|
+| CLT + TST | 47/72 | 62/72 | 0,751 |
+| + CF, ADCT, CC e 5 leis | 43/72 | 62/72 | 0,716 |
+
+O acerto@5 não se moveu; o primeiro lugar, sim. Das 15 consultas que mudaram de
+posição, só **4 têm uma obra nova no topo**, e de novo elas não se somam: "vedada
+a dispensa do empregado sindicalizado" devolve o art. 8º, VIII, da CF, que é a
+norma constitucional do tema (gabarito estreito); "juiz pode executar de ofício"
+devolve o art. 249 do Código Civil, e "assédio... ofensa à honra" o art. 21 da
+Lei 8.213 — ruído. As outras 11 perderam uma ou duas posições para o que já
+estava lá, TST sobretudo: competição de densidade, como na entrada das súmulas.
+Recall@50 foi a 70/72.
 
 ### O que aconteceu com reranqueadores reais
 
@@ -387,16 +475,21 @@ partida — enquanto o reranqueador de 1,1 GB entregava +3 em acerto@5 e **−2*
 acerto@1. É o argumento inteiro desta seção numa linha: antes de acrescentar um
 modelo, medir o que os que já estão lá não estão conseguindo ver.
 
-**Quando reabrir a discussão.** Hoje o corpus é só a CLT. Quando entrarem CF,
-súmulas do TST, OJs e NRs, o lote de candidatos passa a misturar obras e a chance
-de o topo vir sujo cresce — aí a folga aumenta e a conta muda. O caminho a medir
-primeiro é `bge-reranker-v2-m3`, da mesma família do modelo de embeddings já
-usado; o obstáculo é tamanho: 2,3 GB, sem ONNX oficial publicado.
+**Quando reabrir a discussão.** Este parágrafo dizia "quando entrarem CF,
+súmulas e OJs, o lote passa a misturar obras e a folga aumenta". Entraram, e a
+folga foi medida em 23/09/2026 com [`analisar_rerank.py`](analisar_rerank.py):
+**4 consultas** num lote de 20 candidatos (+5,6 pontos de acerto@5 para um
+reranqueador perfeito), 8 num lote de 50. Cresceu, mas continua pequena — e
+ainda é medida por um gabarito que só tem resposta na CLT. A ordem certa é
+reescrever o gabarito primeiro e medir depois. O caminho a medir primeiro é
+`bge-reranker-v2-m3`, da mesma família do modelo de embeddings já usado; o
+obstáculo é tamanho: 2,3 GB, sem ONNX oficial publicado.
 
 Uma ressalva sobre o gabarito: as 72 consultas têm resposta **na CLT** por
-construção. Recall@50 de 100% quer dizer "quando a resposta está no corpus, a
-busca acha" — não "o sistema responde tudo". Pergunta sobre FGTS, terceirização ou
-súmula não tem onde cair, porque essas obras ainda não foram ingeridas.
+construção. Recall@50 alto quer dizer "quando a resposta está na CLT, a busca
+acha" — não "o sistema responde tudo". Pergunta sobre FGTS, terceirização ou
+estabilidade da gestante agora tem onde cair, mas o gabarito não tem como dizer
+se caiu no lugar certo.
 
 ## Competência: o TRT do caso
 
@@ -489,16 +582,21 @@ sobre as obras nacionais — o gabarito tem resposta na CLT e foi calibrado ante
 existir obra regional —, e `testar_vias.py` imprime ao lado em quantas das 72
 consultas o top-5 muda quando o caso é da 13ª Região:
 
-| | |
-|---|---|
-| top-5 muda | 7 de 72 consultas |
-| verbete do TRT-13 em #1 | 0 |
-| obra fora do permitido | 0 de 72, em todas as vias |
+| | só CLT e TST | com CF, CC e leis |
+|---|---|---|
+| top-5 muda | 7 de 72 consultas | 3 de 72 |
+| verbete do TRT-13 em #1 | 0 | 1 |
+| obra fora do permitido | 0 de 72, em todas as vias | 0 de 72 |
 
-Sete consultas ganham uma súmula regional entre as cinco primeiras sem que nenhuma
-tome o topo: a súmula entra como complemento, não como competidora — o oposto do
-que aconteceu quando o TST entrou sem filtro. É esse número que reabre a
-discussão de reranking, se um dia ele crescer.
+Com CLT e TST, sete consultas ganhavam uma súmula regional entre as cinco
+primeiras sem que nenhuma tomasse o topo: a súmula entra como complemento, não
+como competidora — o oposto do que aconteceu quando o TST entrou sem filtro.
+Com as leis nacionais no índice, a súmula regional disputa lugar com mais gente
+e aparece em menos consultas. A que tomou o topo é
+"grupo econômico responsabilidade solidária", onde a Súmula 9 do TRT-13 (que
+define grupo econômico) passa à frente da OJ 411 do TST, que diz o oposto do
+perguntado. Aqui o topo melhorou. É esse número que reabre a discussão de
+reranking, se um dia ele crescer.
 
 ## A minuta da inicial
 
@@ -535,9 +633,11 @@ Três decisões que valem mais que o código:
 - **A narrativa dos fatos entra literal.** Reescrever fato dito pelo cliente vira
   alegação que ele não fez.
 
-Obra que ainda não está no corpus — CF, leis esparsas, NRs — é citada pelo rótulo,
+Obra que ainda não está no corpus — NRs, decisões do STF — é citada pelo rótulo,
 sem transcrição. Citar sem transcrever é útil; transcrever de memória, não. CLT,
-súmulas e OJs do TST já entram transcritas.
+CF, ADCT, Código Civil, as leis esparsas que o catálogo cita e as súmulas e OJs
+do TST já entram transcritas. Lei citada por inteiro, sem artigo ("Lei
+12.506/2011"), também sai pelo rótulo: não se transcreve uma lei na peça.
 
 ## Estado
 
@@ -545,9 +645,9 @@ Triagem completa. Em andamento e a fazer:
 
 | | | |
 |---|---|---|
-| **Corpus** | CLT e TST prontas | 4.716 dispositivos, 6.804 redações, com eixo de vigência. CLT do Planalto; súmulas e OJs (SBDI-I, SBDI-I Transitória, SBDI-II) do Livro consolidado do TST; súmulas do TRT-13 do site do NUGEP. Faltam CF, leis esparsas, NRs. |
+| **Corpus** | tudo o que o catálogo cita, menos NR e STF | 13.591 dispositivos, 16.799 redações, com eixo de vigência, em 14 obras. Do Planalto: CLT, CF, ADCT, Código Civil e Leis 6.019, 7.998, 8.036, 8.213 e 12.506 — ver [Além da CLT](#além-da-clt-cf-adct-código-civil-e-leis-esparsas). Súmulas e OJs (SBDI-I, SBDI-I Transitória, SBDI-II) do Livro consolidado do TST; súmulas do TRT-13 do site do NUGEP. Faltam NRs e decisões do STF. |
 | **Regional** | TRT-13 pronto | O caso deriva o TRT do local da prestação e a busca só vê as obras dele — ver [Competência](#competência-o-trt-do-caso). Súmulas do TRT-13 ingeridas: 45 verbetes, 35 vigentes, 10 com janela de cancelamento. Outros tribunais entram um a um, quando houver caso deles. |
-| **Via densa** | pronta | BGE-M3 em ONNX, CPU por padrão e GPU quando houver (5x na consulta, 17x na indexação). Fusão RRF acerta 62 de 72 no conjunto de avaliação, com recall@50 de 71/72. Reranking foi medido e reprovado - ver [Sobre reranking](#sobre-reranking). |
+| **Via densa** | pronta | BGE-M3 em ONNX, CPU por padrão e GPU quando houver (5x na consulta, 17x na indexação). Fusão RRF acerta 62 de 72 no conjunto de avaliação, com recall@50 de 70/72. Reranking foi medido e reprovado - ver [Sobre reranking](#sobre-reranking). |
 | **Inicial** | minuta pronta | Os quatro blocos — qualificação, fatos, fundamentação, pedidos — saem como peça em `/peca`, montada por template. Sem modelo de linguagem: o texto é função determinista das respostas. |
 | **Recurso, embargos, contrarrazões** | a fazer | Partem de um **documento** (sentença, acórdão, recurso da outra parte), não da entrevista. Exigem uma camada de leitura que não existe. |
 | **Processo parado** | a fazer | Consultor de próxima medida para processo que anda devagar há anos. |
@@ -628,13 +728,25 @@ não o projeto.
   em 90 dias para os arts. 161, 634 e 634-A, e na publicação para o resto; o
   índice usa a publicação para todos. O catálogo não cita nenhum dos três, então
   isso só afeta busca livre nesses artigos.
-- **194 dispositivos têm janelas de vigência que se sobrepõem**, 38 deles em datas
-  a partir de 2010. A causa é outra: quando o Planalto repete um texto sem
-  marcador legível, a redação cai no piso de 1943 e passa a cobrir período que não
-  lhe pertence. Nenhum deles é citado pelo catálogo — a Via 0 está limpa —, mas a
-  busca livre pode devolver duas redações para a mesma data.
-- 1.258 redações ficaram marcadas como revogadas sem data legível na fonte. Elas
-  nunca são servidas como vigentes — na dúvida o índice cala, em vez de afirmar.
+- **51 dispositivos têm janelas de vigência que se sobrepõem**, 24 deles em datas
+  a partir de 2010 — 30 na CLT, 11 na Lei 8.213, o resto espalhado. Eram 194 só
+  na CLT: quando o Planalto repete um texto sem marcador legível, a redação caía
+  no piso da obra (1943, na CLT) e passava a cobrir período que não lhe pertence.
+  Desde 23/09/2026 ela começa, no mínimo, junto da redação anterior — a ordem do
+  documento é cronológica. O que sobra são casos em que a fonte traz datas
+  contraditórias entre si. Nenhum é citado pelo catálogo, mas a busca livre pode
+  devolver duas redações para a mesma data.
+- 1.914 redações ficaram marcadas como revogadas sem data legível na fonte (1.251
+  na CLT). Elas nunca são servidas como vigentes — na dúvida o índice cala, em
+  vez de afirmar. Isso inclui texto histórico que deveria ter janela: as alíneas
+  do art. 702 da CLT valeram de 1943 a 1946, mas a sucessora foi reescrita em
+  outra estrutura (alínea de inciso), e sem sucessora no mesmo endereço não há
+  de onde tirar a data de fim.
+- **Emenda constitucional entra no ano, não no dia.** O marcador da CF escreve
+  "(Redação dada pela Emenda Constitucional nº 72, de 2013)", sem dia, e a
+  redação nova passa a valer em 1º de janeiro — três meses antes da EC 72. É a
+  mesma aproximação das leis que alteram a CLT; só a Reforma e as MPs da tabela
+  `CADUCIDADE` têm data exata.
 - A qualificação é a única parte do sistema que **não influencia nada**. É de
   propósito, e há teste que tranca isso: se um CPF digitado passar a mudar quais
   pedidos cabem, `testar_inicial.py` quebra.

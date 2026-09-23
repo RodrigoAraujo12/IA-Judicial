@@ -78,10 +78,12 @@ class Citacao:
     ref: str
     nota: str | None = None
     controverso: bool = False
-    # Preenchidos so quando o corpus tem a obra. CLT, sumulas e OJs do TST ja
-    # entram transcritas; CF, leis esparsas e NRs ainda nao foram ingeridas, e
-    # nessas a citacao sai pelo rotulo, sem o texto - que e honesto: melhor citar
-    # sem transcrever do que transcrever de memoria.
+    # Preenchidos so quando o corpus tem a obra. CLT, CF, ADCT, Codigo Civil, as
+    # leis esparsas que o catalogo cita e as sumulas e OJs do TST ja entram
+    # transcritas; NRs e decisoes do STF ainda nao foram ingeridas, e nessas a
+    # citacao sai pelo rotulo, sem o texto - que e honesto: melhor citar sem
+    # transcrever do que transcrever de memoria. Lei citada por inteiro ("Lei
+    # 12.506/2011", sem artigo) tambem sai pelo rotulo: nao se transcreve a lei.
     rotulo: str | None = None
     texto: str | None = None
     vigencia: str | None = None
@@ -242,8 +244,8 @@ def _citacoes(
                     )
                 )
         if not achou:
-            # Obra fora do corpus (CF, lei esparsa, NR) ou dispositivo nao vigente
-            # em nenhuma das datas do caso.
+            # Obra fora do corpus (NR, STF), lei citada por inteiro, ou dispositivo
+            # nao vigente em nenhuma das datas do caso.
             saida.append(Citacao(ref=f.ref, nota=f.nota, controverso=f.controverso))
     return saida
 

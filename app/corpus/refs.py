@@ -120,9 +120,10 @@ def _subdivisao(token: str) -> tuple[str, str] | None:
 
     if re.match(r"^par[aá]grafo\s+[uú]nico$", t, re.I):
         return "par", "par-unico"
-    m = re.match(r"^(?:par\.|par[aá]grafo|§)\s*(\d+)$", t, re.I)
+    # "§ 6o-A" e paragrafo proprio (`par-6-A`), como o corpus o grava.
+    m = re.match(r"^(?:par\.|par[aá]grafo|§)\s*(\d+)(?:-([A-Za-z]))?$", t, re.I)
     if m:
-        return "par", f"par-{m.group(1)}"
+        return "par", f"par-{m.group(1)}" + (f"-{m.group(2).upper()}" if m.group(2) else "")
     if _ROMANO.match(t):
         return "inc", f"inc-{t}"
     m = re.match(r"^(?:al[ií]nea\s+)?([a-z])$", t, re.I)
@@ -148,6 +149,8 @@ def _artigos_e_subdivisoes(texto: str) -> tuple[list[str], list[tuple[str, str]]
     # forma, gente digitando usa todas. Exige ponto OU espaco depois, para
     # "artigo" nao ser cortado no meio.
     texto = re.sub(r"^art(?:igo)?s?(?:\.\s*|\s+)", "", texto.strip(), flags=re.I)
+    # Ponto de milhar: "art. 1.228" do Codigo Civil e o `cc/art-1228` do corpus.
+    texto = re.sub(r"(?<=\d)\.(?=\d{3}\b)", "", texto)
     # O catalogo escreve "art. 71, par. 4o", com virgula. Gente digitando escreve
     # "art. 71 §4o" e "art. 71 par. 4o", sem. Sem separar aqui, "71 §4o" vira um
     # token unico que nao casa artigo nem subdivisao, e a consulta volta vazia -
@@ -171,7 +174,8 @@ def _artigos_e_subdivisoes(texto: str) -> tuple[list[str], list[tuple[str, str]]
 
         limpo = _limpar(token)
         if _ARTIGO.match(limpo) and not subdivisoes:
-            artigos.append(limpo)
+            # "art. 5-a" digitado e o `art-5-A` do corpus.
+            artigos.append(limpo.upper())
             continue
 
         sub = _subdivisao(limpo)

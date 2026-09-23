@@ -183,10 +183,11 @@ if Path("dados/corpus.db").exists():
 
     # A afirmacao original deste teste continua valendo, so mudou de endereco.
     # Com CLT e TST ingeridas, o caso ATRAVESSA passou a ter TODAS as citacoes
-    # transcritas - e a assercao ficou sem sujeito. O que segue fora do corpus e
-    # CF, lei esparsa e NR, e quem as cita e o pedido de insalubridade (NR-15,
-    # Sumula Vinculante 4 do STF). Citar sem transcrever e o certo; transcrever
-    # de memoria seria inventar.
+    # transcritas - e a assercao ficou sem sujeito. Depois da CF e das leis
+    # esparsas, o que segue fora do corpus e NR e STF, e quem os cita e o pedido
+    # de insalubridade (NR-15, Sumula Vinculante 4). Citar sem transcrever e o
+    # certo; transcrever de memoria seria inventar. O art. 7o da CF, que antes
+    # tinha passe livre aqui, agora TEM de vir transcrito.
     com_insalubridade = montar({
         **ATRAVESSA,
         "exposicao_agente_nocivo": True,
@@ -197,9 +198,9 @@ if Path("dados/corpus.db").exists():
         c for b in com_insalubridade.fundamentacao for c in b.citacoes if c.texto is None
     ]
     conferir("obra fora do corpus cita sem transcrever", bool(sem_corpus), True)
-    conferir("e sao mesmo obras nao ingeridas (NR, CF, STF)",
-             all(not r.startswith("art.") or "7o" in r or "7º" in r
-                 for r in (c.ref for c in sem_corpus)), True)
+    if "cf" in banco.obras(con):
+        conferir("e sao mesmo obras nao ingeridas (NR, STF)",
+                 [r for r in (c.ref for c in sem_corpus) if r.startswith("art.")], [])
     con.close()
 else:
     print("\n(corpus nao ingerido - rode: python -m app.corpus.indexar clt)")

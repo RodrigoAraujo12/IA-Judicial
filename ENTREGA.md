@@ -30,9 +30,9 @@ todas offline.
 
 ### 1. Git + o corpus por fora
 
-Ela clona do GitHub e recebe `dados/corpus.db` (33 MB) separado — pen drive,
+Ela clona do GitHub e recebe `dados/corpus.db` (97 MB) separado — pen drive,
 WeTransfer, o que for. O corpus está no `.gitignore` de propósito: é índice
-reconstruível, não código, e 33 MB por commit poluiria o histórico para sempre.
+reconstruível, não código, e 97 MB por commit poluiria o histórico para sempre.
 
 Serve quando ela é técnica ou quando você vai dar suporte de perto. Exige Python
 instalado.
@@ -58,7 +58,7 @@ vez. Copia a pasta, clica no `abrir.bat`, usa.
 |---|---|
 | Python embutido | ~11 MB |
 | Dependências já instaladas | ~169 MB |
-| Código + `corpus.db` | ~34 MB |
+| Código + `corpus.db` | ~98 MB |
 | Modelo BGE-M3 | ~2,2 GB |
 | **Total** | **~2,4 GB** |
 
@@ -133,12 +133,20 @@ abrir o navegador não acontece.
 dispositivos e 5.748 redações da CLT, todas vetorizadas. Nove arquivos de teste,
 todos passando.
 
-**O `corpus.db` mudou** depois do conserto do art. 60 (abaixo). Quem já recebeu o
-pacote está com a versão anterior: para atualizar, basta trocar esse arquivo — não
-é preciso reenviar o modelo, que é a parte pesada.
+**O `corpus.db` mudou** e cresceu: de 33 MB para 97 MB, quase tudo vetores.
+Quem já recebeu o pacote troca só esse arquivo; o modelo não muda.
 
 O que foi feito por último, e que vale saber porque muda o comportamento:
 
+- **CF, ADCT, Código Civil e cinco leis esparsas no corpus** — todas as obras do
+  Planalto que o catálogo cita. A minuta passou a transcrever o art. 7º da CF, a
+  estabilidade da gestante do ADCT, os arts. 186, 927 e 950 do Código Civil e os
+  artigos citados das Leis 6.019, 8.036 e 8.213. Detalhe em `README.md`, seção
+  "Além da CLT".
+- **Consertos no parser que mudaram a CLT.** Alínea de inciso ia para o caput
+  (211 redações, 12 artigos); "§ 3º-A" era lido como § 3º, o que deixava o art.
+  832, § 3º e o art. 879, § 1º revogados estando em vigor; texto sem marcador
+  caía em 1943 — janelas sobrepostas na CLT foram de 194 para 30.
 - **Súmulas do TRT-13 no corpus.** 45 verbetes do site do NUGEP, uma página
   por súmula, com janela de vigência lida do bloco "Histórico": 35 valem
   hoje, 10 canceladas ficam com data de fim. Só entram em caso cujo TRT é o
@@ -187,9 +195,9 @@ O que foi feito por último, e que vale saber porque muda o comportamento:
   então a minuta termina nos requerimentos.
 - **A regra de "o que ainda falta"** está duplicada: no template do relatório e
   em `redator.lacunas()`. Deveria convergir para um lugar só.
-- **194 dispositivos com janelas de vigência sobrepostas**, 38 em datas recentes.
-  Causa: texto que o Planalto repete sem marcador legível cai no piso de 1943.
-  Nenhum é citado pelo catálogo, então a Via 0 está limpa; afeta só busca livre.
+- **51 dispositivos com janelas de vigência sobrepostas** em todo o corpus (30 na
+  CLT, que tinha 194). Nenhum é citado pelo catálogo, então a Via 0 está limpa;
+  afeta só busca livre.
 - **Triagem de viabilidade econômica** (aceitar ou não a causa) foi
   deliberadamente deixada de fora: é decisão de negócio, não análise jurídica, e
   misturar as duas estraga as duas.

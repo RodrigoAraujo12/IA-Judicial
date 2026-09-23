@@ -86,11 +86,27 @@ _DATA_LEI = re.compile(r"de\s*(?:(\d{1,2})[./](\d{1,2})[./])?(\d{4})", re.I)
 # 1.108 e 1.116 viraram lei, e 2.164, 2.180 e 2.226 seguem em vigor por forca do
 # art. 2o da EC 32/2001. Se aparecer "(Vigencia encerrada)" de uma MP fora desta
 # tabela, a ingestao avisa em vez de adivinhar.
+#
+# Vieram com a Lei 8.213 e a Lei 8.036, lidas da mesma forma - a pagina de cada
+# MP da o DOU, o Ato Declaratorio da o dia do encerramento:
+#
+#   MP 739/2016    DOU 08/07/2016  encerrada 04/11/2016  (ADC 58/2016)
+#   MP 891/2019    DOU 06/08/2019  encerrada 03/12/2019  (ADC 67/2019)
+#   MP 1.303/2025  DOU 11/06/2025  encerrada 08/10/2025  (ADC 67/2025)
+#   MP 1.336/2026  DOU 06/02/2026  encerrada 05/06/2026  (ADC 48/2026)
+#   MP 1.355/2026  DOU 04/05/2026  encerrada 31/08/2026  (ADC 89/2026)
+#
+# A chave e o numero como o marcador o escreve, com o ponto de milhar.
 CADUCIDADE = {
+    "739": (date(2016, 7, 8), date(2016, 11, 4)),
     "808": (date(2017, 11, 14), date(2018, 4, 23)),
     "873": (date(2019, 3, 1), date(2019, 6, 28)),
+    "891": (date(2019, 8, 6), date(2019, 12, 3)),
     "905": (date(2019, 11, 12), date(2020, 8, 18)),
     "955": (date(2020, 4, 20), date(2020, 8, 17)),
+    "1.303": (date(2025, 6, 11), date(2025, 10, 8)),
+    "1.336": (date(2026, 2, 6), date(2026, 6, 5)),
+    "1.355": (date(2026, 5, 4), date(2026, 8, 31)),
 }
 _VIG_ENCERRADA = re.compile(r"Vig[eê]ncia\s+encerrada", re.I)
 _E_MP = re.compile(r"^Medida\s+Provis", re.I)
@@ -120,9 +136,27 @@ _PREFIXO = 15
 # antiga escreve "Art. 58 - A duracao normal do trabalho...". Aceitar espaco antes
 # do hifen le esse artigo como "art. 58-A" e apaga o art. 58 - junto com todos os
 # outros no formato antigo, que sao a maioria da Consolidacao.
-_ARTIGO = re.compile(r"^Art[.\s]*(\d+)(?:[-–—]\s*([A-Z])\b)?\s*[-.–]?", re.I)
+#
+# Duas formas que a CLT nao tem e as outras leis tem. O Codigo Civil passa de mil
+# artigos e escreve "Art. 1.228" com ponto de milhar: lido como "1", o artigo
+# parecia regredir mil posicoes e o guarda de norma estranha descartava o Codigo
+# do art. 1.000 em diante. E a Lei 6.019 escreve "Art. 5o -A.", com o ordinal no
+# meio e um espaco antes do hifen. Com espaco antes, o sufixo so vale se a letra
+# vier seguida de ponto: a CLT tem "Art. 11 -O direito de acao", com o espaco
+# faltando do outro lado, e ler ali um "art. 11-O" apagava a prescricao.
+_ARTIGO = re.compile(
+    r"^Art[.\s]*(\d{1,3}(?:\.\d{3})+|\d+)[oº°]?"
+    r"(?:[-–—]\s*([A-Z])\b|\s+[-–—]([A-Z])(?=\.))?\s*[-.–]?",
+    re.I,
+)
 _PAR_UNICO = re.compile(r"^Par[aá]grafo\s+[uú]nico", re.I)
-_PARAGRAFO = re.compile(r"^§\s*(\d+)")
+# "§ 6º-A" e paragrafo proprio, nao redacao nova do § 6º. Lido sem o sufixo, os
+# §§ 6º-A, 6º-B e 6º-C viravam tres versoes sucessivas do § 6º, cada uma
+# "revogando" a anterior - e o art. 832, § 3º, da CLT aparecia revogado desde
+# 2018 por causa do § 3º-A. Mesma regra do artigo: hifen colado ao numero, ou
+# espaco antes e ponto depois ("§ 1o -A.", art. 429). "§ 1º - O disposto" e o
+# estilo antigo, e continua sendo o § 1º.
+_PARAGRAFO = re.compile(r"^§\s*(\d+)[oº°]?(?:[-–—]([A-Z])\b|\s+[-–—]([A-Z])(?=\.))?")
 _INCISO = re.compile(r"^([IVXLC]{1,7})\s*[-–.)]")
 _ALINEA = re.compile(r"^([a-z])\s*\)")
 
@@ -343,7 +377,17 @@ def _sem_marcador(texto: str) -> str:
     return _ESPACO.sub(" ", limpo).strip()
 
 
-def dispositivos(bruto: bytes, obra: str, inicio: str | None = None) -> list[Trecho]:
+def _milhar(numero: str) -> str:
+    """"1228" -> "1.228", como o advogado le e escreve. So para exibicao."""
+    base, _, letra = numero.partition("-")
+    if len(base) > 3:
+        base = f"{int(base):,}".replace(",", ".")
+    return f"{base}-{letra}" if letra else base
+
+
+def dispositivos(
+    bruto: bytes, obra: str, inicio: str | None = None, sigla: str | None = None
+) -> list[Trecho]:
     """Percorre o documento montando URNs a partir do contexto corrente.
 
     `inicio` e um padrao que marca onde a norma comeca de fato. A pagina da CLT
@@ -351,10 +395,17 @@ def dispositivos(bruto: bytes, obra: str, inicio: str | None = None) -> list[Tre
     1o e 2o - "Fica aprovada a Consolidacao" e "entrara em vigor em 10 de novembro
     de 1943". Sem o corte, eles colidem com os arts. 1o e 2o da CLT (conceito de
     empregador), e a colisao cai justamente sobre os artigos que fundam o vinculo.
+
+    `sigla` e como a obra aparece no rotulo citavel: "CF", "Lei 8.213/1991". Sem
+    ela o rotulo sai da chave em maiusculas, que so presta para a CLT - a chave
+    `lei-8213-1991` viraria "LEI-8213-1991, art. 118" dentro da peca.
     """
+    sigla = sigla or obra.upper()
     trechos: list[Trecho] = []
     artigo: str | None = None
-    sub: str | None = None  # paragrafo ou inciso corrente, para pendurar alinea
+    # Paragrafo e inciso correntes, como (fragmento de URN, trecho de rotulo).
+    par: tuple[str, str] | None = None
+    inc: tuple[str, str] | None = None
     ordem = 0
     comecou = inicio is None
     padrao_inicio = re.compile(inicio, re.I) if inicio else None
@@ -386,7 +437,7 @@ def dispositivos(bruto: bytes, obra: str, inicio: str | None = None) -> list[Tre
         # descartar conteudo por um desalinhamento pequeno, que seria falha de
         # parsing e nao norma estranha.
         if m_art:
-            n = int(m_art.group(1))
+            n = int(m_art.group(1).replace(".", ""))
             if n < pico - _REGRESSAO_TOLERADA:
                 intruso = True
             elif n >= pico:
@@ -399,47 +450,60 @@ def dispositivos(bruto: bytes, obra: str, inicio: str | None = None) -> list[Tre
         urn = pai = None
         corte = 0  # onde termina o identificador ("Art. 71 -", "§ 4o", "I -")
 
+        # Cada subdivisao pendura na mais proxima acima dela: inciso no paragrafo
+        # corrente (ou no caput), alinea no inciso corrente (ou no paragrafo, ou
+        # no caput). Ate a ingestao da CF a alinea ia sempre para o paragrafo ou o
+        # caput, pulando o inciso - e no art. 589 da CLT a alinea 'a' do inciso I
+        # e a do inciso II viravam a mesma URN, lidas como redacao uma da outra.
+        # A CLT antiga poe alinea direto no caput (art. 482); a tecnica de hoje, e
+        # a CF, poem no inciso (ADCT, art. 10, II, 'b').
+        #
+        # O rotulo acompanha o caminho inteiro. "art. 430, III" para um inciso do
+        # § 6º e citacao errada, e ela ia para a peca assim.
         if m := m_art:
             corte = m.end()
-            numero = m.group(1) + (f"-{m.group(2)}" if m.group(2) else "")
-            artigo, sub = numero, None
+            # A URN leva o numero sem ponto (`cc/art-1228`); o rotulo, com.
+            letra_art = m.group(2) or m.group(3)
+            numero = m.group(1).replace(".", "") + (f"-{letra_art.upper()}" if letra_art else "")
+            artigo, par, inc = numero, None, None
             urn = f"{obra}/art-{numero}"
-            especie, rotulo, pai = "artigo", f"art. {numero}", None
+            especie, rotulo, pai = "artigo", f"art. {_milhar(numero)}", None
 
-        elif artigo and (m := _PAR_UNICO.match(texto)):
+        elif artigo and (m := _PAR_UNICO.match(texto) or _PARAGRAFO.match(texto)):
             corte = m.end()
-            sub = "par-unico"
-            urn = f"{obra}/art-{artigo}/par-unico"
-            especie, rotulo = "paragrafo", f"art. {artigo}, parágrafo único"
+            if m.re is _PAR_UNICO:
+                par = ("par-unico", "parágrafo único")
+            else:
+                letra_par = m.group(2) or m.group(3)
+                sufixo = f"-{letra_par.upper()}" if letra_par else ""
+                # Ordinal ate o nono, cardinal dai em diante (LC 95/1998, art.
+                # 10, I): "§ 9º", mas "§ 10" e "§ 11-B". "§ 11º" nao se escreve.
+                ordinal = "º" if int(m.group(1)) < 10 else ""
+                par = (f"par-{m.group(1)}{sufixo}", f"§ {m.group(1)}{ordinal}{sufixo}")
+            inc = None
             pai = f"{obra}/art-{artigo}"
-
-        elif artigo and (m := _PARAGRAFO.match(texto)):
-            corte = m.end()
-            sub = f"par-{m.group(1)}"
-            urn = f"{obra}/art-{artigo}/{sub}"
-            especie, rotulo = "paragrafo", f"art. {artigo}, § {m.group(1)}º"
-            pai = f"{obra}/art-{artigo}"
+            urn = f"{pai}/{par[0]}"
+            especie, rotulo = "paragrafo", f"art. {_milhar(artigo)}, {par[1]}"
 
         elif artigo and (m := _INCISO.match(texto)):
             corte = m.end()
             romano = m.group(1).upper()
-            base = f"{obra}/art-{artigo}"
-            # Inciso pendura no paragrafo corrente quando ha um; senao, no caput.
-            if sub and sub.startswith("par-"):
-                base = f"{base}/{sub}"
-            urn = f"{base}/inc-{romano}"
-            especie, rotulo = "inciso", f"art. {artigo}, {romano}"
-            pai = base
+            inc = (f"inc-{romano}", romano)
+            pai = "/".join([f"{obra}/art-{artigo}", *([par[0]] if par else [])])
+            urn = f"{pai}/{inc[0]}"
+            especie = "inciso"
+            rotulo = ", ".join([f"art. {_milhar(artigo)}", *([par[1]] if par else []), romano])
 
         elif artigo and (m := _ALINEA.match(texto)):
             corte = m.end()
             letra = m.group(1)
-            base = f"{obra}/art-{artigo}"
-            if sub:
-                base = f"{base}/{sub}"
-            urn = f"{base}/al-{letra}"
-            especie, rotulo = "alinea", f"art. {artigo}, alínea '{letra}'"
-            pai = base
+            acima = [x for x in (par, inc) if x]
+            pai = "/".join([f"{obra}/art-{artigo}", *(x[0] for x in acima)])
+            urn = f"{pai}/al-{letra}"
+            especie = "alinea"
+            rotulo = ", ".join(
+                [f"art. {_milhar(artigo)}", *(x[1] for x in acima), f"alínea '{letra}'"]
+            )
 
         if not urn:
             continue
@@ -459,7 +523,7 @@ def dispositivos(bruto: bytes, obra: str, inicio: str | None = None) -> list[Tre
             Trecho(
                 urn=urn,
                 especie=especie,
-                rotulo=f"{obra.upper()}, {rotulo}",
+                rotulo=f"{sigla}, {rotulo}",
                 texto=texto,
                 pai=pai,
                 ordem=ordem,
@@ -506,6 +570,14 @@ def com_vigencia(
             # na data em que valeu pela primeira vez.
             if i and redacoes[i - 1].caducou_em:
                 inicio = date.fromordinal(redacoes[i - 1].caducou_em.toordinal() + 1)
+            elif i and t.vigencia is None:
+                # Redacao sem marcador legivel DEPOIS de outra nao pode comecar
+                # antes dela: a ordem do documento e cronologica. Sem isto ela
+                # caia no piso da obra - o art. 9o-C da Lei 8.036, criado em 2018,
+                # aparecia valendo desde 1990, porque o Planalto repete o texto
+                # sem marcador depois da MP 1.336. Empatando o inicio com a
+                # anterior, `vigente_em` desempata pela ordem, e a de baixo vence.
+                inicio = max(inicio, resolvidos[-1][1])
 
             fim: date | None = None
             revogado = False

@@ -78,6 +78,13 @@ LOTE = 8
 # obriga a reembutir as que truncavam, e nao o corpus inteiro - e por isso o
 # `maxlen` fica gravado junto do vetor, para que a proxima mudanca aqui saiba
 # sozinha o que refazer.
+#
+# O "nenhuma perde texto" valia para a CLT. Remedido em 23/09/2026, com TST,
+# TRT-13, CF, ADCT, Codigo Civil e as leis esparsas (16.799 redacoes): p99 200,
+# e 53 passam de 256. As leis novas quase nao contribuem - 3 da CF, e o Codigo
+# Civil nao passa de 189. Quem estoura sao as sumulas do TST, 38 de 463, porque
+# o Livro traz a tese do IRR junto do verbete; uma chega a 1.220 tokens. Subir o
+# teto e decisao em aberto: custa latencia na consulta e reembutir as 53.
 MAXLEN = 256
 
 

@@ -116,10 +116,28 @@ def lexical(
 # Consulta que JA e uma referencia: "art. 384", "Sumula 437", "art. 71 par. 4o".
 # Sem esse desvio ela cai no BM25, onde o token "art" casa com o corpus inteiro e
 # o resultado e ruido - foi o que aconteceu no primeiro teste com "art. 384".
+#
+# A obra pode vir antes ("CF, art. 7o", "Lei 8.213/91, art. 118") ou depois ("art.
+# 7o, XXIX da CF"). Antes de a CF entrar no corpus, toda consulta "art. N" era da
+# CLT por falta de alternativa; agora "art. 7o da CF" cairia no art. 7o da CLT.
+_OBRA_ANTES = (
+    r"(?:cf(?:/1?9?88)?|adct|cc|clt|c[oó]digo\s+civil|constitui[cç][aã]o(?:\s+federal)?"
+    r"|lei\s*n?[ºo°.]*\s*[\d.]+\s*/\s*\d{2,4})\s*,?\s*"
+)
 _E_REFERENCIA = re.compile(
-    r"^\s*(?:arts?\.?\s*\d|s[uú]mula\s*(?:vinculante\s*)?\d|oj\s*\d|nr-?\s*\d)",
+    rf"^\s*(?:{_OBRA_ANTES})?"
+    r"(?:arts?\.?\s*\d|s[uú]mula\s*(?:vinculante\s*)?\d|oj\s*\d|nr-?\s*\d)",
     re.I,
 )
+_LEI_NA_CONSULTA = re.compile(r"\blei\s*n?[ºo°.]*\s*([\d.]+)\s*/\s*(\d{2,4})", re.I)
+# (padrao, tipo do catalogo, prefixo que `interpretar` espera na ref). A ordem
+# importa: ADCT antes de CF, porque "ADCT da CF" e ADCT.
+_OBRA_NA_CONSULTA = [
+    (re.compile(r"\bADCT\b", re.I), "cf", "ADCT, "),
+    (re.compile(r"\b(?:CF(?:/1?9?88)?|Constitui[cç][aã]o(?:\s+Federal)?)(?![\w/])", re.I), "cf", ""),
+    (re.compile(r"\b(?:CC|C[oó]digo\s+Civil)\b", re.I), "lei", "Código Civil, "),
+    (re.compile(r"\bCLT\b", re.I), "clt", ""),
+]
 
 
 def _tipo_provavel(consulta: str) -> str:
@@ -134,6 +152,30 @@ def _tipo_provavel(consulta: str) -> str:
     if baixa.lstrip().startswith("nr"):
         return "nr"
     return "clt"
+
+
+def _sem_obra(consulta: str, m: re.Match) -> str:
+    """Tira da consulta a mencao a obra e o conectivo que a prendia."""
+    resto = f"{consulta[:m.start()]} {consulta[m.end():]}".strip(" ,")
+    resto = re.sub(r"\s*\b(?:d[aoe]s?)\s*$", "", resto, flags=re.I)
+    return re.sub(r"\s+", " ", resto).strip(" ,")
+
+
+def _como_referencia(consulta: str) -> tuple[str, str]:
+    """(tipo, ref) no formato em que o catalogo os escreve, para `interpretar`.
+
+    "art. 118 da Lei 8.213/91" vira ("lei", "Lei 8.213/91, art. 118"); sem obra
+    nenhuma na consulta, a referencia continua sendo da CLT, como sempre foi.
+    """
+    tipo = _tipo_provavel(consulta)
+    if tipo != "clt":
+        return tipo, consulta
+    if m := _LEI_NA_CONSULTA.search(consulta):
+        return "lei", f"Lei {m.group(1)}/{m.group(2)}, {_sem_obra(consulta, m)}"
+    for padrao, tipo_obra, prefixo in _OBRA_NA_CONSULTA:
+        if m := padrao.search(consulta):
+            return tipo_obra, prefixo + _sem_obra(consulta, m)
+    return "clt", consulta
 
 
 @dataclass
@@ -237,7 +279,7 @@ def buscar(
     competencia. `None` e sem filtro, que e o comportamento anterior.
     """
     if _E_REFERENCIA.match(consulta):
-        r = interpretar(_tipo_provavel(consulta), consulta)
+        r = interpretar(*_como_referencia(consulta))
         achados = [
             _achado(linha, "referencia", 1.0)
             for urn in r.urns

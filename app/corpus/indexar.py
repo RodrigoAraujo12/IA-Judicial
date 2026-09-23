@@ -1,6 +1,7 @@
 """Ingestao do corpus normativo.
 
-    python -m app.corpus.indexar clt          # texto da lei, do Planalto
+    python -m app.corpus.indexar              # todas as obras do Planalto em OBRAS
+    python -m app.corpus.indexar clt cf adct  # so as escolhidas
     python -m app.corpus.indexar tst          # sumulas e OJs, do Livro do TST
     python -m app.corpus.indexar trt13        # sumulas do TRT-13, do site do NUGEP
     python -m app.corpus.indexar vetores      # Via 2: vetores densos (BGE-M3)
@@ -25,6 +26,16 @@ from app.corpus import banco, planalto, trt13, tst
 from app.corpus.banco import Dispositivo
 from app.corpus.refs import interpretar
 
+# O `piso` e a data em que o texto original passou a valer, e cada um foi lido na
+# propria pagina: o DOU do rodape ("Este texto nao substitui o publicado no DOU
+# de...") mais o artigo de vigencia da lei. Onde os dois divergem, manda o artigo:
+# o Codigo Civil saiu no DOU de 11.1.2002 e so vigorou um ano depois (art. 2.044),
+# e a Lei 6.019 teve sessenta dias de vacatio (art. 20).
+#
+# So as obras que o catalogo cita. Cada lei nova e densidade a mais competindo na
+# busca livre - o TST custou 8 consultas em acerto@1 -, entao lei que nenhum
+# pedido usa entra quando houver pedido que a use.
+_CF = "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
 OBRAS = {
     "clt": {
         "url": planalto.URL_CLT,
@@ -32,6 +43,76 @@ OBRAS = {
         "inicio": planalto.INICIO_CLT,
         "piso": planalto.VIGENCIA_CLT,
         "nome": "Consolidacao das Leis do Trabalho",
+        "sigla": "CLT",
+    },
+    # O ADCT mora no fim da pagina da CF, com numeracao propria que recomeca no
+    # art. 1o. Na passada da CF o guarda de regressao o descarta como norma
+    # estranha; aqui ele vira obra sua, a partir do titulo em caixa alta. O
+    # `(?-i:...)` e necessario porque o cabecalho da pagina tem um link "Ato das
+    # Disposicoes..." em caixa mista, e casar ali comecaria o ADCT no art. 1o da CF.
+    "cf": {
+        "url": _CF,
+        "arquivo": "cf-planalto.html",
+        "inicio": None,
+        "piso": date(1988, 10, 5),
+        "nome": "Constituicao Federal",
+        "sigla": "CF",
+    },
+    "adct": {
+        "url": _CF,
+        "arquivo": "cf-planalto.html",
+        "inicio": r"(?-i:^ATO DAS DISPOSI[CÇ][OÕ]ES CONSTITUCIONAIS TRANSIT)",
+        "piso": date(1988, 10, 5),
+        "nome": "Ato das Disposicoes Constitucionais Transitorias",
+        "sigla": "ADCT",
+    },
+    "cc": {
+        "url": "https://www.planalto.gov.br/ccivil_03/leis/2002/l10406compilada.htm",
+        "arquivo": "cc-planalto.html",
+        "inicio": None,
+        "piso": date(2003, 1, 11),
+        "nome": "Codigo Civil (Lei 10.406/2002)",
+        "sigla": "CC",
+    },
+    "lei-6019-1974": {
+        "url": "https://www.planalto.gov.br/ccivil_03/leis/l6019.htm",
+        "arquivo": "lei-6019-1974.html",
+        "inicio": None,
+        "piso": date(1974, 3, 5),
+        "nome": "Lei 6.019/1974 (trabalho temporario e terceirizacao)",
+        "sigla": "Lei 6.019/1974",
+    },
+    "lei-7998-1990": {
+        "url": "https://www.planalto.gov.br/ccivil_03/leis/l7998.htm",
+        "arquivo": "lei-7998-1990.html",
+        "inicio": None,
+        "piso": date(1990, 1, 12),
+        "nome": "Lei 7.998/1990 (seguro-desemprego)",
+        "sigla": "Lei 7.998/1990",
+    },
+    "lei-8036-1990": {
+        "url": "https://www.planalto.gov.br/ccivil_03/leis/l8036consol.htm",
+        "arquivo": "lei-8036-1990.html",
+        "inicio": None,
+        "piso": date(1990, 5, 14),
+        "nome": "Lei 8.036/1990 (FGTS)",
+        "sigla": "Lei 8.036/1990",
+    },
+    "lei-8213-1991": {
+        "url": "https://www.planalto.gov.br/ccivil_03/leis/l8213cons.htm",
+        "arquivo": "lei-8213-1991.html",
+        "inicio": None,
+        "piso": date(1991, 7, 25),
+        "nome": "Lei 8.213/1991 (planos de beneficios da Previdencia)",
+        "sigla": "Lei 8.213/1991",
+    },
+    "lei-12506-2011": {
+        "url": "https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2011/lei/l12506.htm",
+        "arquivo": "lei-12506-2011.html",
+        "inicio": None,
+        "piso": date(2011, 10, 13),
+        "nome": "Lei 12.506/2011 (aviso previo proporcional)",
+        "sigla": "Lei 12.506/2011",
     },
 }
 
@@ -63,7 +144,7 @@ def indexar(chave: str, rebaixar: bool = False) -> None:
     bruto = planalto.baixar(obra["url"], obra["arquivo"], forcar=rebaixar)
     print(f"  fonte: {len(bruto):,} bytes")
 
-    trechos = planalto.dispositivos(bruto, chave, inicio=obra["inicio"])
+    trechos = planalto.dispositivos(bruto, chave, inicio=obra["inicio"], sigla=obra["sigla"])
     resolvidos = planalto.com_vigencia(trechos, obra["piso"])
 
     # MP que caducou sem estar na tabela entraria como alteracao definitiva, e seu
@@ -313,6 +394,10 @@ def conferir_catalogo(con, chave: str) -> None:
     #               corrige-se no YAML, e e informacao util para quem redige.
     hoje = date.today()
     ausentes, revogados = [], []
+    # "Lei 12.506/2011" sem artigo e citacao da lei inteira: a URN e a propria
+    # obra, e nao ha dispositivo com esse endereco para achar. Obra ingerida e
+    # citacao atendida - a peca a cita pelo nome, sem transcrever a lei toda.
+    exigidos.pop(chave, None)
     for urn in exigidos:
         if banco.vigente_em(con, urn, hoje) is not None:
             continue
