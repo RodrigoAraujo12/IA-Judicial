@@ -29,7 +29,7 @@ a conta no provedor ainda não existia. **Continue daqui.**
 
 - Cartão de crédito (a Oracle só verifica, não cobra dentro do plano grátis).
 - Uns 40 minutos, a maior parte esperando download.
-- O arquivo `dados/corpus.db` deste computador (97 MB). Ele não está no GitHub, e
+- O arquivo `dados/corpus.db` deste computador (89 MB). Ele não está no GitHub, e
   montar o corpus no servidor levaria horas no processador fraco do plano grátis.
 
   **Confira que ele é o corpus inteiro antes de copiar**, porque o banco não vai
@@ -129,9 +129,9 @@ sudo git clone https://github.com/RodrigoAraujo12/IA-Judicial.git /opt/triagem
 sudo bash /opt/triagem/implantacao/instalar-servidor.sh triagem-teste.duckdns.org seu@email.com
 ```
 
-O script instala os pacotes, cria o usuário `triagem`, baixa o modelo (2,2 GB),
-sobe o app como serviço, configura o HTTPS e agenda o backup. No fim ele diz o que
-falta.
+O script instala os pacotes, cria o usuário `triagem`, baixa o modelo (2,2 GB —
+pulado sozinho em máquina com menos de 3 GB de memória), sobe o app como serviço,
+configura o HTTPS e agenda o backup. No fim ele diz o que falta.
 
 ## 6. Levar o corpus
 
