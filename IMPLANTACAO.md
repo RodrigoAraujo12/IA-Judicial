@@ -18,6 +18,12 @@ a conta no provedor ainda não existia. **Continue daqui.**
   sintaxe num Windows, sem Docker nem WSL. A primeira execução real é a da Oracle.
   Eles podem ser rodados de novo sem estragar nada; se um passo falhar, corrija e
   rode outra vez.
+- **Conferido em 23/09/2026, antes da primeira execução:** os quatro scripts
+  passam em `bash -n` e estão com fim de linha Unix (CRLF faria o Linux recusar
+  o interpretador); o pacote `caddy` existe no Ubuntu 24.04 (universe, 2.6.2), e
+  `numpy`, `onnxruntime` e `tokenizers` publicam pacote pronto para ARM64 em
+  Python 3.12 — sem isso o `pip` tentaria compilar e a instalação levaria horas
+  no processador do plano grátis.
 
 ## O que você vai precisar
 
@@ -25,6 +31,19 @@ a conta no provedor ainda não existia. **Continue daqui.**
 - Uns 40 minutos, a maior parte esperando download.
 - O arquivo `dados/corpus.db` deste computador (97 MB). Ele não está no GitHub, e
   montar o corpus no servidor levaria horas no processador fraco do plano grátis.
+
+  **Confira que ele é o corpus inteiro antes de copiar**, porque o banco não vai
+  pelo git e a máquina de onde você copia pode estar atrasada em relação ao
+  código:
+
+  ```
+  python -c "from app.corpus import banco; c=banco.conectar(); print(banco.estatisticas(c))"
+  ```
+
+  Tem de dizer 14 obras e 16.799 redações, com `com_vetor` igual a `redacoes`.
+  Se disser menos, refaça com `python -m app.corpus.indexar` e
+  `python -m app.corpus.indexar tst trt13 vetores` — a ingestão leva um minuto e
+  os vetores, cerca de uma hora em CPU, retomáveis de onde pararem.
 
 ## 1. Conta na Oracle Cloud
 
@@ -201,7 +220,6 @@ o que exclui Render, Railway, DigitalOcean e Hetzner.
 
 ## O que ainda falta depois de no ar
 
-- Registro de acesso: quem abriu qual caso, e quando.
 - Troca de senha pelo próprio usuário, e recuperação por e-mail.
 - Importar os casos de uma instalação local para um escritório do serviço.
 - O contrato de LGPD com os escritórios — é o que libera dado real.
