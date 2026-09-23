@@ -84,8 +84,22 @@
   }
 
   let pendente = null;
+  // Sessao expirada (so no servico) chega como 401. A entrevista NAO sai da tela:
+  // navegar para o login descartaria as respostas nao salvas. Entrar de novo em
+  // outra aba devolve o cookie, e o proximo salvar funciona.
+  const SESSAO_EXPIRADA =
+    "Sua sessão expirou. Entre de novo em outra aba — as respostas desta tela continuam aqui.";
+
   async function atualizarPainel() {
     const resposta = await fetch("/analise", { method: "POST", body: new FormData(form) });
+    if (resposta.status === 401) {
+      painel.innerHTML = "";
+      const aviso = document.createElement("div");
+      aviso.className = "caixa alerta";
+      aviso.textContent = SESSAO_EXPIRADA;
+      painel.appendChild(aviso);
+      return;
+    }
     painel.innerHTML = await resposta.text();
     aplicarPosTriagem();
   }
@@ -105,6 +119,12 @@
   if (botao) {
     botao.addEventListener("click", async () => {
       const resposta = await fetch("/caso/salvar", { method: "POST", body: new FormData(form) });
+      // Sem isto um erro virava `caso_id = undefined` no formulario, e o
+      // salvar seguinte criava um caso duplicado sem ninguem perceber.
+      if (!resposta.ok) {
+        aviso.textContent = resposta.status === 401 ? SESSAO_EXPIRADA : "NÃO SALVOU — tente de novo.";
+        return;
+      }
       const dados = await resposta.json();
       document.getElementById("caso_id").value = dados.id;
       aviso.textContent = "salvo " + new Date().toLocaleTimeString("pt-BR");

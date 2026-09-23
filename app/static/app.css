@@ -226,6 +226,8 @@ section.secao > h2 {
 input[type="text"],
 input[type="date"],
 input[type="number"],
+input[type="email"],
+input[type="password"],
 textarea,
 select {
   font: inherit;
@@ -396,6 +398,37 @@ input.curto { min-width: 8rem; }
 /* --- lista de casos ------------------------------------------------------ */
 
 .lista { max-width: 40rem; margin: 2.5rem auto; padding: 0 2rem; }
+
+/* --- entrar e conta (so no servico) --------------------------------------- */
+
+.lista.entrar { max-width: 24rem; }
+.entrar form { display: flex; flex-direction: column; gap: 0.9rem; margin-top: 0.6rem; }
+.entrar label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.85rem; color: var(--muted); }
+.entrar input { min-width: 0; width: 100%; }
+.entrar button { align-self: flex-start; }
+.entrar .nota { font-size: 0.8rem; color: var(--faint); margin-top: 1.4rem; }
+
+.topo .conta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.topo .conta button { font-size: 0.78rem; padding: 0.2rem 0.7rem; }
+
+/* Aviso de sessao expirada no painel lateral da entrevista. */
+#analise .caixa.alerta {
+  font-size: 0.86rem;
+  padding: 0.7rem 0.9rem;
+  border-left: 3px solid var(--alert);
+  background: var(--alert-bg);
+  color: var(--alert);
+}
+/* Com as abas presentes, sao elas que empurram para a direita; sem elas (relatorio,
+   minuta) a conta assume. */
+.topo .secoes + .conta { margin-left: 0.8rem; }
 
 .caso {
   display: block;

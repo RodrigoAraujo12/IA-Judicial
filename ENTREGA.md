@@ -129,15 +129,22 @@ abrir o navegador não acontece.
 
 ## Estado do projeto nesta data
 
-26 pedidos, 12 verificações, 81 perguntas em 10 seções. Corpus com 3.660
-dispositivos e 5.748 redações da CLT, todas vetorizadas. Nove arquivos de teste,
-todos passando.
+Atualizado em 23/09/2026. 26 pedidos, 12 verificações, 81 perguntas em 10
+seções. Corpus com 14 obras, 13.591 dispositivos e 16.799 redações, todas
+vetorizadas. Dezessete arquivos de teste, todos passando.
 
 **O `corpus.db` mudou** e cresceu: de 33 MB para 97 MB, quase tudo vetores.
 Quem já recebeu o pacote troca só esse arquivo; o modelo não muda.
 
 O que foi feito por último, e que vale saber porque muda o comportamento:
 
+- **Modo serviço, com login.** `TRIAGEM_MODO=servico` exige login e dá a cada
+  escritório o seu arquivo de casos. **Quem instala na própria máquina não é
+  afetado**: o padrão continua sendo o modo local, sem login, com o mesmo
+  `dados/casos.db`. A única diferença visível é que o modo local agora recusa
+  pedidos que não venham da própria máquina — era o que o `127.0.0.1` do
+  `abrir.bat` já garantia, e agora o app garante sozinho. Detalhe em `README.md`,
+  seção "Modo serviço"; para subir num servidor, `IMPLANTACAO.md`.
 - **CF, ADCT, Código Civil e cinco leis esparsas no corpus** — todas as obras do
   Planalto que o catálogo cita. A minuta passou a transcrever o art. 7º da CF, a
   estabilidade da gestante do ADCT, os arts. 186, 927 e 950 do Código Civil e os

@@ -1,7 +1,10 @@
 """Entrevista guiada e triagem de pedidos.
 
-Roda local, sem IA. Sobe com:
-    uvicorn app.main:app --reload
+Sem IA na triagem. Sobe com:
+    uvicorn app.main:app --reload                      # local, sem login
+    TRIAGEM_MODO=servico uvicorn app.main:app          # servico, com login
+
+O modo e explicado em `app/contas.py`.
 """
 
 from __future__ import annotations
@@ -11,14 +14,16 @@ import re
 from datetime import date
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import FormData
 
-from app import jurisdicao, persistencia
+from app import contas, jurisdicao, persistencia
 from app.catalogo.loader import carregar
 from app.corpus import banco as corpus_banco
 from app.corpus import busca as corpus_busca
@@ -37,6 +42,127 @@ templates.env.globals["rotulo_trt"] = jurisdicao.rotulo
 # Estoura na subida se algum YAML estiver quebrado ou inconsistente.
 CATALOGO: Catalogo = carregar()
 PERGUNTAS_POR_ID = {p.id: p for p in CATALOGO.entrevista.perguntas}
+
+
+# --- porteiro -----------------------------------------------------------------
+
+COOKIE = "sessao"
+
+
+def _livre(caminho: str) -> bool:
+    """Rotas que respondem sem sessao. Lista curta e explicita: o porteiro nega por
+    padrao, e rota nova nasce protegida sem que ninguem precise lembrar disso."""
+    return caminho == "/login" or caminho.startswith("/static/")
+
+
+def _da_propria_maquina(request: Request) -> bool:
+    """O pedido veio desta maquina, direto - sem proxy no meio?
+
+    Proxy reverso na mesma maquina tambem conecta de 127.0.0.1, e e exatamente o
+    arranjo de um servidor de verdade. O cabecalho de encaminhamento e o que o
+    denuncia.
+    """
+    host = request.client.host if request.client else ""
+    encaminhado = "x-forwarded-for" in request.headers or "forwarded" in request.headers
+    return host in ("127.0.0.1", "::1") and not encaminhado
+
+
+@app.middleware("http")
+async def porteiro(request: Request, call_next):
+    """Decide, antes de qualquer rota, quem pode entrar e em que banco de casos.
+
+    `request.state.banco_casos` e o unico lugar de onde as rotas tiram o arquivo
+    de casos. No servico ele sai da sessao, e so dela.
+    """
+    request.state.usuario = None
+    if contas.MODO == "local":
+        # Sem login, so a propria maquina. Se o servidor subir na rede sem
+        # TRIAGEM_MODO=servico, ele recusa todo mundo em vez de abrir os casos.
+        if not _da_propria_maquina(request):
+            return PlainTextResponse(
+                "Modo local: este servidor so atende a propria maquina. Para servir "
+                "outros computadores, suba com TRIAGEM_MODO=servico (login obrigatorio).",
+                status_code=403,
+            )
+        request.state.banco_casos = persistencia.BANCO
+        return await call_next(request)
+
+    if _livre(request.url.path):
+        return await call_next(request)
+
+    token = request.cookies.get(COOKIE)
+    usuario = await run_in_threadpool(contas.sessao, token) if token else None
+    if usuario is None:
+        # GET vai para o login e volta depois. POST vem do JavaScript da
+        # entrevista (painel, salvar): redirecionar ali trocaria o JSON esperado
+        # por uma pagina de login, e o salvar falharia calado. 401 o JS sabe ler.
+        if request.method == "GET":
+            # A consulta ao corpus volta com a busca junto: /corpus?q=...
+            volta = request.url.path + (f"?{request.url.query}" if request.url.query else "")
+            return RedirectResponse(f"/login?proximo={quote(volta)}", status_code=303)
+        return JSONResponse({"erro": "sessao expirada"}, status_code=401)
+
+    request.state.usuario = usuario
+    request.state.banco_casos = contas.banco_de_casos(usuario.escritorio_id)
+    return await call_next(request)
+
+
+def _destino_seguro(proximo: str) -> str:
+    """So caminho interno. "//site.com" e "https://..." viram "/"."""
+    return proximo if proximo.startswith("/") and not proximo.startswith("//") else "/"
+
+
+@app.get("/login", response_class=HTMLResponse)
+def login(request: Request, proximo: str = "/"):
+    if contas.MODO == "local":
+        return RedirectResponse("/", status_code=303)
+    return templates.TemplateResponse(
+        request, "login.html", {"proximo": _destino_seguro(proximo), "erro": None, "email": ""}
+    )
+
+
+@app.post("/login", response_class=HTMLResponse)
+async def login_entrar(request: Request):
+    if contas.MODO == "local":
+        return RedirectResponse("/", status_code=303)
+    form = await request.form()
+    email = str(form.get("email") or "").strip()
+    senha = str(form.get("senha") or "")
+    proximo = _destino_seguro(str(form.get("proximo") or "/"))
+
+    erro = None
+    if await run_in_threadpool(contas.bloqueado, email):
+        erro = "Muitas tentativas com este e-mail. Espere quinze minutos."
+    elif (token := await run_in_threadpool(contas.entrar, email, senha)) is None:
+        erro = "E-mail ou senha não conferem."
+    if erro:
+        return templates.TemplateResponse(
+            request, "login.html", {"proximo": proximo, "erro": erro, "email": email}, status_code=401
+        )
+
+    resposta = RedirectResponse(proximo, status_code=303)
+    resposta.set_cookie(
+        COOKIE,
+        token,
+        max_age=int(contas.DURACAO.total_seconds()),
+        httponly=True,
+        # Lax segura o cookie fora de POST vindo de outro site, que e a defesa
+        # contra CSRF aqui: toda rota que grava e POST.
+        samesite="lax",
+        # Em producao o servico fica atras de HTTPS, e ai o cookie so viaja
+        # cifrado. `--proxy-headers` no uvicorn faz o esquema chegar certo.
+        secure=request.url.scheme == "https",
+    )
+    return resposta
+
+
+@app.post("/sair")
+async def sair(request: Request):
+    if token := request.cookies.get(COOKIE):
+        await run_in_threadpool(contas.sair, token)
+    resposta = RedirectResponse("/login" if contas.MODO == "servico" else "/", status_code=303)
+    resposta.delete_cookie(COOKIE)
+    return resposta
 
 
 # Salario redondo se digita sem centavos: "3.500". Ali o ponto e separador de
@@ -181,13 +307,21 @@ async def caso_salvar(request: Request):
     respostas = parse_respostas(form)
     nome = str(form.get("caso_nome") or "").strip() or "Caso sem nome"
     bruto = str(form.get("caso_id") or "").strip()
-    caso_id = persistencia.salvar(nome, respostas, int(bruto) if bruto.isdigit() else None)
+    caso_id = await run_in_threadpool(
+        persistencia.salvar,
+        request.state.banco_casos,
+        nome,
+        respostas,
+        int(bruto) if bruto.isdigit() else None,
+    )
     return JSONResponse({"id": caso_id, "nome": nome})
 
 
 @app.get("/caso/{caso_id}", response_class=HTMLResponse)
 def caso_abrir(request: Request, caso_id: int):
-    dados = persistencia.carregar(caso_id)
+    # O id so e procurado no banco do escritorio da sessao. O caso 7 de outro
+    # escritorio nao "existe mas e proibido": ele nao esta neste arquivo.
+    dados = persistencia.carregar(request.state.banco_casos, caso_id)
     if dados is None:
         return RedirectResponse("/casos", status_code=303)
     nome, respostas = dados
@@ -196,7 +330,9 @@ def caso_abrir(request: Request, caso_id: int):
 
 @app.get("/casos", response_class=HTMLResponse)
 def casos(request: Request):
-    return templates.TemplateResponse(request, "casos.html", {"casos": persistencia.listar()})
+    return templates.TemplateResponse(
+        request, "casos.html", {"casos": persistencia.listar(request.state.banco_casos)}
+    )
 
 
 # --- corpus normativo -------------------------------------------------------

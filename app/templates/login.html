@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block titulo %}Entrar{% endblock %}
+
+{% block corpo %}
+<article class="lista entrar">
+  <p class="rotulo">Entrar</p>
+
+  {% if erro %}
+    <div class="caixa alerta" role="alert">{{ erro }}</div>
+  {% endif %}
+
+  <form method="post" action="/login">
+    <input type="hidden" name="proximo" value="{{ proximo }}">
+    <label>
+      E-mail
+      <input type="email" name="email" value="{{ email }}" autocomplete="username" required
+             {% if not email %}autofocus{% endif %}>
+    </label>
+    <label>
+      Senha
+      <input type="password" name="senha" autocomplete="current-password" required
+             {% if email %}autofocus{% endif %}>
+    </label>
+    <button type="submit">Entrar</button>
+  </form>
+
+  {# Nao ha "criar conta" nem "esqueci a senha" de proposito: no piloto, conta e
+     senha nova sao criadas por quem administra o servico (python -m app.contas).
+     Recuperacao por e-mail exige envio de e-mail, e isso e passo seguinte. #}
+  <p class="nota">Sem acesso? Fale com quem administra o sistema no seu escritório.</p>
+</article>
+{% endblock %}

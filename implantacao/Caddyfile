@@ -1,0 +1,22 @@
+# Proxy com HTTPS automatico (Let's Encrypt). instalar-servidor.sh troca
+# __DOMINIO__ e __EMAIL__ e grava em /etc/caddy/Caddyfile.
+#
+# O certificado so sai se o dominio ja apontar para o IP desta maquina e as
+# portas 80 e 443 estiverem abertas. Sem isso o Caddy fica tentando - ver
+# `journalctl -u caddy`.
+
+{
+	email __EMAIL__
+}
+
+__DOMINIO__ {
+	encode gzip
+	reverse_proxy 127.0.0.1:8000
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "same-origin"
+		-Server
+	}
+}

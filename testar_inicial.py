@@ -29,7 +29,9 @@ from starlette.datastructures import FormData
 sys.stdout.reconfigure(encoding="utf-8")
 
 catalogo = carregar()
-cliente = TestClient(app)
+# No modo local o app so atende a propria maquina (ver o porteiro em app/main.py),
+# e o TestClient se apresenta como "testclient" se nao disserem outra coisa.
+cliente = TestClient(app, client=("127.0.0.1", 50000))
 falhas: list[str] = []
 
 

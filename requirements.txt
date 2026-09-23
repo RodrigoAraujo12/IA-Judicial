@@ -16,6 +16,12 @@ numpy>=2.0          # o produto escalar da busca densa
 onnxruntime>=1.20   # roda o BGE-M3 sem PyTorch e sem CUDA
 tokenizers>=0.20    # tokenizador do BGE-M3 (sentencepiece do XLM-R)
 
+# --- testes ------------------------------------------------------------------
+# O TestClient do Starlette fala HTTP com o app sem subir servidor, e precisa do
+# httpx. So `testar_contas.py` usa: login e isolamento entre escritorios nao se
+# testam chamando funcao, e sim fazendo o pedido que o navegador faria.
+httpx>=0.27
+
 # --- acelerador opcional (nao instalar junto) --------------------------------
 # `onnxruntime-directml` SUBSTITUI a wheel acima, nao soma a ela: as duas
 # fornecem o modulo `onnxruntime`. So Windows, e so vale a pena com GPU.

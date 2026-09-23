@@ -26,6 +26,16 @@
         {% endfor %}
       </nav>
     {% endif %}
+    {#- So no servico. O nome do escritorio fica a vista porque e ele que diz em
+        que banco de casos se esta: quem atende por dois escritorios precisa ver
+        qual esta aberto antes de salvar. -#}
+    {% set usuario = request.state.usuario %}
+    {% if usuario %}
+      <form class="conta" method="post" action="/sair">
+        <span>{{ usuario.nome }} &middot; <strong>{{ usuario.escritorio }}</strong></span>
+        <button type="submit" class="secundario">Sair</button>
+      </form>
+    {% endif %}
   </header>
   {% block corpo %}{% endblock %}
 </body>

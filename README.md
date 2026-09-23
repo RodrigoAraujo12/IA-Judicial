@@ -68,6 +68,7 @@ python testar_vias.py      # placar das vias sobre as 72 consultas de avaliacao.
 python testar_jurisdicao.py # UF -> TRT, e sumula de outro tribunal fora do caso
 python testar_trt13.py     # sumulas do TRT-13: datas do historico e janela de vigencia
 python testar_leis.py      # CF, ADCT, Codigo Civil e leis esparsas: o parser fora da CLT
+python testar_contas.py    # modo servico: login, sessao, e um escritorio sem ver o outro
 python analisar_rerank.py  # a folga que um reranqueador teria (exige vetores)
 ```
 
@@ -118,7 +119,8 @@ app/
   motor.py               avaliação de três estados, prescrição, regimes
   jurisdicao.py          do local da prestação ao TRT; que obras valem para o caso
   persistencia.py        SQLite — casos, a fonte da verdade
-  main.py                FastAPI
+  contas.py              modo serviço: escritórios, usuários, senhas e sessões
+  main.py                FastAPI, e o porteiro que decide quem entra
   catalogo/
     loader.py            carga + validação cruzada dos YAML
     entrevista.yaml      roteiro de perguntas (81, em 10 secoes)
@@ -136,7 +138,10 @@ app/
     redator.py           minuta da inicial — só dá forma, não decide
   templates/             Jinja2 — entrevista, relatório, casos, corpus e minuta
   static/                CSS e JS (sem dependência externa, sem CDN)
-dados/casos.db           criado no primeiro salvamento
+implantacao/             instalação em servidor Ubuntu: script, serviço, HTTPS, backup
+dados/casos.db           criado no primeiro salvamento (modo local)
+dados/contas.db          escritórios, usuários e sessões (modo serviço)
+dados/escritorios/<id>/  os casos de cada escritório (modo serviço)
 dados/corpus.db          índice do corpus — reconstruível e descartável
 ```
 
@@ -653,16 +658,17 @@ Triagem completa. Em andamento e a fazer:
 | **Processo parado** | a fazer | Consultor de próxima medida para processo que anda devagar há anos. |
 | **Gabarito de avaliação** | a refazer | As 72 consultas têm resposta na CLT por construção, e o corpus agora tem súmulas. Metade das quedas de acerto@1 é o gabarito ficando estreito, metade é degradação real - e só juízo jurídico separa as duas. |
 | **Jurisprudência** | a decidir | Uso principal é **citar na peça**, o que torna o validador de citações obrigatório. Uso secundário é aferir viabilidade. Muda a escala e exige rastrear superação de tese, não vigência. |
-| **Serviço para escritórios** | a fazer | Login, um escritório por conta, corpus compartilhado e somente leitura, casos de cada um. Reabre a premissa local do `ENTREGA.md` — ver [Rumo](#rumo-um-serviço-para-escritórios). |
+| **Serviço para escritórios** | login, isolamento e instalação prontos; falta subir | `TRIAGEM_MODO=servico`: login obrigatório, um arquivo de casos por escritório, corpus compartilhado e somente leitura — ver [Modo serviço](#modo-serviço-login-e-escritórios). A instalação para servidor (HTTPS, backup) está em [`IMPLANTACAO.md`](IMPLANTACAO.md), escrita e ainda não executada: o teste será no plano grátis da Oracle. Reabre a premissa local do `ENTREGA.md` — ver [Rumo](#rumo-um-serviço-para-escritórios). |
 
 ## Rumo: um serviço para escritórios
 
 Tudo acima descreve um sistema que roda na máquina de uma advogada. A direção,
 registrada em 17/09/2026, é outra: **um serviço para escritórios trabalhistas de
 todo o país.** Cada escritório entra com login e vê só os seus casos; o corpus é
-um só, compartilhado e somente leitura. Nada disso está feito — esta seção existe
-para que a intenção sobreviva à conversa em que foi dita, e para registrar o que
-ela reabre antes que alguém comece pelo lugar errado.
+um só, compartilhado e somente leitura. O primeiro passo — login e isolamento
+entre escritórios — está feito desde 23/09/2026 e descrito em
+[Modo serviço](#modo-serviço-login-e-escritórios). O resto desta seção registra o
+que a mudança reabre, para que ninguém comece pelo lugar errado.
 
 **A divisão certa já existe, por outro motivo.** `corpus.db` e `casos.db` são
 arquivos separados desde o início, e a separação foi justificada em
@@ -671,13 +677,6 @@ diferentes. É exatamente a linha que o serviço precisa: o corpus vira o que é
 comum a todos e ninguém escreve; os casos viram o que é de cada um. Quem for
 desenhar o serviço não parte de um monólito a fatiar — parte de dois bancos que
 já não se misturam.
-
-**O que não existe.** Não há login, sessão nem cookie em
-[`main.py`](app/main.py). A tabela `casos` tem `id`, `nome`, datas e `respostas`
-— nenhuma coluna diz de quem é o caso, porque até hoje a resposta era "de quem
-está sentado na máquina". Os dois caminhos de banco são constantes de módulo
-([`persistencia.py`](app/persistencia.py), [`banco.py`](app/corpus/banco.py)):
-um processo, um arquivo. E o servidor escuta em `127.0.0.1` de propósito.
 
 **O que a mudança reabre, e que não é código.**
 
@@ -698,12 +697,76 @@ um processo, um arquivo. E o servidor escuta em `127.0.0.1` de propósito.
   importar é quantas consultas ao mesmo tempo uma sessão ONNX aguenta. A
   degradação para lexical continua como rede de segurança, não como modo normal.
 
-**O que fica em aberto, de propósito.** Um `casos.db` por escritório — que
-preserva o isolamento por arquivo e o modelo de "fonte da verdade" de hoje — ou um
-banco só com coluna de escritório. Onde hospedar. Se a instalação local continua
-como segundo produto (as três formas do `ENTREGA.md` seguem válidas para quem
-preferir). Nenhuma dessas tem resposta óbvia, e este README registra a intenção,
-não o projeto.
+**O que fica em aberto, de propósito.** Onde hospedar para valer — o teste vai
+para o plano grátis da Oracle, e a Lightsail em São Paulo é a candidata se der
+certo ([`IMPLANTACAO.md`](IMPLANTACAO.md) tem a comparação). Se a instalação local
+continua como segundo produto — o modo local segue funcionando igual, e as três
+formas do `ENTREGA.md` seguem válidas para quem preferir. A escolha entre um
+`casos.db` por escritório e um banco só com coluna de escritório foi feita em
+23/09/2026: um arquivo por escritório (o porquê está abaixo).
+
+### Modo serviço: login e escritórios
+
+O mesmo código roda de dois jeitos, escolhidos pela variável `TRIAGEM_MODO` —
+explicitamente, nunca deduzidos de algum arquivo existir:
+
+| | `local` (padrão) | `servico` |
+|---|---|---|
+| login | não | obrigatório em toda rota, menos `/login` e `/static/` |
+| casos | `dados/casos.db` | `dados/escritorios/<id>/casos.db`, um por escritório |
+| quem atende | só a própria máquina | quem tiver sessão |
+
+```
+set TRIAGEM_MODO=servico
+python -m app.contas criar-escritorio "Silva & Souza Advogados"     # -> escritorio #1
+python -m app.contas criar-usuario 1 ana@silvasouza.adv.br "Ana Silva"  # pede a senha
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+**Um arquivo de casos por escritório.** O erro que o serviço não pode cometer é
+um escritório ver o cliente de outro, com dado de saúde. Num banco único, basta
+uma consulta que esqueça o filtro de escritório. Aqui o arquivo sai da sessão —
+de um número gravado em `contas.db`, nunca de algo que o navegador mande —, e o
+banco do outro escritório nem está aberto. O caso nº 7 do escritório B não
+"existe, mas é proibido" para A: ele não está no arquivo de A. Encerrar um
+contrato é apagar uma pasta, que é o que a LGPD pede ao operador no fim do
+tratamento. O custo: mudança de esquema passa por todos os arquivos, e o serviço
+fica num servidor só — o que serve para as primeiras dezenas de escritórios.
+
+**O porteiro nega por padrão.** A checagem de sessão é um middleware em
+[`main.py`](app/main.py) que roda antes de qualquer rota, com uma lista explícita
+do que é livre. Rota nova nasce protegida sem que ninguém precise lembrar.
+
+**O modo local recusa quem não é a própria máquina.** Um servidor que subisse na
+rede sem `TRIAGEM_MODO=servico` ficaria sem login. Em vez de abrir os casos, ele
+responde 403 a qualquer pedido de fora — inclusive atrás de proxy reverso na mesma
+máquina, que o cabeçalho `X-Forwarded-For` denuncia. O esquecimento aparece na
+primeira requisição, não num vazamento.
+
+O resto, em [`contas.py`](app/contas.py): senha com scrypt da biblioteca padrão
+(nenhuma dependência nova), mínimo de 10 caracteres; sessão de 12 horas, e o banco
+guarda o hash do token, não o token; cookie `HttpOnly` e `SameSite=Lax`, que é a
+defesa contra CSRF porque toda rota que grava é POST; dez senhas erradas em quinze
+minutos travam o e-mail; a mensagem de erro é a mesma para e-mail inexistente e
+senha errada, e o tempo de resposta também. Sessão expirada no meio de uma
+entrevista não descarta as respostas: o painel avisa, e entrar de novo em outra
+aba basta. [`testar_contas.py`](testar_contas.py) confere tudo isso fazendo os
+pedidos que o navegador faria.
+
+**Pôr no ar** está em [`IMPLANTACAO.md`](IMPLANTACAO.md): um script instala o
+serviço num Ubuntu 24.04 novo — ARM (Oracle, plano grátis, para o teste) ou x86
+(Lightsail, depois) — com HTTPS automático pelo Caddy, o app como serviço do
+sistema, e backup diário cifrado das contas e dos casos. Contas e casos moram em
+`TRIAGEM_DADOS` (`/var/lib/triagem` no servidor), fora da pasta do código, e são
+a única coisa que o backup leva; corpus e modelo são reconstruíveis.
+
+**O que ainda falta depois de no ar**, em ordem:
+
+1. **Registro de acesso** — quem abriu qual caso, e quando. É o que responde a um
+   incidente, e a LGPD cobra do operador.
+2. **Troca de senha pelo próprio usuário e recuperação por e-mail.** Hoje só o
+   administrador troca (`triagem-contas redefinir-senha`).
+3. **Importar os casos de uma instalação local** para o escritório no serviço.
 
 ## Limites conhecidos
 

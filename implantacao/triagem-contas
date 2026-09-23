@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Administra escritorios e usuarios no servidor. Instalado em /usr/local/bin.
+#
+#   sudo triagem-contas criar-escritorio "Silva & Souza Advogados"
+#   sudo triagem-contas criar-usuario 1 ana@silvasouza.adv.br "Ana Silva"
+#   sudo triagem-contas listar
+#
+# Roda como o usuario `triagem`, e nao como root, de proposito: se contas.db
+# nascesse com dono root, o servico (que roda como triagem) nao conseguiria
+# gravar sessao nenhuma, e ninguem entraria.
+
+set -euo pipefail
+[ "$(id -u)" -eq 0 ] || { echo "rode com sudo" >&2; exit 1; }
+
+# shellcheck source=/dev/null
+. /etc/triagem.env
+cd /opt/triagem
+exec sudo -u triagem env TRIAGEM_MODO="$TRIAGEM_MODO" TRIAGEM_DADOS="$TRIAGEM_DADOS" \
+	/opt/triagem/.venv/bin/python -m app.contas "$@"

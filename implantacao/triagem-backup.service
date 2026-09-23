@@ -1,0 +1,7 @@
+# Disparado pelo triagem-backup.timer. Instalado por instalar-servidor.sh.
+[Unit]
+Description=Backup das contas e dos casos da triagem
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/triagem-backup

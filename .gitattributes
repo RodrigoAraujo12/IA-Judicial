@@ -1,0 +1,5 @@
+# Scripts e arquivos do servidor saem sempre com quebra de linha LF. Este
+# repositorio e editado no Windows (core.autocrlf), e um script bash com CRLF
+# falha no Linux com "$'\r': command not found" - erro que nao diz o motivo.
+implantacao/** text eol=lf
+*.sh text eol=lf

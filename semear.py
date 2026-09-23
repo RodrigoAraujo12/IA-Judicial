@@ -153,11 +153,11 @@ CASOS = [
 ]
 
 if __name__ == "__main__":
-    existentes = {c["nome"] for c in persistencia.listar(200)}
+    existentes = {c["nome"] for c in persistencia.listar(persistencia.BANCO, 200)}
     for nome, respostas in CASOS:
         if nome in existentes:
             print(f"ja existe, pulando: {nome}")
             continue
-        caso_id = persistencia.salvar(nome, respostas)
+        caso_id = persistencia.salvar(persistencia.BANCO, nome, respostas)
         print(f"criado #{caso_id}: {nome}")
     print("\nAbra http://127.0.0.1:8000/casos")

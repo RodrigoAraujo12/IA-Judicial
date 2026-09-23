@@ -1,0 +1,32 @@
+# O app como servico do sistema: sobe no boot e volta sozinho se cair.
+# Instalado em /etc/systemd/system/ por instalar-servidor.sh.
+
+[Unit]
+Description=Triagem trabalhista (modo servico)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=triagem
+Group=triagem
+WorkingDirectory=/opt/triagem
+# TRIAGEM_MODO=servico e TRIAGEM_DADOS=/var/lib/triagem
+EnvironmentFile=/etc/triagem.env
+# So em 127.0.0.1: quem fala com a internet e o Caddy, com HTTPS. Os
+# --proxy-headers fazem o esquema "https" chegar ao app, e e isso que liga o
+# `Secure` do cookie de sessao.
+ExecStart=/opt/triagem/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --proxy-headers --forwarded-allow-ips 127.0.0.1
+Restart=always
+RestartSec=3
+
+# O processo so escreve onde precisa: contas e casos, e o corpus (que migra
+# esquema ao abrir). O resto do disco e somente leitura para ele.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/triagem /opt/triagem/dados
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+# Backup diario de madrugada. `Persistent` roda o que ficou para tras se a
+# maquina estava desligada na hora marcada.
+[Unit]
+Description=Backup diario da triagem
+
+[Timer]
+OnCalendar=*-*-* 03:30
+RandomizedDelaySec=15m
+Persistent=true
+
+[Install]
+WantedBy=timers.target
