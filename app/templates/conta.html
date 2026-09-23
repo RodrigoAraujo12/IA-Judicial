@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block titulo %}Minha conta{% endblock %}
+
+{% block corpo %}
+<article class="lista entrar">
+  <p class="rotulo">Minha conta</p>
+
+  <div class="caixa neutra">
+    {{ usuario.nome }} &middot; <strong>{{ usuario.escritorio }}</strong><br>
+    <span class="nota">{{ usuario.email }}</span>
+  </div>
+
+  {% if erro %}
+    <div class="caixa alerta" role="alert">{{ erro }}</div>
+  {% endif %}
+
+  <p class="rotulo">Trocar a senha</p>
+
+  {# O campo do e-mail, escondido, existe para o gerenciador de senhas do
+     navegador saber DE QUEM e a senha que esta sendo trocada. Sem ele, ele
+     oferece salvar uma senha sem dono e depois nao a preenche no login. #}
+  <form method="post" action="/conta/senha">
+    <input type="hidden" name="email" value="{{ usuario.email }}" autocomplete="username">
+    <label>
+      Senha atual
+      <input type="password" name="atual" autocomplete="current-password" required autofocus>
+    </label>
+    <label>
+      Senha nova
+      <input type="password" name="nova" autocomplete="new-password"
+             minlength="{{ minimo }}" required>
+    </label>
+    <label>
+      Repita a senha nova
+      <input type="password" name="repetida" autocomplete="new-password"
+             minlength="{{ minimo }}" required>
+    </label>
+    <button type="submit">Trocar a senha</button>
+  </form>
+
+  <p class="nota">
+    M&iacute;nimo de {{ minimo }} caracteres. Trocar a senha <b>encerra as sess&otilde;es
+    abertas</b>, inclusive esta: voc&ecirc; entra de novo com a senha nova. &Eacute; o que
+    faz a troca valer quando algu&eacute;m entrou sem permiss&atilde;o.
+  </p>
+
+  {# Nao ha "esqueci a senha" de proposito: recuperacao por e-mail exige um
+     servidor de envio, que e decisao e custo proprios. Enquanto nao existe,
+     quem administra redefine pela linha de comando. #}
+  <p class="nota">
+    Esqueceu a senha e n&atilde;o consegue entrar? Quem administra o sistema
+    redefine para voc&ecirc;.
+  </p>
+</article>
+{% endblock %}

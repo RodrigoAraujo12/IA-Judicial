@@ -136,7 +136,7 @@ app/
     busca.py             as vias de recuperação e a fusão RRF
   peca/
     redator.py           minuta da inicial — só dá forma, não decide
-  templates/             Jinja2 — entrevista, relatório, casos, corpus e minuta
+  templates/             Jinja2 — entrevista, relatório, casos, corpus, minuta, login e conta
   static/                CSS e JS (sem dependência externa, sem CDN)
 implantacao/             instalação em servidor Ubuntu: script, serviço, HTTPS, backup
 dados/casos.db           criado no primeiro salvamento (modo local)
@@ -809,10 +809,29 @@ dentro de uma transação de escrita, e sem tarefa agendada para alguém esquece
 "quem", e uma linha dizendo "alguém nesta máquina abriu o caso 7" não responde a
 pergunta que o registro existe para responder.
 
+### Trocar a própria senha
+
+Quem está logado troca a própria senha em `/conta`, alcançada pelo nome no
+cabeçalho. A senha atual é exigida — sem isso, um computador deixado aberto na
+recepção viraria uma conta tomada, porque quem passasse por ali trocaria a senha
+e o dono perderia o acesso.
+
+**A troca derruba todas as sessões, inclusive a de quem trocou.** Trocar senha é
+o que se faz quando se desconfia que alguém entrou; manter aberta a sessão do
+possível invasor esvaziaria o gesto. O preço é entrar de novo, e é barato.
+
+Tentativa com a senha atual errada fica no registro de acesso como
+`troca-de-senha-negada`: é alguém tentando trocar a senha de uma conta que talvez
+não seja dele. A troca bem-sucedida entra como `trocou-senha`.
+
+Não há "esqueci a senha" ainda, e isso está dito na tela: recuperação por e-mail
+exige um servidor de envio, que é decisão e custo próprios. Enquanto não existe,
+quem administra redefine por `triagem-contas redefinir-senha`.
+
 **O que ainda falta depois de no ar**, em ordem:
 
-1. **Troca de senha pelo próprio usuário e recuperação por e-mail.** Hoje só o
-   administrador troca (`triagem-contas redefinir-senha`).
+1. **Recuperação de senha por e-mail**, para quem não consegue entrar. Precisa de
+   um serviço de envio e da decisão de qual.
 2. **Importar os casos de uma instalação local** para o escritório no serviço.
 
 ## Limites conhecidos

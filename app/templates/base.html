@@ -32,7 +32,8 @@
     {% set usuario = request.state.usuario %}
     {% if usuario %}
       <form class="conta" method="post" action="/sair">
-        <span>{{ usuario.nome }} &middot; <strong>{{ usuario.escritorio }}</strong></span>
+        <a href="/conta">{{ usuario.nome }}</a>
+        <span>&middot; <strong>{{ usuario.escritorio }}</strong></span>
         <button type="submit" class="secundario">Sair</button>
       </form>
     {% endif %}

@@ -247,7 +247,54 @@ try:
     conferir("a limpeza tira so a velha", (saiu, len(contas.acessos(limite=500))), (1, antes - 1))
     conferir("e ela nao esta mais la", contas.acessos(limite=500, email="antiga@a.adv.br"), [])
 
-    # --- 6. modo local ----------------------------------------------------------
+    # --- 6. trocar a propria senha ----------------------------------------------
+
+    print("\ntrocar a propria senha")
+
+    # O Caio, do bloco anterior, esta logado. Uma segunda sessao dele, aberta
+    # noutro aparelho, serve para ver se a troca derruba as duas.
+    outro = cliente()
+    outro.post("/login", data={"email": "caio@a.adv.br", "senha": "senha-do-caio-123"})
+    conferir("o Caio tem duas sessoes abertas", outro.get("/").status_code, 200)
+
+    conferir("sem sessao, /conta vai para o login", anonimo.get("/conta").status_code, 303)
+    r = novo.get("/conta")
+    conferir("logado, a tela abre", (r.status_code, "Trocar a senha" in r.text), (200, True))
+
+    def trocar(**campos):
+        return novo.post("/conta/senha", data={"atual": "senha-do-caio-123",
+                                               "nova": "nova-senha-do-caio",
+                                               "repetida": "nova-senha-do-caio", **campos})
+
+    r = trocar(atual="senha-errada-errada")
+    conferir("senha atual errada e recusada", (r.status_code, "não confere" in r.text), (400, True))
+    r = trocar(repetida="outra-coisa-qualquer")
+    conferir("as duas novas precisam bater", (r.status_code, "não são iguais" in r.text), (400, True))
+    r = trocar(nova="curta", repetida="curta")
+    conferir("senha curta e recusada", (r.status_code, "pelo menos" in r.text), (400, True))
+    r = trocar(nova="senha-do-caio-123", repetida="senha-do-caio-123")
+    conferir("senha nova igual a atual e recusada", (r.status_code, "igual" in r.text), (400, True))
+
+    # Nenhuma das recusas pode ter trocado a senha pelo caminho.
+    conferir("depois das recusas, a senha antiga ainda vale",
+             contas.entrar("caio@a.adv.br", "senha-do-caio-123") is not None, True)
+
+    r = trocar()
+    conferir("a troca boa redireciona para o login",
+             (r.status_code, r.headers.get("location")), (303, "/login"))
+    conferir("a senha nova vale", contas.entrar("caio@a.adv.br", "nova-senha-do-caio") is not None, True)
+    conferir("a antiga nao vale mais", contas.entrar("caio@a.adv.br", "senha-do-caio-123"), None)
+
+    # Trocar senha e o que se faz quando se desconfia que alguem entrou. Manter
+    # aberta a sessao do possivel invasor esvaziaria o gesto.
+    conferir("a sessao de quem trocou cai", novo.get("/").status_code, 303)
+    conferir("e a do outro aparelho tambem", outro.get("/").status_code, 303)
+
+    acoes_caio = [x["acao"] for x in contas.acessos(limite=500, email="caio@a.adv.br")]
+    conferir("a troca ficou registrada", "trocou-senha" in acoes_caio, True)
+    conferir("a tentativa com senha errada tambem", "troca-de-senha-negada" in acoes_caio, True)
+
+    # --- 7. modo local ----------------------------------------------------------
 
     print("\nmodo local")
     contas.MODO = "local"

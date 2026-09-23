@@ -245,6 +245,30 @@ def redefinir_senha(email: str, senha: str) -> None:
         con.execute("DELETE FROM sessoes WHERE usuario_id = ?", (linha["id"],))
 
 
+def trocar_senha(email: str, atual: str, nova: str) -> bool:
+    """O proprio usuario troca a senha. False quando a senha atual nao confere.
+
+    Diferente de `redefinir_senha`, que e do administrador e nao pergunta nada:
+    aqui a senha atual e exigida. Sem isso, um computador deixado aberto na
+    recepcao viraria uma conta tomada - quem passasse trocaria a senha e o dono
+    perderia o acesso.
+
+    Derruba TODAS as sessoes, inclusive a de quem trocou. Trocar senha e o que se
+    faz quando se desconfia que alguem entrou; manter aberta a sessao de quem
+    talvez seja o invasor esvaziaria o gesto. O preco e entrar de novo.
+    """
+    _exigir_senha_boa(nova)
+    with closing(conectar()) as con, con:
+        linha = con.execute(
+            "SELECT id, senha FROM usuarios WHERE email = ? AND ativo = 1", (email,)
+        ).fetchone()
+        if linha is None or not senha_confere(atual, linha["senha"]):
+            return False
+        con.execute("UPDATE usuarios SET senha = ? WHERE id = ?", (hash_senha(nova), linha["id"]))
+        con.execute("DELETE FROM sessoes WHERE usuario_id = ?", (linha["id"],))
+        return True
+
+
 def desativar(email: str) -> None:
     with closing(conectar()) as con, con:
         linha = con.execute("SELECT id FROM usuarios WHERE email = ?", (email,)).fetchone()

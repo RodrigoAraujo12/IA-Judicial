@@ -417,6 +417,14 @@ input.curto { min-width: 8rem; }
   color: var(--muted);
 }
 .topo .conta button { font-size: 0.78rem; padding: 0.2rem 0.7rem; }
+/* O nome de quem esta logado leva a /conta. Sublinhado so no hover: no cabecalho
+   ele e identificacao antes de ser link, e um sublinhado permanente ali competia
+   com as abas das secoes. */
+.topo .conta a { color: inherit; text-decoration: none; }
+.topo .conta a:hover, .topo .conta a:focus-visible { text-decoration: underline; }
+/* O `gap` do flex ja separa o nome do escritorio; sem isto sobrava um vao duplo
+   entre o link e o ponto divisor. */
+.topo .conta a + span { margin-left: -0.35rem; }
 
 /* Aviso de sessao expirada no painel lateral da entrevista. */
 #analise .caixa.alerta {

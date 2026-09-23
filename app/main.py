@@ -173,6 +173,64 @@ async def login_entrar(request: Request):
     return resposta
 
 
+@app.get("/conta", response_class=HTMLResponse)
+def conta(request: Request, erro: str | None = None):
+    """A conta de quem esta logado, e a troca de senha.
+
+    Nao existe no modo local: sem login nao ha conta, e uma tela de trocar senha
+    que nao protege nada so confundiria.
+    """
+    if contas.MODO == "local":
+        return RedirectResponse("/", status_code=303)
+    return templates.TemplateResponse(
+        request,
+        "conta.html",
+        {"usuario": request.state.usuario, "erro": erro, "minimo": contas.SENHA_MINIMA},
+    )
+
+
+@app.post("/conta/senha", response_class=HTMLResponse)
+async def conta_senha(request: Request):
+    """Troca a senha do proprio usuario. Derruba as sessoes, inclusive esta."""
+    if contas.MODO == "local":
+        return RedirectResponse("/", status_code=303)
+    form = await request.form()
+    usuario = request.state.usuario
+    atual = str(form.get("atual") or "")
+    nova = str(form.get("nova") or "")
+
+    erro = None
+    if nova != str(form.get("repetida") or ""):
+        erro = "As duas senhas novas não são iguais."
+    elif len(nova) < contas.SENHA_MINIMA:
+        erro = f"A senha nova precisa de pelo menos {contas.SENHA_MINIMA} caracteres."
+    elif nova == atual:
+        erro = "A senha nova é igual à atual."
+    elif not await run_in_threadpool(contas.trocar_senha, usuario.email, atual, nova):
+        # Senha atual errada. E tentativa de troca por quem talvez nao seja o
+        # dono da conta, entao fica registrada.
+        await run_in_threadpool(
+            contas.registrar, "troca-de-senha-negada", usuario, ip=_ip(request)
+        )
+        erro = "A senha atual não confere."
+
+    if erro:
+        return templates.TemplateResponse(
+            request,
+            "conta.html",
+            {"usuario": usuario, "erro": erro, "minimo": contas.SENHA_MINIMA},
+            status_code=400,
+        )
+
+    await run_in_threadpool(contas.registrar, "trocou-senha", usuario, ip=_ip(request))
+    # A sessao acabou de ser derrubada junto com as outras; o cookie que sobrou
+    # no navegador nao vale mais nada, e apaga-lo evita um 303 para o login
+    # carregando um token morto.
+    resposta = RedirectResponse("/login", status_code=303)
+    resposta.delete_cookie(COOKIE)
+    return resposta
+
+
 @app.post("/sair")
 async def sair(request: Request):
     if token := request.cookies.get(COOKIE):
