@@ -6,6 +6,11 @@ a conta no provedor ainda não existia. **Continue daqui.**
 
 ## Onde paramos
 
+- **PENDENTE desde 24/09/2026: levar ao site no ar a versão para celular**
+  (commit `ab7ad41`, "Celular em pe: nada passa da borda"). O código já está no
+  GitHub; falta puxá-lo de dentro do servidor. Ficou para depois porque a chave
+  de acesso está no computador de casa. Como fazer: seção
+  [Atualizar o site no ar](#atualizar-o-site-no-ar). Feito isso, apague este item.
 - **O código está pronto**: login e isolamento entre escritórios (`README.md`,
   seção "Modo serviço"), e a instalação para servidor em [`implantacao/`](implantacao/).
 - **Provedor do teste: Oracle Cloud, plano grátis** (R$ 0). Se o teste der certo,
@@ -207,11 +212,49 @@ mesmo (o plano grátis dá 20 GB de armazenamento de objetos):
 5. Em `/etc/triagem.env`: `TRIAGEM_BACKUP_REMOTO=oracle:triagem-backups`.
 6. Teste: `sudo triagem-backup`.
 
+## Atualizar o site no ar
+
+O que vai para o GitHub **não chega sozinho ao site**. Alguém precisa puxar de
+dentro do servidor, e só entra nele quem tem a chave.
+
+O que você precisa ter em mãos:
+
+- **A chave**: o arquivo `.key` baixado quando a máquina foi criada (passo 2),
+  com nome parecido com `ssh-key-2026-09-23.key`. Ela está no computador de casa.
+  A Oracle não guarda cópia: se ela se perder, não há como entrar na máquina.
+- **O IP da máquina**: no painel da Oracle, em **Compute → Instances**, clique
+  na máquina e veja o campo **Public IP address**. O endereço do duckdns serve no
+  lugar do IP.
+
+Os passos, no PowerShell do computador que tem a chave:
+
+1. Entre no servidor:
+   ```
+   ssh -i CAMINHO\DA\CHAVE.key ubuntu@IP
+   ```
+   Na primeira vez ele pergunta `Are you sure you want to continue connecting?`.
+   Responda `yes`. Se reclamar da permissão da chave, use o `icacls` do passo 5.
+2. Quando o início da linha virar `ubuntu@...:~$`, você está dentro do servidor.
+   Rode:
+   ```
+   sudo bash /opt/triagem/implantacao/atualizar.sh
+   ```
+   Ele puxa a versão nova do GitHub, instala o que faltar e reinicia o site.
+3. O fim da saída precisa mostrar **`active (running)`**. Se não mostrar,
+   `journalctl -u triagem -n 50` mostra o erro.
+4. Digite `exit` para sair.
+
+Contas e casos não são tocados: moram em `/var/lib/triagem`, fora do código.
+
+**Se o celular ainda mostrar o layout antigo**, recarregue a página. O navegador
+pode guardar o CSS antigo por algumas horas, porque o site ainda não avisa quando
+ele muda.
+
 ## Dia a dia
 
 | Para | Comando |
 |---|---|
-| atualizar o código | `sudo bash /opt/triagem/implantacao/atualizar.sh` |
+| atualizar o código | `sudo bash /opt/triagem/implantacao/atualizar.sh` (passo a passo em [Atualizar o site no ar](#atualizar-o-site-no-ar)) |
 | ver o app | `systemctl status triagem` e `journalctl -u triagem -n 50` |
 | ver o HTTPS | `journalctl -u caddy -n 50` |
 | contas | `sudo triagem-contas listar` / `redefinir-senha EMAIL` / `desativar EMAIL` |
