@@ -6,11 +6,6 @@ a conta no provedor ainda não existia. **Continue daqui.**
 
 ## Onde paramos
 
-- **PENDENTE desde 24/09/2026: levar ao site no ar a versão para celular**
-  (commit `ab7ad41`, "Celular em pe: nada passa da borda"). O código já está no
-  GitHub; falta puxá-lo de dentro do servidor. Ficou para depois porque a chave
-  de acesso está no computador de casa. Como fazer: seção
-  [Atualizar o site no ar](#atualizar-o-site-no-ar). Feito isso, apague este item.
 - **O código está pronto**: login e isolamento entre escritórios (`README.md`,
   seção "Modo serviço"), e a instalação para servidor em [`implantacao/`](implantacao/).
 - **Provedor do teste: Oracle Cloud, plano grátis** (R$ 0). Se o teste der certo,
