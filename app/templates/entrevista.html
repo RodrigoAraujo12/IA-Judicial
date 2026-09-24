@@ -87,15 +87,22 @@
 
 </div>
 
+{# Dois grupos - guardar o caso, e gerar a partir dele. No computador ficam na
+   mesma linha; no celular cada um ganha a sua, porque os quatro juntos passavam
+   da borda e a barra e fixa: o que ficava de fora nem rolando se alcancava. #}
 <div class="acoes">
-  <input type="text" name="caso_nome" id="caso_nome" class="curto"
-         value="{{ caso_nome }}" placeholder="Nome do caso">
-  <button type="button" id="salvar" class="secundario">Salvar</button>
-  <span id="aviso-salvo" class="salvo"></span>
-  <button type="submit">Gerar relat&oacute;rio do caso</button>
-  {# Mesmo formulario, outro destino: a minuta parte exatamente das respostas que
-     o relatorio descreve. #}
-  <button type="submit" formaction="/peca" class="secundario">Minuta da inicial</button>
+  <div class="grupo">
+    <input type="text" name="caso_nome" id="caso_nome" class="curto"
+           value="{{ caso_nome }}" placeholder="Nome do caso">
+    <button type="button" id="salvar" class="secundario">Salvar</button>
+    <span id="aviso-salvo" class="salvo"></span>
+  </div>
+  <div class="grupo">
+    <button type="submit">Gerar relat&oacute;rio do caso</button>
+    {# Mesmo formulario, outro destino: a minuta parte exatamente das respostas que
+       o relatorio descreve. #}
+    <button type="submit" formaction="/peca" class="secundario">Minuta da inicial</button>
+  </div>
 </div>
 </form>
 

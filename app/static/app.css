@@ -42,7 +42,8 @@
 
 * { box-sizing: border-box; }
 
-html { font-size: 15px; }
+/* O text-size-adjust impede o celular deitado de inflar a fonte por conta propria. */
+html { font-size: 15px; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 body {
   margin: 0;
@@ -116,11 +117,39 @@ body {
   border-bottom-color: var(--accent);
 }
 
+/* Titulo e abas nao quebram: quem cede espaco e o nome de quem esta logado. */
+.topo h1, .topo .secoes a { white-space: nowrap; }
+
 /* Janela estreita: o subtitulo sai antes que as abas comecem a se espremer. Ele
-   explica, elas navegam - e navegar ganha. */
-@media (max-width: 760px) {
-  .topo { padding-left: 1rem; padding-right: 1rem; }
+   explica, elas navegam - e navegar ganha. Com a conta no cabecalho falta espaco
+   mais cedo. */
+@media (max-width: 1100px) {
+  .topo:has(.conta) .sub { display: none; }
+}
+
+@media screen and (max-width: 760px) {
   .topo .sub { display: none; }
+
+  /* Cabecalho em linhas: titulo e Sair; quem esta logado e em que escritorio;
+     as tres abas, dividindo a largura. Numa linha so ele passava da tela. Deixa
+     de ser fixo no alto: no celular a altura e o que falta, e a barra de acoes
+     ja ocupa o pe. */
+  .topo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 0.8rem;
+    row-gap: 0.3rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    position: static;
+  }
+  .topo h1 { grid-column: 1; grid-row: 1; }
+  .topo .conta { display: contents; }
+  .topo .conta button { grid-column: 2; grid-row: 1; padding: 0.35rem 0.8rem; }
+  .topo .conta .quem { grid-column: 1 / -1; grid-row: 2; font-size: 0.8rem; color: var(--muted); }
+  .topo .secoes { grid-column: 1 / -1; margin-left: 0; margin-top: 0.35rem; }
+  .topo .secoes a { flex: 1; justify-content: center; text-align: center; padding: 0.6rem 0.25rem; }
 }
 
 /* --- estrutura ----------------------------------------------------------- */
@@ -132,12 +161,6 @@ body {
   gap: 0;
   max-width: 1500px;
   margin: 0 auto;
-}
-
-@media (max-width: 1100px) {
-  .quadro { grid-template-columns: minmax(0, 1fr); }
-  .rail, .lateral { position: static; border: 0; }
-  .rail { display: none; }
 }
 
 .rail {
@@ -171,6 +194,19 @@ body {
   padding: 1.6rem 1.5rem 3rem 1.25rem;
   border-left: 1px solid var(--rule);
   align-self: start;
+}
+
+/* Tela estreita: uma coluna so, com o painel de analise depois das perguntas.
+   Este bloco tem de vir DEPOIS de .rail e .lateral - antes, com a mesma
+   especificidade, perdia para eles, e o painel continuava preso, com filete ao
+   lado e rolagem propria dentro da rolagem da pagina. */
+@media (max-width: 1100px) {
+  /* O pe da pagina fica livre para a barra de acoes, que e fixa. */
+  .quadro { grid-template-columns: minmax(0, 1fr); padding-bottom: 4rem; }
+  .rail, .lateral { position: static; border: 0; }
+  .rail { display: none; }
+  .principal { padding-bottom: 1rem; }
+  .lateral { max-height: none; overflow: visible; border-top: 1px solid var(--rule-strong); }
 }
 
 /* --- rotulos e secoes ---------------------------------------------------- */
@@ -305,9 +341,12 @@ input:focus, textarea:focus, select:focus {
 
 /* --- acoes --------------------------------------------------------------- */
 
+/* `margin: 0` porque na minuta a barra e um <p>: a margem dele a descolava do pe
+   da tela, e o texto aparecia por baixo dela. */
 .acoes {
   position: fixed;
   bottom: 0; left: 0; right: 0;
+  margin: 0;
   background: var(--surface);
   border-top: 1px solid var(--rule-strong);
   padding: 0.7rem 1.5rem;
@@ -316,6 +355,8 @@ input:focus, textarea:focus, select:focus {
   align-items: center;
   z-index: 20;
 }
+
+.acoes .grupo { display: flex; gap: 0.7rem; align-items: center; }
 
 button {
   font: inherit;
@@ -422,9 +463,6 @@ input.curto { min-width: 8rem; }
    com as abas das secoes. */
 .topo .conta a { color: inherit; text-decoration: none; }
 .topo .conta a:hover, .topo .conta a:focus-visible { text-decoration: underline; }
-/* O `gap` do flex ja separa o nome do escritorio; sem isto sobrava um vao duplo
-   entre o link e o ponto divisor. */
-.topo .conta a + span { margin-left: -0.35rem; }
 
 /* Aviso de sessao expirada no painel lateral da entrevista. */
 #analise .caixa.alerta {
@@ -511,7 +549,11 @@ input.curto { min-width: 8rem; }
   font-size: 0.7rem;
   color: var(--faint);
   margin-left: 0.5rem;
+  overflow-wrap: anywhere;
 }
+/* Vigencia e alteracao. Sem isto a linha saia no corpo cheio, maior que o
+   proprio texto da lei que ela so data. */
+.dispositivo .nota { display: block; font-size: 0.78rem; color: var(--muted); }
 /* Serifa porque isto e texto de lei, nao rotulo de interface - a mesma regra que
    separa o relatorio do formulario no resto do sistema. */
 .texto-lei {
@@ -592,4 +634,60 @@ input.curto { min-width: 8rem; }
 
 @media print {
   .peca .aviso-tela, .no-print { display: none; }
+}
+
+/* --- celular em pe --------------------------------------------------------- */
+
+/* Regra desta faixa: nada passa da borda. Rolar para o lado e o defeito que mais
+   cansa no celular, e a barra de acoes e fixa - o que passava dela nem rolando
+   se alcancava. `screen` para a impressao feita do celular sair como a do
+   computador: papel nao e tela estreita. */
+@media screen and (max-width: 640px) {
+  /* Palavra sem espaco (e-mail, URL, nome colado) quebra em vez de empurrar. */
+  body { overflow-wrap: break-word; }
+
+  /* Margem de 1rem: os 2rem do computador comiam um sexto da largura. */
+  .principal { padding: 1.2rem 1rem 1rem; }
+  .lateral { padding: 1.2rem 1rem 1rem; }
+  .relatorio { margin-top: 1.5rem; padding: 0 1rem; }
+  .lista { margin-top: 1.5rem; padding: 0 1rem; }
+  /* Espaco para a barra de acoes, que aqui tem duas linhas: sem ele o fim do
+     painel de analise ficava escondido atras dela. */
+  .quadro { padding-bottom: 8.5rem; }
+
+  /* 16px nos campos: abaixo disso o iPhone da zoom ao tocar no campo, e a
+     pagina ampliada e justamente o que obriga a rolar para o lado. */
+  input, select, textarea, .busca input[type="search"] { font-size: 16px; }
+  input[type="text"], input[type="date"], input[type="email"],
+  input[type="password"], select { width: 100%; min-width: 0; }
+  input.curto { width: auto; min-width: 8rem; }
+
+  /* Alvo de dedo, nao de cursor. */
+  button { padding: 0.6rem 1rem; }
+  .binario label { padding: 0.5rem 1.1rem; }
+  .opcoes { gap: 0.5rem; }
+
+  .acoes { flex-direction: column; align-items: stretch; gap: 0.5rem; padding: 0.6rem 1rem; }
+  .acoes .grupo { flex-wrap: wrap; gap: 0.5rem; align-items: stretch; }
+  .acoes .grupo > * { flex: 1 1 0; min-width: 0; }
+  .acoes #salvar { flex: none; }
+  /* O aviso de salvo (ou de erro) desce para uma linha propria enquanto dura,
+     em vez de espremer o campo do nome. */
+  .acoes .salvo { flex-basis: 100%; }
+  .acoes .salvo:empty { display: none; }
+
+  /* Consulta: cada filtro numa linha, com os campos alinhados. */
+  .busca input[type="search"], .busca button { flex: 1 1 100%; }
+  .busca .data {
+    flex: 1 1 100%;
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    align-items: center;
+  }
+
+  /* Justificado numa coluna de 35 letras abre buracos entre as palavras. Na
+     impressao a peca continua justificada - isto e so a tela. */
+  .peca .corrido { text-align: left; text-indent: 1.5rem; }
+  .peca blockquote { margin-left: 1rem; }
+  .peca ol.pedidos { padding-left: 1.5rem; }
 }

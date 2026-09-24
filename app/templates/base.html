@@ -31,9 +31,11 @@
         qual esta aberto antes de salvar. -#}
     {% set usuario = request.state.usuario %}
     {% if usuario %}
+      {#- Nome e escritorio andam juntos num `.quem`: no celular o Sair fica na
+          linha do titulo e os dois descem para a linha de baixo, inteiros. -#}
       <form class="conta" method="post" action="/sair">
-        <a href="/conta">{{ usuario.nome }}</a>
-        <span>&middot; <strong>{{ usuario.escritorio }}</strong></span>
+        <span class="quem"><a href="/conta">{{ usuario.nome }}</a>
+          <span>&middot; <strong>{{ usuario.escritorio }}</strong></span></span>
         <button type="submit" class="secundario">Sair</button>
       </form>
     {% endif %}
