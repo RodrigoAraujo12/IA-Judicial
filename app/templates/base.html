@@ -16,10 +16,14 @@
 
         Relatorio e peca ficam de fora de proposito. Sao resultado de um POST, e
         uma aba ali levaria a uma entrevista em branco - descartando as respostas
-        sem avisar. Delas se volta pelo botao do navegador. -#}
+        sem avisar. Delas se volta pelo botao do navegador.
+
+        /conta aparece com as abas, nenhuma marcada: ela e um GET e nao ha o que
+        descartar, e sem elas quem abrisse a propria conta ficava sem caminho de
+        volta - so pelo botao do navegador. -#}
     {% set secoes = {"/": "Entrevista", "/corpus": "Consultar a lei", "/casos": "Casos salvos"} %}
     {% set aqui = "/" if request.url.path.startswith("/caso/") else request.url.path %}
-    {% if aqui in secoes %}
+    {% if aqui in secoes or aqui == "/conta" %}
       <nav class="secoes">
         {% for href, nome in secoes.items() %}
           <a href="{{ href }}"{% if href == aqui %} class="aqui" aria-current="page"{% endif %}>{{ nome }}</a>
